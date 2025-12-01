@@ -1,8 +1,9 @@
 # InDepthDispenza
 
-[![.NET CI](https://github.com/OWNER/REPO/actions/workflows/dotnet.yml/badge.svg)](https://github.com/OWNER/REPO/actions/workflows/dotnet.yml)
+[![.NET CI](https://github.com/ferrydeboer/indepth-dispenza/actions/workflows/dotnet.yml/badge.svg)](https://github.com/ferrydeboer/indepth-dispenza/actions/workflows/dotnet.yml)
 
-Azure Functions app for scanning Spotify playlists (e.g., ScanPlaylist endpoint).
+Azure Functions app for scanning the Joe Dispenza Testimonials playlists (e.g., ScanPlaylist endpoint)
+and run AI based analysis for data extraction and browsing.
 
 ## Setup
 1. Clone the repo.
@@ -12,5 +13,3 @@ Azure Functions app for scanning Spotify playlists (e.g., ScanPlaylist endpoint)
 
 ## Deploy
 Deploy `backend/InDepthDispenza.Functions/` to Azure Functions.
-
-*Replace `OWNER/REPO` in the badge URL above with your GitHub username/org and repo name.*
