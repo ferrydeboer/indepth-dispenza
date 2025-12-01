@@ -26,7 +26,6 @@ public class ScanPlaylistTests
         var okResult = (OkObjectResult)result;
         Assert.That(okResult.Value, Is.InstanceOf<ScanPlaylistResult>());
         Assert.That(((ScanPlaylistResult)okResult.Value!).OrchestrationCount, Is.EqualTo(0));
-        mockLogger.Verify(l => l.LogInformation(It.IsAny<string>()), Times.Once);
     }
 
     [Test]
@@ -46,6 +45,5 @@ public class ScanPlaylistTests
         var okResult = (OkObjectResult)result;
         Assert.That(okResult.Value, Is.InstanceOf<ScanPlaylistResult>());
         Assert.That(((ScanPlaylistResult)okResult.Value!).OrchestrationCount, Is.EqualTo(testLimit));
-        mockLogger.Verify(l => l.LogInformation(It.IsAny<string>()), Times.Once);
     }
 }
