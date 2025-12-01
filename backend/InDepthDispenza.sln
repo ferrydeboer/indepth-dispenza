@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InDepthDispenza.Functions", "InDepthDispenza.Functions\InDepthDispenza.Functions.csproj", "{CF1634A3-6AE0-4109-9EA3-29720CF3D330}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IndepthDispenza.Tests", "IndepthDispenza.Tests\IndepthDispenza.Tests.csproj", "{841119D4-D1A2-43FD-9A4A-846F9AEDA04F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CF1634A3-6AE0-4109-9EA3-29720CF3D330}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF1634A3-6AE0-4109-9EA3-29720CF3D330}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CF1634A3-6AE0-4109-9EA3-29720CF3D330}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CF1634A3-6AE0-4109-9EA3-29720CF3D330}.Release|Any CPU.Build.0 = Release|Any CPU
+		{841119D4-D1A2-43FD-9A4A-846F9AEDA04F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{841119D4-D1A2-43FD-9A4A-846F9AEDA04F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{841119D4-D1A2-43FD-9A4A-846F9AEDA04F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{841119D4-D1A2-43FD-9A4A-846F9AEDA04F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
