@@ -2,7 +2,7 @@ using Google.Apis.Services;
 using Google.Apis.YouTube.v3;
 using Google.Apis.YouTube.v3.Data;
 using InDepthDispenza.Functions.Interfaces;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
 
 namespace InDepthDispenza.Functions.Integrations.YouTube;
@@ -11,16 +11,18 @@ public class PlaylistPlaylistService : IPlaylistService
 {
     private readonly ILogger<YouTubeService> _logger;
     private readonly YouTubeService _youTubeClient;
-    private readonly string _apiKey;
+    private readonly YouTubeOptions _options;
 
-    public PlaylistPlaylistService(IConfiguration configuration, ILogger<YouTubeService> logger)
+    public PlaylistPlaylistService(IOptions<YouTubeOptions> options, ILogger<YouTubeService> logger)
     {
         _logger = logger;
-        _apiKey = configuration["YouTube:ApiKey"] ?? throw new InvalidOperationException("YouTubeApiKey configuration is missing");
+        _options = options.Value;
+        
+        var apiKey = _options.ApiKey ?? throw new InvalidOperationException("YouTube ApiKey configuration is missing");
         
         _youTubeClient = new YouTubeService(new BaseClientService.Initializer()
         {
-            ApiKey = _apiKey,
+            ApiKey = apiKey,
             ApplicationName = "InDepthDispenza"
         });
     }

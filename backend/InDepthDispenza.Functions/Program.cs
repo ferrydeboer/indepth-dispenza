@@ -12,6 +12,7 @@ using Microsoft.Extensions.Hosting;
 var builder = FunctionsApplication.CreateBuilder(args);
 // Change to scalable solution.
 builder.Configuration.AddJsonFile("local.settings.json", optional: true, reloadOnChange: false);
+builder.Services.Configure<YouTubeOptions>(builder.Configuration.GetSection("YouTube"));
 builder.ConfigureFunctionsWebApplication();
 
 builder.Services
