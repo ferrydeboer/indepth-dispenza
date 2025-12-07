@@ -46,11 +46,10 @@ public class ScanPlaylist
                 _logger.LogInformation("Playlist scan completed successfully. Videos processed: {Count}", result.Data);
                 return new OkObjectResult(new ScanPlaylistResult(result.Data!));
             }
-            else
-            {
-                _logger.LogError("Playlist scan failed: {Error}", result.ErrorMessage);
-                return new BadRequestObjectResult(new { error = result.ErrorMessage });
-            }
+
+            _logger.LogError("Playlist scan failed: {Error}", result.ErrorMessage);
+            // I don't like this unconventional anonymous response types due to testing difficulties.
+            return new BadRequestObjectResult(new { error = result.ErrorMessage });
         }
         catch (Exception ex)
         {
