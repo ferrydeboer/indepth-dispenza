@@ -31,4 +31,4 @@ jobs:
       run: dotnet build --no-restore --configuration Release
 
     - name: Test
-      run: dotnet test IndepthDispenza.Tests --no-build --verbosity normal --configuration Release --collect:"XPlat Code Coverage"
+      run: dotnet test --no-build --verbosity normal --configuration Release --collect:"XPlat Code Coverage"

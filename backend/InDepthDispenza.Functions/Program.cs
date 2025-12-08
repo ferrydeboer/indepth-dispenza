@@ -1,7 +1,7 @@
 using InDepthDispenza.Functions.Integrations;
+using InDepthDispenza.Functions.Integrations.Azure;
 using InDepthDispenza.Functions.Integrations.YouTube;
 using InDepthDispenza.Functions.Interfaces;
-using InDepthDispenza.Functions.Services;
 using InDepthDispenza.Functions.VideoAnalysis;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Builder;
@@ -18,11 +18,10 @@ builder.ConfigureFunctionsWebApplication();
 builder.Services
     .AddApplicationInsightsTelemetryWorkerService()
     .ConfigureFunctionsApplicationInsights()
-    
+
     // Register services
-    .AddScoped<IPlaylistService, PlaylistPlaylistService>()
-    // .AddScoped<IQueueService, AzureStorageQueueService>()
-    .AddScoped<IQueueService, LoggingQueueService>()
+    .AddScoped<IPlaylistService, YouTubePlaylistVideoService>()
+    .AddScoped<IQueueService, AzureStorageQueueService>()
     .AddScoped<IPlaylistScanService, PlaylistScanService>();
 
 

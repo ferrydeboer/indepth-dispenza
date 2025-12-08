@@ -7,24 +7,31 @@ using Microsoft.Extensions.Logging;
 
 namespace InDepthDispenza.Functions.Integrations.YouTube;
 
-public class PlaylistPlaylistService : IPlaylistService
+public class YouTubePlaylistVideoService : IPlaylistService
 {
-    private readonly ILogger<YouTubeService> _logger;
+    private readonly ILogger<YouTubePlaylistVideoService> _logger;
     private readonly YouTubeService _youTubeClient;
-    private readonly YouTubeOptions _options;
 
-    public PlaylistPlaylistService(IOptions<YouTubeOptions> options, ILogger<YouTubeService> logger)
+    public YouTubePlaylistVideoService(IOptions<YouTubeOptions> options, ILogger<YouTubePlaylistVideoService> logger)
     {
         _logger = logger;
-        _options = options.Value;
-        
-        var apiKey = _options.ApiKey ?? throw new InvalidOperationException("YouTube ApiKey configuration is missing");
-        
-        _youTubeClient = new YouTubeService(new BaseClientService.Initializer()
+        var youTubeOptions = options.Value;
+
+        var apiKey = youTubeOptions.ApiKey ?? throw new InvalidOperationException("YouTube ApiKey configuration is missing");
+
+        var initializer = new BaseClientService.Initializer
         {
             ApiKey = apiKey,
             ApplicationName = "InDepthDispenza"
-        });
+        };
+
+        // Override base URL if provided (useful for testing with mock servers)
+        if (!string.IsNullOrWhiteSpace(youTubeOptions.ApiBaseUrl))
+        {
+            initializer.BaseUri = youTubeOptions.ApiBaseUrl;
+        }
+
+        _youTubeClient = new YouTubeService(initializer);
     }
 
     public async Task<ServiceResult<IEnumerable<VideoInfo>>> GetPlaylistVideosAsync(string playlistId, int? limit = null)

@@ -1,5 +1,4 @@
 using InDepthDispenza.Functions.Interfaces;
-using InDepthDispenza.Functions.Services;
 using Microsoft.Extensions.Logging;
 
 namespace InDepthDispenza.Functions.VideoAnalysis;
@@ -27,7 +26,7 @@ public class PlaylistScanService : IPlaylistScanService
     {
         try
         {
-            _logger.LogInformation("Starting playlist scan for playlist: {PlaylistId} with limit: {Limit}", 
+            _logger.LogInformation("Starting playlist scan for playlist: {PlaylistId} with limit: {Limit}",
                 request.PlaylistId, request.Limit);
 
             // Retrieve videos from YouTube
@@ -38,7 +37,6 @@ public class PlaylistScanService : IPlaylistScanService
             }
 
             var videos = videosResult.Data!.ToList();
-            _logger.LogInformation("Retrieved {Count} videos from playlist", videos.Count);
 
             // Enqueue each video
             var successCount = 0;
