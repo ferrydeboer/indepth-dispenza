@@ -6,56 +6,83 @@
 
 ## Technical Details
 
+### Repository Structure
+```
+indepth-dispenza/                    # Repository root
+├── backend/                         # Azure Functions (.NET)
+│   ├── InDepthDispenza.Functions/
+│   ├── InDepthDispenza.Tests/
+│   └── InDepthDispenza.IntegrationTests/
+├── frontend/                        # Future: Web UI (Phase 3)
+├── docs/                           # Documentation
+├── infrastructure/                 # Bicep templates (all Azure resources)
+│   ├── main.bicep
+│   ├── modules/
+│   └── parameters/
+├── docker-compose.yml              # Local development environment
+└── .github/workflows/              # CI/CD pipelines
+```
+
 ### Local Development (docker-compose)
-Create `backend/docker-compose.yml` with:
-- **Cosmos DB Emulator** (or Azure CosmosDB Linux Emulator)
+Create `docker-compose.yml` at **repository root** with:
+- **Cosmos DB Emulator** (Azure CosmosDB Linux Emulator)
 - **Azurite** (Azure Storage emulator - already used in tests)
-- **Azure Functions runtime** for local debugging
+- Services should be accessible from both backend and future frontend directories
 
 ### Infrastructure as Code
-Create Azure Bicep templates in `backend/infrastructure/`:
+Create Azure Bicep templates in **`infrastructure/`** directory at repository root:
 - `main.bicep` - Main orchestration file
-- `cosmos-db.bicep` - Cosmos DB account with serverless mode
-  - Collections: `transcript-cache`, `video-analysis`
-  - Partition keys, indexes
-- `storage.bicep` - Azure Storage account for queue storage
-- `function-app.bicep` - Azure Functions (consumption plan)
-- `app-insights.bicep` - Application Insights for monitoring
+- `modules/`
+  - `cosmos-db.bicep` - Cosmos DB account with serverless mode
+    - Collections: `transcript-cache`, `video-analysis`
+    - Partition keys, indexes
+  - `storage.bicep` - Azure Storage account for queue storage
+  - `function-app.bicep` - Azure Functions backend (consumption plan)
+  - `app-insights.bicep` - Application Insights for monitoring
+  - `static-web-app.bicep` - (Future: Phase 3) Static Web App for frontend
+- `parameters/`
+  - `dev.parameters.json` - Development environment parameters
+  - `prod.parameters.json` - Production environment parameters
 
 ### CI/CD Pipeline
-Extend `.github/workflows/dotnet.yml` to:
-1. Build and test (existing)
-2. **Deploy infrastructure** (new) - Bicep → Azure
-3. **Deploy functions** (new) - Azure Functions deployment
+Extend `.github/workflows/dotnet.yml` or create separate `deploy.yml`:
+1. Build and test backend (existing)
+2. **Deploy infrastructure** (new) - `az deployment sub create --location westeurope --template-file infrastructure/main.bicep`
+3. **Deploy functions** (new) - Azure Functions deployment from `backend/`
+4. Future: Frontend deployment to Static Web App (Phase 3)
 
 ## Acceptance Criteria
 
 ### Local Development
-- [ ] `docker-compose.yml` file in `backend/` directory
+- [ ] `docker-compose.yml` file at **repository root**
 - [ ] Cosmos DB emulator accessible at `https://localhost:8081`
-- [ ] Azurite runs with queues on port 10001
-- [ ] `local.settings.json.example` template with connection strings
-- [ ] README documentation for running: `docker-compose up -d`
-- [ ] Integration tests can run against docker-compose environment
+- [ ] Azurite runs with queues on port 10001, accessible from backend/frontend
+- [ ] `backend/InDepthDispenza.Functions/local.settings.json.example` with connection strings
+- [ ] Root-level `README.md` with instructions for: `docker-compose up -d`
+- [ ] Integration tests in `backend/` can connect to docker-compose services
+- [ ] Environment variables documented for both backend and future frontend
 
 ### Infrastructure as Code
-- [ ] Bicep templates validate: `az bicep build`
-- [ ] Parameters file for dev/prod environments
+- [ ] Bicep templates in `infrastructure/` directory at repository root
+- [ ] All templates validate: `az bicep build --file infrastructure/main.bicep`
+- [ ] Parameter files for dev/prod in `infrastructure/parameters/`
 - [ ] Cosmos DB serverless mode configured
 - [ ] Storage account with queue enabled
 - [ ] Function App with consumption plan (Linux)
 - [ ] Application Insights connected to Function App
 - [ ] Outputs include connection strings for CI/CD
+- [ ] Infrastructure prepared for future Static Web App (placeholder in modules)
 
 ### CI/CD Pipeline
 - [ ] Workflow runs on push to `main` branch
-- [ ] Infrastructure deployment step using Azure CLI
-- [ ] Function App deployment using Azure Functions action
+- [ ] Infrastructure deployment step: `az deployment sub create --template-file infrastructure/main.bicep`
+- [ ] Function App deployment using Azure Functions action (deploys from `backend/`)
 - [ ] Secrets stored in GitHub secrets:
   - `AZURE_CREDENTIALS` (service principal)
   - `AZURE_SUBSCRIPTION_ID`
   - `AZURE_OPENAI_KEY` (for Story 2)
 - [ ] Deployment only on successful tests
+- [ ] Deployment working directory properly set for backend vs infrastructure
 - [ ] Manual approval for production deployment (optional)
 
 ## Cost Considerations

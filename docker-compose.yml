@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  # Azure Cosmos DB Emulator (Linux - supports ARM64 and x86_64)
+  # See: https://devblogs.microsoft.com/cosmosdb/introducing-the-new-linux-based-azure-cosmos-db-emulator-preview/
+  cosmosdb:
+    image: mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:vnext-preview
+    container_name: indepth-dispenza-cosmosdb
+    ports:
+      - "8081:8081"      # Cosmos DB Emulator HTTPS endpoint
+      - "1234:1234"      # Cosmos DB Emulator HTTPS endpoint
+      - "10250-10255:10250-10255"  # Additional endpoints
+    environment:
+      - AZURE_COSMOS_EMULATOR_PARTITION_COUNT=10
+      - AZURE_COSMOS_EMULATOR_ENABLE_DATA_PERSISTENCE=true
+      - AZURE_COSMOS_EMULATOR_IP_ADDRESS_OVERRIDE=127.0.0.1
+    volumes:
+      - cosmosdb-data:/tmp/cosmos/appdata
+    networks:
+      - indepth-dispenza
+    mem_limit: 3g
+    cpus: 2.0
+    healthcheck:
+      test: ["CMD", "curl", "-k", "https://localhost:8081/_explorer/emulator.pem"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+
+  # Azurite - Azure Storage Emulator (Blob, Queue, Table)
+  # Works on all architectures including ARM
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite:latest
+    container_name: indepth-dispenza-azurite
+    ports:
+      - "10000:10000"    # Blob service
+      - "10001:10001"    # Queue service
+      - "10002:10002"    # Table service
+    volumes:
+      - azurite-data:/data
+    command: "azurite --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0 --loose --skipApiVersionCheck"
+    networks:
+      - indepth-dispenza
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "10001"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  cosmosdb-data:
+    driver: local
+  azurite-data:
+    driver: local
+
+networks:
+  indepth-dispenza:
+    driver: bridge
