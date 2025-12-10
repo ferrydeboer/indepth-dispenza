@@ -1,0 +1,34 @@
+@startuml InDepthDispenza Component Diagram
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Component Diagram - InDepthDispenza.Functions Namespace Architecture
+
+Container_Boundary(functions, "InDepthDispenza.Functions") {
+    Component(root, "Root", "Namespace", "Azure Functions entry points (ScanPlaylist)")
+    Component(interfaces, "Interfaces", "Namespace", "Contracts and models for decoupling")
+    Component(videoAnalysis, "VideoAnalysis", "Namespace", "Domain layer orchestration services")
+    Component(integrationsYouTube, "Integrations.YouTube", "Namespace", "YouTube API integration")
+    Component(integrationsAzure, "Integrations.Azure", "Namespace", "Azure Storage Queue integration")
+    Component(integrations, "Integrations", "Namespace", "Cross-cutting integration concerns")
+}
+
+System_Ext(youtubeApi, "YouTube Data API v3", "External API")
+System_Ext(azureStorage, "Azure Storage Queues", "Message queue")
+
+' Namespace dependencies (acyclic)
+Rel(root, interfaces, "Uses")
+Rel(root, videoAnalysis, "Uses")
+Rel(videoAnalysis, interfaces, "Uses")
+Rel(integrationsYouTube, interfaces, "Implements")
+Rel(integrationsAzure, interfaces, "Implements")
+Rel(integrations, interfaces, "Implements")
+
+' External dependencies
+Rel(integrationsYouTube, youtubeApi, "Calls", "HTTPS")
+Rel(integrationsAzure, azureStorage, "Sends to", "HTTPS")
+
+SHOW_LEGEND()
+
+@enduml
