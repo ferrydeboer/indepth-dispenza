@@ -66,16 +66,16 @@ Extend `.github/workflows/dotnet.yml` or create separate `deploy.yml`:
 - [x] Bicep templates in `infrastructure/` directory at repository root
 - [x] All templates validate: `az bicep build --file infrastructure/main.bicep`
 - [x] Parameter files for dev/prod in `infrastructure/parameters/`
-- [ ] Cosmos DB serverless mode configured
+- [x] Cosmos DB serverless mode configured
 - [ ] Storage account with queue enabled
 - [ ] Function App with consumption plan (Linux)
-- [ ] Application Insights connected to Function App
+- [x] Application Insights connected to Function App
 - [ ] Outputs include connection strings for CI/CD
 - [ ] Infrastructure prepared for future Static Web App (placeholder in modules)
 
 ### CI/CD Pipeline
-- [ ] Workflow runs on push to `main` branch
-- [ ] Infrastructure deployment step: `az deployment sub create --template-file infrastructure/main.bicep`
+- [x] Workflow runs on push to `main` branch
+- [x] Infrastructure deployment step: `az deployment sub create --template-file infrastructure/main.bicep`
 - [ ] Function App deployment using Azure Functions action (deploys from `backend/`)
 - [ ] Secrets stored in GitHub secrets:
   - `AZURE_CREDENTIALS` (service principal)
