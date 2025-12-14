@@ -76,13 +76,13 @@ Extend `.github/workflows/dotnet.yml` or create separate `deploy.yml`:
 ### CI/CD Pipeline
 - [x] Workflow runs on push to `main` branch
 - [x] Infrastructure deployment step: `az deployment sub create --template-file infrastructure/main.bicep`
-- [ ] Function App deployment using Azure Functions action (deploys from `backend/`)
+- [x] Function App deployment using Azure Functions action (deploys from `backend/`)
 - [ ] Secrets stored in GitHub secrets:
   - `AZURE_CREDENTIALS` (service principal)
   - `AZURE_SUBSCRIPTION_ID`
   - `AZURE_OPENAI_KEY` (for Story 2)
-- [ ] Deployment only on successful tests
-- [ ] Deployment working directory properly set for backend vs infrastructure
+- [x] Deployment only on successful tests
+- [x] Deployment working directory properly set for backend vs infrastructure
 - [ ] Manual approval for production deployment (optional)
 
 ## Cost Considerations

@@ -67,7 +67,8 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
     reserved: false  // Windows
     httpsOnly: true
     siteConfig: {
-      netFrameworkVersion: 'v9.0'  // .NET 9 on Windows
+      ftpsState: 'Disabled'
+      minTlsVersion: '1.2'
       appSettings: [
         {
           name: 'AzureWebJobsStorage'
@@ -114,9 +115,19 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
           value: 'video-analysis'
         }
       ]
-      ftpsState: 'Disabled'
-      minTlsVersion: '1.2'
     }
+  }
+}
+
+// Separate config resource to set .NET framework version
+// This is the proper way to configure runtime for Function Apps
+resource functionAppConfig 'Microsoft.Web/sites/config@2023-12-01' = {
+  name: 'web'
+  parent: functionApp
+  properties: {
+    netFrameworkVersion: 'v9.0'
+    ftpsState: 'Disabled'
+    minTlsVersion: '1.2'
   }
 }
 
