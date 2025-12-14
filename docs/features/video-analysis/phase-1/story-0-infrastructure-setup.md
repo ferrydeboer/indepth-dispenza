@@ -54,18 +54,18 @@ Extend `.github/workflows/dotnet.yml` or create separate `deploy.yml`:
 ## Acceptance Criteria
 
 ### Local Development
-- [ ] `docker-compose.yml` file at **repository root**
-- [ ] Cosmos DB emulator accessible at `https://localhost:8081`
-- [ ] Azurite runs with queues on port 10001, accessible from backend/frontend
-- [ ] `backend/InDepthDispenza.Functions/local.settings.json.example` with connection strings
-- [ ] Root-level `README.md` with instructions for: `docker-compose up -d`
+- [x] `docker-compose.yml` file at **repository root**
+- [x] Cosmos DB emulator accessible at `https://localhost:8081`
+- [x] Azurite runs with queues on port 10001, accessible from backend/frontend
+- [x] `backend/InDepthDispenza.Functions/local.settings.json.example` with connection strings
+- [x] Root-level `README.md` with instructions for: `docker-compose up -d`
 - [ ] Integration tests in `backend/` can connect to docker-compose services
 - [ ] Environment variables documented for both backend and future frontend
 
 ### Infrastructure as Code
-- [ ] Bicep templates in `infrastructure/` directory at repository root
-- [ ] All templates validate: `az bicep build --file infrastructure/main.bicep`
-- [ ] Parameter files for dev/prod in `infrastructure/parameters/`
+- [x] Bicep templates in `infrastructure/` directory at repository root
+- [x] All templates validate: `az bicep build --file infrastructure/main.bicep`
+- [x] Parameter files for dev/prod in `infrastructure/parameters/`
 - [ ] Cosmos DB serverless mode configured
 - [ ] Storage account with queue enabled
 - [ ] Function App with consumption plan (Linux)
