@@ -18,10 +18,12 @@
         <PackageReference Include="Azure.Storage.Queues" Version="12.23.0"/>
         <PackageReference Include="Testcontainers" Version="4.1.0"/>
         <PackageReference Include="Testcontainers.Azurite" Version="4.1.0"/>
+        <PackageReference Include="Testcontainers.CosmosDb" Version="4.1.0"/>
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.0"/>
         <PackageReference Include="FluentAssertions" Version="7.0.0"/>
         <PackageReference Include="WireMock.Net" Version="1.6.9"/>
         <PackageReference Include="WireMock.Net.Testcontainers" Version="1.6.9"/>
+        <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.47.0"/>
         <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.0"/>
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.0"/>
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0"/>

@@ -11,9 +11,11 @@ public class WireMockConfiguration
 {
     private readonly IWireMockAdminApi _adminClient;
     private readonly Fixture _fixture;
+    public WireMockContainer WireMockContainer { get; }
 
     public WireMockConfiguration(WireMockContainer wireMockContainer)
     {
+        WireMockContainer = wireMockContainer;
         _adminClient = wireMockContainer.CreateWireMockAdminClient();
         _fixture = new Fixture();
     }
@@ -97,7 +99,7 @@ public class WireMockConfiguration
             },
             Response = new ResponseModel
             {
-                StatusCode = statusCode.Value,
+                StatusCode = statusCode ?? 200,
                 Headers = new Dictionary<string, object>
                 {
                     { "Content-Type", "application/json" }

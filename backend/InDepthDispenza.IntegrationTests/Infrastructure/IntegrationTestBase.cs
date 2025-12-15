@@ -128,12 +128,17 @@ public abstract class IntegrationTestBase
 
         _functionContainer = new ContainerBuilder()
             .WithImage("indepthdispenza-functions:test")
-            .WithNetwork(EnvironmentSetup.Network) // Join the same network as WireMock and Azurite
+            .WithNetwork(EnvironmentSetup.Network) // Join the same network as WireMock, Azurite, and Cosmos DB
             .WithPortBinding(80, true)
             .WithEnvironment("AzureWebJobsStorage", EnvironmentSetup.AzureWebJobsStorage)
             .WithEnvironment("VideoQueueName", EnvironmentSetup.VideoQueueName)
             .WithEnvironment("YouTube__ApiKey", EnvironmentSetup.YouTubeApiKey)
             .WithEnvironment("YouTube__ApiBaseUrl", EnvironmentSetup.YouTubeApiBaseUrl)
+            .WithEnvironment("YouTubeTranscriptApi__BaseUrl", EnvironmentSetup.YouTubeTranscriptApiBaseUrl)
+            .WithEnvironment("CosmosDb__AccountEndpoint", EnvironmentSetup.CosmosDbEndpoint)
+            .WithEnvironment("CosmosDb__AccountKey", EnvironmentSetup.CosmosDbKey)
+            .WithEnvironment("CosmosDb__DatabaseName", EnvironmentSetup.CosmosDbDatabaseName)
+            .WithEnvironment("CosmosDb__TranscriptCacheContainer", EnvironmentSetup.CosmosDbTranscriptCacheContainer)
             .WithEnvironment("FUNCTIONS_WORKER_RUNTIME", "dotnet-isolated")
             .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(80))
             .Build();
