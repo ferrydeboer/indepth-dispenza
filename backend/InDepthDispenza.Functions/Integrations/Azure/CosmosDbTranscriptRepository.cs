@@ -121,7 +121,7 @@ public class CosmosDbTranscriptRepository : ITranscriptRepository
     }
 
     // Internal Cosmos document representation with lowercase 'id' for Cosmos DB
-    private class CosmosTranscriptDocument
+    private sealed class CosmosTranscriptDocument
     {
         public string id { get; set; } = string.Empty;
         public string? transcript { get; set; }

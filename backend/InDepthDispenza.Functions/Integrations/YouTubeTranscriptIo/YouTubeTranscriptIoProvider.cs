@@ -129,12 +129,12 @@ public class YouTubeTranscriptIoProvider : ITranscriptProvider
             ChannelName: microformat.OwnerChannelName,
             Category: microformat.Category,
             LengthSeconds: int.TryParse(microformat.LengthSeconds, out var length) ? length : null,
-            PublishDate: DateTimeOffset.TryParse(microformat.PublishDate, out var date) ? date : null
+            PublishDate: DateTimeOffset.TryParse(microformat.PublishDate, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var date) ? date : null
         );
     }
 
     // API Response Models matching the actual YouTube Transcript IO format
-    private record YouTubeTranscriptIoResponse(
+    private sealed record YouTubeTranscriptIoResponse(
         [property: JsonPropertyName("id")] string Id,
         [property: JsonPropertyName("title")] string? Title,
         [property: JsonPropertyName("text")] string? Text,
@@ -146,27 +146,27 @@ public class YouTubeTranscriptIoProvider : ITranscriptProvider
         [property: JsonPropertyName("playabilityStatus")] PlayabilityStatus? PlayabilityStatus
     );
 
-    private record Track(
+    private sealed record Track(
         [property: JsonPropertyName("language")] string? Language,
         [property: JsonPropertyName("transcript")] TranscriptSegmentApi[] Transcript
     );
 
-    private record TranscriptSegmentApi(
+    private sealed record TranscriptSegmentApi(
         [property: JsonPropertyName("start")] string Start,
         [property: JsonPropertyName("dur")] string Dur,
         [property: JsonPropertyName("text")] string Text
     );
 
-    private record Language(
+    private sealed record Language(
         [property: JsonPropertyName("label")] string? Label,
         [property: JsonPropertyName("languageCode")] string? LanguageCode
     );
 
-    private record Microformat(
+    private sealed record Microformat(
         [property: JsonPropertyName("playerMicroformatRenderer")] PlayerMicroformatRenderer? PlayerMicroformatRenderer
     );
 
-    private record PlayerMicroformatRenderer(
+    private sealed record PlayerMicroformatRenderer(
         [property: JsonPropertyName("title")] SimpleText? Title,
         [property: JsonPropertyName("description")] SimpleText? Description,
         [property: JsonPropertyName("lengthSeconds")] string? LengthSeconds,
@@ -176,17 +176,17 @@ public class YouTubeTranscriptIoProvider : ITranscriptProvider
         [property: JsonPropertyName("externalChannelId")] string? ExternalChannelId
     );
 
-    private record SimpleText(
+    private sealed record SimpleText(
         [property: JsonPropertyName("simpleText")] string? Value
     );
 
-    private record PlayabilityStatus(
+    private sealed record PlayabilityStatus(
         [property: JsonPropertyName("status")] string? Status,
         [property: JsonPropertyName("reason")] string? Reason
     );
 }
 
-public class YouTubeTranscriptApiOptions
+public sealed class YouTubeTranscriptApiOptions
 {
     public string? ApiToken { get; set; }
     public string? BaseUrl { get; set; }

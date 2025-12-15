@@ -23,7 +23,7 @@ public class ServiceResult<T>
 
 public class ServiceResult : ServiceResult<object>
 {
-    public static new ServiceResult Success() => new()
+    public static ServiceResult Success() => new()
     {
         IsSuccess = true
     };
