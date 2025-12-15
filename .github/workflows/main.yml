@@ -75,6 +75,7 @@ jobs:
         with:
           name: function-app
           path: ./backend/publish
+          include-hidden-files: true
 
   # Validate Bicep templates
   validate-infrastructure:
