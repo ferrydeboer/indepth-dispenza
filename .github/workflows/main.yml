@@ -67,7 +67,7 @@ jobs:
 
       - name: Publish Function App
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: dotnet publish InDepthDispenza.Functions --no-build --configuration Release --output ./publish
+        run: dotnet publish InDepthDispenza.Functions --configuration Release --output ./publish
 
       - name: Upload Function App artifact
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
