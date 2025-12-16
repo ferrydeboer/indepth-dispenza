@@ -6,6 +6,10 @@
 # Azure Functions localsettings file
 local.settings.json
 
+# Environment-specific settings with secrets (keep in Git: appsettings.Development.json, appsettings.Production.json)
+# Exclude any local overrides:
+appsettings.*.local.json
+
 # User-specific files
 *.suo
 *.user

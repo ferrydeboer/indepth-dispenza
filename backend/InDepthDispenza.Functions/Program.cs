@@ -13,8 +13,18 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 var builder = FunctionsApplication.CreateBuilder(args);
-// Change to scalable solution.
-builder.Configuration.AddJsonFile("local.settings.json", optional: true, reloadOnChange: false);
+
+// Configure app settings loading for Azure Functions
+var configBuilder = new ConfigurationBuilder()
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.local.json", optional: true, reloadOnChange: true)
+    .AddEnvironmentVariables();
+
+var configuration = configBuilder.Build();
+builder.Configuration.AddConfiguration(configuration);
+
 builder.Services.Configure<YouTubeOptions>(builder.Configuration.GetSection("YouTube"));
 builder.Services.Configure<CosmosDbOptions>(builder.Configuration.GetSection("CosmosDb"));
 builder.Services.Configure<YouTubeTranscriptApiOptions>(builder.Configuration.GetSection("YouTubeTranscriptApi"));

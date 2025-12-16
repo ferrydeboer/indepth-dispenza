@@ -128,7 +128,8 @@ public class CosmosDbTranscriptRepository : ITranscriptRepository
         public string language { get; set; } = string.Empty;
         public DateTimeOffset fetchedAt { get; set; }
         public string videoTitle { get; set; } = string.Empty;
-        public string duration { get; set; } = string.Empty;
+        public string videoDescription { get; set; } = string.Empty;
+        public int duration { get; set; } = 0;
 
         public static CosmosTranscriptDocument FromTranscriptDocument(TranscriptDocument document)
         {
@@ -139,6 +140,7 @@ public class CosmosDbTranscriptRepository : ITranscriptRepository
                 language = document.Language,
                 fetchedAt = document.FetchedAt,
                 videoTitle = document.VideoTitle,
+                videoDescription = document.VideoDescription,
                 duration = document.Duration
             };
         }
@@ -151,6 +153,7 @@ public class CosmosDbTranscriptRepository : ITranscriptRepository
                 Language: language,
                 FetchedAt: fetchedAt,
                 VideoTitle: videoTitle,
+                VideoDescription: videoDescription,
                 Duration: duration
             );
         }
