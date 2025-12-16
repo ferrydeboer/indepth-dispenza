@@ -91,7 +91,6 @@ module functionApp 'modules/function-app.bicep' = {
     storageAccountName: storage.outputs.storageAccountName
     appInsightsInstrumentationKey: appInsights.outputs.instrumentationKey
     appInsightsConnectionString: appInsights.outputs.connectionString
-    cosmosDbAccountName: cosmosDb.outputs.accountName
     cosmosDbEndpoint: cosmosDb.outputs.endpoint
     cosmosDbAccountKey: cosmosDb.outputs.accountKey
     azureOpenAiEndpoint: azureOpenAi.outputs.endpoint
