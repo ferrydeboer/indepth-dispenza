@@ -16,13 +16,6 @@ param tags object = {
   ManagedBy: 'Bicep'
 }
 
-@description('Azure OpenAI API Key')
-@secure()
-param azureOpenAiApiKey string
-
-@description('Azure OpenAI Endpoint')
-param azureOpenAiEndpoint string = ''
-
 @description('YouTube API Key')
 @secure()
 param youTubeApiKey string
@@ -74,6 +67,18 @@ module cosmosDb 'modules/cosmos-db.bicep' = {
   }
 }
 
+// Deploy Azure OpenAI
+module azureOpenAi 'modules/azure-openai.bicep' = {
+  name: 'azureopenai-deployment'
+  scope: rg
+  params: {
+    location: location
+    projectName: projectName
+    environment: environment
+    tags: tags
+  }
+}
+
 // Deploy Function App
 module functionApp 'modules/function-app.bicep' = {
   name: 'functionapp-deployment'
@@ -89,8 +94,9 @@ module functionApp 'modules/function-app.bicep' = {
     cosmosDbAccountName: cosmosDb.outputs.accountName
     cosmosDbEndpoint: cosmosDb.outputs.endpoint
     cosmosDbAccountKey: cosmosDb.outputs.accountKey
-    azureOpenAiApiKey: azureOpenAiApiKey
-    azureOpenAiEndpoint: azureOpenAiEndpoint
+    azureOpenAiEndpoint: azureOpenAi.outputs.endpoint
+    azureOpenAiDeploymentName: azureOpenAi.outputs.deploymentName
+    azureOpenAiAccountName: azureOpenAi.outputs.accountName
     youTubeApiKey: youTubeApiKey
     youTubeTranscriptApiToken: youTubeTranscriptApiToken
   }
@@ -102,3 +108,6 @@ output functionAppName string = functionApp.outputs.functionAppName
 output storageAccountName string = storage.outputs.storageAccountName
 output cosmosDbAccountName string = cosmosDb.outputs.accountName
 output appInsightsName string = appInsights.outputs.appInsightsName
+output azureOpenAiAccountName string = azureOpenAi.outputs.accountName
+output azureOpenAiEndpoint string = azureOpenAi.outputs.endpoint
+output azureOpenAiDeploymentName string = azureOpenAi.outputs.deploymentName

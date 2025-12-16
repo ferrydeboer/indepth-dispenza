@@ -31,12 +31,14 @@ param cosmosDbEndpoint string
 @secure()
 param cosmosDbAccountKey string
 
-@description('Azure OpenAI API Key')
-@secure()
-param azureOpenAiApiKey string
-
 @description('Azure OpenAI Endpoint')
-param azureOpenAiEndpoint string = ''
+param azureOpenAiEndpoint string
+
+@description('Azure OpenAI Deployment Name')
+param azureOpenAiDeploymentName string
+
+@description('Azure OpenAI Account Name')
+param azureOpenAiAccountName string
 
 @description('YouTube API Key')
 @secure()
@@ -52,6 +54,11 @@ var hostingPlanName = '${projectName}-${environment}-plan'
 // Get reference to existing storage account
 resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
   name: storageAccountName
+}
+
+// Get reference to existing Azure OpenAI account
+resource openAiAccount 'Microsoft.CognitiveServices/accounts@2023-05-01' existing = {
+  name: azureOpenAiAccountName
 }
 
 // Cosmos DB reference removed - not needed until Story 1 implementation
@@ -143,7 +150,11 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
         }
         {
           name: 'AzureOpenAI__ApiKey'
-          value: azureOpenAiApiKey
+          value: openAiAccount.listKeys().key1
+        }
+        {
+          name: 'AzureOpenAI__DeploymentName'
+          value: azureOpenAiDeploymentName
         }
         {
           name: 'YouTube__ApiKey'
