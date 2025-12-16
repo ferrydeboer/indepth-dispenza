@@ -16,6 +16,21 @@ param tags object = {
   ManagedBy: 'Bicep'
 }
 
+@description('Azure OpenAI API Key')
+@secure()
+param azureOpenAiApiKey string
+
+@description('Azure OpenAI Endpoint')
+param azureOpenAiEndpoint string = ''
+
+@description('YouTube API Key')
+@secure()
+param youTubeApiKey string
+
+@description('YouTube Transcript API Token')
+@secure()
+param youTubeTranscriptApiToken string
+
 // Create resource group
 resource rg 'Microsoft.Resources/resourceGroups@2024-03-01' = {
   name: '${projectName}-${environment}-rg'
@@ -73,6 +88,11 @@ module functionApp 'modules/function-app.bicep' = {
     appInsightsConnectionString: appInsights.outputs.connectionString
     cosmosDbAccountName: cosmosDb.outputs.accountName
     cosmosDbEndpoint: cosmosDb.outputs.endpoint
+    cosmosDbAccountKey: cosmosDb.outputs.accountKey
+    azureOpenAiApiKey: azureOpenAiApiKey
+    azureOpenAiEndpoint: azureOpenAiEndpoint
+    youTubeApiKey: youTubeApiKey
+    youTubeTranscriptApiToken: youTubeTranscriptApiToken
   }
 }
 

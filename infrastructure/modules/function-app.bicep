@@ -27,6 +27,25 @@ param cosmosDbAccountName string
 @description('Cosmos DB endpoint')
 param cosmosDbEndpoint string
 
+@description('Cosmos DB account key')
+@secure()
+param cosmosDbAccountKey string
+
+@description('Azure OpenAI API Key')
+@secure()
+param azureOpenAiApiKey string
+
+@description('Azure OpenAI Endpoint')
+param azureOpenAiEndpoint string = ''
+
+@description('YouTube API Key')
+@secure()
+param youTubeApiKey string
+
+@description('YouTube Transcript API Token')
+@secure()
+param youTubeTranscriptApiToken string
+
 var functionAppName = '${projectName}-${environment}-func'
 var hostingPlanName = '${projectName}-${environment}-plan'
 
@@ -103,6 +122,10 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
           value: cosmosDbEndpoint
         }
         {
+          name: 'CosmosDb__AccountKey'
+          value: cosmosDbAccountKey
+        }
+        {
           name: 'CosmosDb__DatabaseName'
           value: 'indepth-dispenza'
         }
@@ -113,6 +136,22 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
         {
           name: 'CosmosDb__VideoAnalysisContainer'
           value: 'video-analysis'
+        }
+        {
+          name: 'AzureOpenAI__Endpoint'
+          value: azureOpenAiEndpoint
+        }
+        {
+          name: 'AzureOpenAI__ApiKey'
+          value: azureOpenAiApiKey
+        }
+        {
+          name: 'YouTube__ApiKey'
+          value: youTubeApiKey
+        }
+        {
+          name: 'YouTubeTranscriptApi__ApiToken'
+          value: youTubeTranscriptApiToken
         }
       ]
     }

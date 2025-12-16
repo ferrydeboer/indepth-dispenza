@@ -38,11 +38,11 @@
   "YouTube": {
     "ApiKey": "your-youtube-api-key-here"
   },
-  "Grok": {
-    "ApiKey": "your-grok-api-key-here",
-    "BaseUrl": "https://api.x.ai/v1/",
-    "Model": "grok-4",
-    "MaxTokens": 4000,
-    "Temperature": 0.7
+  "YouTubeTranscriptApi": {
+    "BaseUrl": "https://www.youtube-transcript.io",
+    "ApiToken": "694051beff1f98e691878d65"
+  },
+  "VideoAnalysis": {
+    "PreferredLanguages": ["en"]
   }
 }

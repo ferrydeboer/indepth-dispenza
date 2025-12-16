@@ -16,6 +16,14 @@ on:
         required: true
       AZURE_SUBSCRIPTION_ID:
         required: true
+      AZURE_OPENAI_API_KEY:
+        required: true
+      AZURE_OPENAI_ENDPOINT:
+        required: false
+      YOUTUBE_API_KEY:
+        required: true
+      YOUTUBE_TRANSCRIPT_API_TOKEN:
+        required: true
 
 permissions:
   contents: read
@@ -44,7 +52,11 @@ jobs:
             --name "indepth-dispenza-${{ inputs.environment }}-$(date +%Y%m%d-%H%M%S)" \
             --location canadacentral \
             --template-file main.bicep \
-            --parameters parameters/${{ inputs.environment }}.parameters.json
+            --parameters parameters/${{ inputs.environment }}.parameters.json \
+            --parameters azureOpenAiApiKey="${{ secrets.AZURE_OPENAI_API_KEY }}" \
+            --parameters azureOpenAiEndpoint="${{ secrets.AZURE_OPENAI_ENDPOINT }}" \
+            --parameters youTubeApiKey="${{ secrets.YOUTUBE_API_KEY }}" \
+            --parameters youTubeTranscriptApiToken="${{ secrets.YOUTUBE_TRANSCRIPT_API_TOKEN }}"
 
       - name: Get Deployment Outputs
         id: outputs
