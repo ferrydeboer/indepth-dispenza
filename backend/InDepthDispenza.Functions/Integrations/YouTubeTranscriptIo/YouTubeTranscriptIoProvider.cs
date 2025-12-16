@@ -17,12 +17,12 @@ public class YouTubeTranscriptIoProvider : ITranscriptProvider
     private const string UnknownLanguage = "unknown";
     private readonly ILogger<YouTubeTranscriptIoProvider> _logger;
     private readonly HttpClient _httpClient;
-    private readonly YouTubeTranscriptApiOptions _options;
+    private readonly YouTubeTranscriptIoOptions _options;
 
     public YouTubeTranscriptIoProvider(
         ILogger<YouTubeTranscriptIoProvider> logger,
         IHttpClientFactory httpClientFactory,
-        IOptions<YouTubeTranscriptApiOptions> options)
+        IOptions<YouTubeTranscriptIoOptions> options)
     {
         _logger = logger;
         _httpClient = httpClientFactory.CreateClient("YouTubeTranscriptApi");
@@ -184,10 +184,4 @@ public class YouTubeTranscriptIoProvider : ITranscriptProvider
         [property: JsonPropertyName("status")] string? Status,
         [property: JsonPropertyName("reason")] string? Reason
     );
-}
-
-public sealed class YouTubeTranscriptApiOptions
-{
-    public string? ApiToken { get; set; }
-    public string? BaseUrl { get; set; }
 }

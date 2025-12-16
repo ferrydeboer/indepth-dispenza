@@ -24,7 +24,6 @@ var configBuilder = new ConfigurationBuilder()
 var configuration = configBuilder.Build();
 builder.Configuration.AddConfiguration(configuration);
 
-builder.Services.Configure<YouTubeTranscriptApiOptions>(builder.Configuration.GetSection("YouTubeTranscriptApi"));
 builder.Services.Configure<VideoAnalysisOptions>(builder.Configuration.GetSection("VideoAnalysis"));
 builder.ConfigureFunctionsWebApplication();
 
@@ -36,22 +35,12 @@ builder.Services
 builder.Services.AddYouTubeModule(configuration);
 builder.Services.AddCosmosModule(configuration);
 builder.Services.AddStorageModule(configuration);
-
-// Register HTTP client for YouTube Transcript API
-builder.Services.AddHttpClient("YouTubeTranscriptApi", (sp, client) =>
-{
-    var config = sp.GetRequiredService<IConfiguration>();
-    var baseUrl = config["YouTubeTranscriptApi:BaseUrl"] ?? "https://www.youtube-transcript.io";
-    client.BaseAddress = new Uri(baseUrl);
-});
+builder.Services.AddYouTubeTranscriptIoModule(configuration);
 
 // Register other services
 builder.Services.AddScoped<IPlaylistScanService, PlaylistScanService>();
 
 // Register transcript services with proper layering:
-
-// 2. Base provider (YouTube Transcript API)
-builder.Services.AddScoped<YouTubeTranscriptIoProvider>();
 
 // 3. Caching decorator wrapping the base provider
 builder.Services.AddScoped<ITranscriptProvider>(sp =>
