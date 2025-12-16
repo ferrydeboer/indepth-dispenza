@@ -25,7 +25,6 @@ var configBuilder = new ConfigurationBuilder()
 var configuration = configBuilder.Build();
 builder.Configuration.AddConfiguration(configuration);
 
-builder.Services.Configure<YouTubeOptions>(builder.Configuration.GetSection("YouTube"));
 builder.Services.Configure<CosmosDbOptions>(builder.Configuration.GetSection("CosmosDb"));
 builder.Services.Configure<YouTubeTranscriptApiOptions>(builder.Configuration.GetSection("YouTubeTranscriptApi"));
 builder.Services.Configure<VideoAnalysisOptions>(builder.Configuration.GetSection("VideoAnalysis"));
@@ -34,6 +33,9 @@ builder.ConfigureFunctionsWebApplication();
 builder.Services
     .AddApplicationInsightsTelemetryWorkerService()
     .ConfigureFunctionsApplicationInsights();
+
+// Add YouTube module (self-contained configuration, services, and health checks)
+builder.Services.AddYouTubeModule(configuration);
 
 // Register HTTP client for YouTube Transcript API
 builder.Services.AddHttpClient("YouTubeTranscriptApi", (sp, client) =>
@@ -65,9 +67,8 @@ builder.Services.AddSingleton(sp =>
     return new CosmosClient(endpoint, key, clientOptions);
 });
 
-// Register existing services
+// Register other services
 builder.Services
-    .AddScoped<IPlaylistService, YouTubePlaylistVideoService>()
     .AddScoped<IQueueService, AzureStorageQueueService>()
     .AddScoped<IPlaylistScanService, PlaylistScanService>();
 
