@@ -28,7 +28,7 @@ param gptCapacity int = 50
 var accountName = '${projectName}-${environment}-openai'
 
 // Azure OpenAI Account
-resource openAiAccount 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
+resource openAiAccount 'Microsoft.CognitiveServices/accounts@2024-10-01' = {
   name: accountName
   location: location
   tags: tags
@@ -45,12 +45,12 @@ resource openAiAccount 'Microsoft.CognitiveServices/accounts@2023-05-01' = {
   }
 }
 
-// Deploy GPT model
-resource gptDeployment 'Microsoft.CognitiveServices/accounts/deployments@2023-05-01' = {
+// Deploy GPT model with GlobalStandard SKU (pay-per-call, globally distributed)
+resource gptDeployment 'Microsoft.CognitiveServices/accounts/deployments@2024-10-01' = {
   parent: openAiAccount
   name: gptDeploymentName
   sku: {
-    name: 'Standard'
+    name: 'GlobalStandard'
     capacity: gptCapacity
   }
   properties: {

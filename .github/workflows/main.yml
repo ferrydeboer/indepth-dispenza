@@ -28,7 +28,7 @@ jobs:
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...${{ github.sha }})
           else
-            CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+            CHANGED_FILES=$(git diff --name-only HEAD^ HEAD)
           fi
 
           INFRA_CHANGES=$(echo "$CHANGED_FILES" | grep -c "^infrastructure/" || true)
