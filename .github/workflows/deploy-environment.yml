@@ -89,6 +89,49 @@ jobs:
           app-name: ${{ needs.deploy-infrastructure.outputs.function-app }}
           package: ./publish
 
+      - name: Wait for Function App to be ready
+        run: sleep 30
+
+      - name: Smoke Test - Health Check
+        run: |
+          FUNCTION_APP="${{ needs.deploy-infrastructure.outputs.function-app }}"
+
+          # Get the function key
+          FUNCTION_KEY=$(az functionapp keys list \
+            --name "$FUNCTION_APP" \
+            --resource-group "${{ needs.deploy-infrastructure.outputs.resource-group }}" \
+            --query "functionKeys.default" \
+            -o tsv)
+
+          # Call the health endpoint
+          HEALTH_URL="https://${FUNCTION_APP}.azurewebsites.net/api/health?code=${FUNCTION_KEY}"
+
+          echo "Testing health endpoint..."
+          RESPONSE=$(curl -s -w "\n%{http_code}" "$HEALTH_URL")
+          HTTP_CODE=$(echo "$RESPONSE" | tail -1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+
+          echo "HTTP Status: $HTTP_CODE"
+          echo "Response Body:"
+          echo "$BODY" | jq '.' || echo "$BODY"
+
+          # Check if health check succeeded
+          if [ "$HTTP_CODE" -eq 200 ]; then
+            echo "✅ Health check passed"
+
+            # Parse and display health status
+            STATUS=$(echo "$BODY" | jq -r '.status' 2>/dev/null || echo "unknown")
+            echo "Overall Status: $STATUS"
+
+            if [ "$STATUS" != "Healthy" ]; then
+              echo "⚠️ Warning: Health status is $STATUS, but continuing deployment"
+              echo "$BODY" | jq '.entries' || true
+            fi
+          else
+            echo "❌ Health check failed with HTTP $HTTP_CODE"
+            exit 1
+          fi
+
       - name: Deployment Summary
         run: |
           echo "## Deployment Successful ✅" >> $GITHUB_STEP_SUMMARY
@@ -96,3 +139,5 @@ jobs:
           echo "**Environment:** ${{ inputs.environment }}" >> $GITHUB_STEP_SUMMARY
           echo "**Resource Group:** ${{ needs.deploy-infrastructure.outputs.resource-group }}" >> $GITHUB_STEP_SUMMARY
           echo "**Function App:** ${{ needs.deploy-infrastructure.outputs.function-app }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ **Smoke Test:** Health check passed" >> $GITHUB_STEP_SUMMARY
