@@ -97,7 +97,7 @@
 ## Technical Implementation Steps
 These steps are designed for sequential development, suitable for feeding into an AI agent or developer workflow. Each step includes inputs, actions, and outputs for clarity.
 
-1. **Set Up Cosmos DB Collections Programmatically**
+1. ✅ **Set Up Cosmos DB Collections Programmatically**
   - **Input**: Cosmos DB connection details from config.
   - **Actions**:
     - In code (e.g., a setup module or on-app-start handler), use Cosmos DB SDK to create/check collections: `video-analysis` (partition key: /id), `taxonomy-versions` (partition key: /id).
@@ -105,7 +105,7 @@ These steps are designed for sequential development, suitable for feeding into a
   - **Output**: Collections created/verified; initial taxonomy JSON stored.
   - **Test**: Run setup code; query collections via SDK.
 
-2. **Implement basic `ITranscriptAnalyzer` called by VideoAnalyzer**
+2. ✅ **Implement basic `ITranscriptAnalyzer` called by VideoAnalyzer**
   - **Input**: The loaded transcript
   - **Actions**:
     - Query `taxonomy-versions` for the latest version (sort by `updatedAt` descending, limit 1).
@@ -119,9 +119,9 @@ These steps are designed for sequential development, suitable for feeding into a
 3. **Design and Implement LLM Prompt**
   - **Input**: Transcript text, taxonomy JSON.
   - **Actions**:
-    - Craft prompt template: Include taxonomy, instruct LLM to extract per schema, propose additions only if needed.
-    - Use Azure OpenAI SDK to call model (e.g., GPT-4o-mini) with prompt.
-    - Parse LLM response as JSON; handle errors with retries (exponential backoff, max 3 attempts).
+    1. ✅ Craft prompt template: Include taxonomy, instruct LLM to extract per schema, propose additions only if needed.
+    2. Use Azure OpenAI SDK to call model (e.g., GPT-4o-mini) with prompt.
+    3. Parse LLM response as JSON;
   - **Output**: Extracted analysis JSON, including optional `proposals` array.
   - **Test**: Mock LLM response; validate JSON schema compliance.
 

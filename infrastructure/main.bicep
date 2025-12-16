@@ -67,17 +67,24 @@ module cosmosDb 'modules/cosmos-db.bicep' = {
   }
 }
 
-// Deploy Azure OpenAI
-module azureOpenAi 'modules/azure-openai.bicep' = {
-  name: 'azureopenai-deployment'
-  scope: rg
-  params: {
-    location: location
-    projectName: projectName
-    environment: environment
-    tags: tags
-  }
-}
+// Azure OpenAI deployment is currently disabled due to deployment issues with GlobalStandard SKU in Canada Central
+// Despite Azure CLI showing GlobalStandard as available, Bicep deployments fail with:
+// "The specified SKU 'GlobalStandard' for model 'gpt-4o-mini 2024-07-18' is not supported in this region 'canadacentral'"
+//
+// Workaround: Using external OpenAI/Grok API with API keys instead
+// The azure-openai.bicep module is kept for future use when Azure OpenAI regional support improves
+//
+// TODO: Re-enable when Azure OpenAI deployment issues are resolved or switch to a supported region
+// module azureOpenAi 'modules/azure-openai.bicep' = {
+//   name: 'azureopenai-deployment'
+//   scope: rg
+//   params: {
+//     location: location
+//     projectName: projectName
+//     environment: environment
+//     tags: tags
+//   }
+// }
 
 // Deploy Function App
 module functionApp 'modules/function-app.bicep' = {
@@ -93,9 +100,6 @@ module functionApp 'modules/function-app.bicep' = {
     appInsightsConnectionString: appInsights.outputs.connectionString
     cosmosDbEndpoint: cosmosDb.outputs.endpoint
     cosmosDbAccountKey: cosmosDb.outputs.accountKey
-    azureOpenAiEndpoint: azureOpenAi.outputs.endpoint
-    azureOpenAiDeploymentName: azureOpenAi.outputs.deploymentName
-    azureOpenAiAccountName: azureOpenAi.outputs.accountName
     youTubeApiKey: youTubeApiKey
     youTubeTranscriptApiToken: youTubeTranscriptApiToken
   }
@@ -107,6 +111,3 @@ output functionAppName string = functionApp.outputs.functionAppName
 output storageAccountName string = storage.outputs.storageAccountName
 output cosmosDbAccountName string = cosmosDb.outputs.accountName
 output appInsightsName string = appInsights.outputs.appInsightsName
-output azureOpenAiAccountName string = azureOpenAi.outputs.accountName
-output azureOpenAiEndpoint string = azureOpenAi.outputs.endpoint
-output azureOpenAiDeploymentName string = azureOpenAi.outputs.deploymentName

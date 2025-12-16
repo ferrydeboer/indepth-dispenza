@@ -28,15 +28,6 @@ param cosmosDbEndpoint string
 @secure()
 param cosmosDbAccountKey string
 
-@description('Azure OpenAI Endpoint')
-param azureOpenAiEndpoint string
-
-@description('Azure OpenAI Deployment Name')
-param azureOpenAiDeploymentName string
-
-@description('Azure OpenAI Account Name')
-param azureOpenAiAccountName string
-
 @description('YouTube API Key')
 @secure()
 param youTubeApiKey string
@@ -53,13 +44,11 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' existing 
   name: storageAccountName
 }
 
-// Get reference to existing Azure OpenAI account
-resource openAiAccount 'Microsoft.CognitiveServices/accounts@2023-05-01' existing = {
-  name: azureOpenAiAccountName
-}
-
 // Cosmos DB reference removed - not needed until Story 1 implementation
 // Will add role assignment when we actually use Cosmos DB
+
+// Azure OpenAI reference removed - using external LLM API instead
+// See main.bicep for rationale on why Azure OpenAI deployment is disabled
 
 // Consumption plan for Azure Functions
 // Note: Free subscriptions require Windows + specific regions (e.g., canadacentral)
@@ -140,18 +129,6 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
         {
           name: 'CosmosDb__VideoAnalysisContainer'
           value: 'video-analysis'
-        }
-        {
-          name: 'AzureOpenAI__Endpoint'
-          value: azureOpenAiEndpoint
-        }
-        {
-          name: 'AzureOpenAI__ApiKey'
-          value: openAiAccount.listKeys().key1
-        }
-        {
-          name: 'AzureOpenAI__DeploymentName'
-          value: azureOpenAiDeploymentName
         }
         {
           name: 'YouTube__ApiKey'

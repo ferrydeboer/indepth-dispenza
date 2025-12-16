@@ -35,14 +35,7 @@ public class TranscriptAnalyzer : ITranscriptAnalyzer
             _logger.LogInformation("Starting transcript analysis for video {VideoId}", videoId);
 
             // Step 1: Compose prompt using the pipeline
-            var prompt = new Prompt();
-
-            foreach (var composer in _promptComposers)
-            {
-                await composer.ComposeAsync(prompt, videoId);
-            }
-
-            var promptText = prompt.Build();
+            var promptText = await ComposePrompt(videoId);
 
             _logger.LogInformation(
                 "Composed prompt for video {VideoId}. Prompt length: {PromptLength} characters",
@@ -74,6 +67,19 @@ public class TranscriptAnalyzer : ITranscriptAnalyzer
                 $"Failed to analyze transcript: {ex.Message}",
                 ex);
         }
+    }
+
+    private async Task<string> ComposePrompt(string videoId)
+    {
+        var prompt = new Prompt();
+
+        foreach (var composer in _promptComposers)
+        {
+            await composer.ComposeAsync(prompt, videoId);
+        }
+
+        var promptText = prompt.Build();
+        return promptText;
     }
 
     /// <summary>
