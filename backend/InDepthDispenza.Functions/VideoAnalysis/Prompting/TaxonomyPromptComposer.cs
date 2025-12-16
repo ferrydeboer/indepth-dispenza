@@ -1,9 +1,9 @@
 using System.Text;
-using System.Text.Json;
 using InDepthDispenza.Functions.Interfaces;
+using InDepthDispenza.Functions.VideoAnalysis.Interfaces;
 using Microsoft.Extensions.Logging;
 
-namespace InDepthDispenza.Functions.VideoAnalysis;
+namespace InDepthDispenza.Functions.VideoAnalysis.Prompting;
 
 /// <summary>
 /// Composes the taxonomy portion of the LLM prompt.

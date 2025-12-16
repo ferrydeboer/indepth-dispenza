@@ -1,4 +1,4 @@
-namespace InDepthDispenza.Functions.VideoAnalysis;
+namespace InDepthDispenza.Functions.VideoAnalysis.Interfaces;
 
 /// <summary>
 /// Composes part of an LLM prompt by adding a segment to the prompt.

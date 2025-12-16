@@ -1,5 +1,6 @@
 using System.Text.Json;
 using InDepthDispenza.Functions.Interfaces;
+using InDepthDispenza.Functions.VideoAnalysis.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace InDepthDispenza.Functions.VideoAnalysis;
@@ -10,8 +11,6 @@ namespace InDepthDispenza.Functions.VideoAnalysis;
 /// </summary>
 public class TranscriptAnalyzer : ITranscriptAnalyzer
 {
-    private const string PromptVersion = "v1.0";
-
     private readonly ILogger<TranscriptAnalyzer> _logger;
     private readonly ILlmService _llmService;
     private readonly IEnumerable<IPromptComposer> _promptComposers;
@@ -101,7 +100,7 @@ public class TranscriptAnalyzer : ITranscriptAnalyzer
             Id: videoId,
             AnalyzedAt: DateTimeOffset.UtcNow,
             ModelVersion: dto.ModelVersion ?? "gpt-4o-mini",
-            PromptVersion: PromptVersion,
+            PromptVersion: dto.PromptVersion ?? "v1.0",
             TaxonomyVersion: "v1.0", // TODO: Get from TaxonomyPromptComposer
             Achievements: dto.Achievements ?? Array.Empty<Achievement>(),
             Timeframe: dto.Timeframe,
@@ -117,6 +116,7 @@ public class TranscriptAnalyzer : ITranscriptAnalyzer
     /// </summary>
     private sealed record LlmResponseDto(
         string? ModelVersion,
+        string? PromptVersion,
         Achievement[]? Achievements,
         Timeframe? Timeframe,
         string[]? Practices,

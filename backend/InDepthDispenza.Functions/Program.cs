@@ -4,6 +4,8 @@ using InDepthDispenza.Functions.Integrations.YouTube;
 using InDepthDispenza.Functions.Integrations.YouTubeTranscriptIo;
 using InDepthDispenza.Functions.Interfaces;
 using InDepthDispenza.Functions.VideoAnalysis;
+using InDepthDispenza.Functions.VideoAnalysis.Interfaces;
+using InDepthDispenza.Functions.VideoAnalysis.Prompting;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Builder;
 using Microsoft.Extensions.Configuration;
