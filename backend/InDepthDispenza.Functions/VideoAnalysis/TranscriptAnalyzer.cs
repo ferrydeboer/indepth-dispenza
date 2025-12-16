@@ -1,148 +1,127 @@
+using System.Text.Json;
 using InDepthDispenza.Functions.Interfaces;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace InDepthDispenza.Functions.VideoAnalysis;
 
 /// <summary>
-/// Main business logic for analyzing video transcripts.
-/// Orchestrates fetching transcripts and passing them to LLM for analysis.
-/// Contains all application logic - Functions layer only handles HTTP concerns.
+/// Analyzes video transcripts using LLM with taxonomy-constrained extraction.
+/// Orchestrates the prompt composition pipeline and LLM call.
 /// </summary>
-public class TranscriptAnalyzer
+public class TranscriptAnalyzer : ITranscriptAnalyzer
 {
+    private const string PromptVersion = "v1.0";
+
     private readonly ILogger<TranscriptAnalyzer> _logger;
-    private readonly ITranscriptProvider _transcriptProvider;
-    private readonly VideoAnalysisOptions _options;
+    private readonly ILlmService _llmService;
+    private readonly IEnumerable<IPromptComposer> _promptComposers;
 
     public TranscriptAnalyzer(
         ILogger<TranscriptAnalyzer> logger,
-        ITranscriptProvider transcriptProvider,
-        IOptions<VideoAnalysisOptions> options)
+        ILlmService llmService,
+        IEnumerable<IPromptComposer> promptComposers)
     {
         _logger = logger;
-        _transcriptProvider = transcriptProvider;
-        _options = options.Value;
+        _llmService = llmService;
+        _promptComposers = promptComposers;
     }
 
     /// <summary>
-    /// Analyzes a video by ID. Handles all business logic including:
-    /// - Creating VideoInfo (placeholder metadata)
-    /// - Determining preferred languages
-    /// - Fetching transcript with caching
-    /// - Preparing result for LLM analysis
+    /// Analyzes a transcript to extract structured healing journey data.
     /// </summary>
-    public async Task<ServiceResult<TranscriptAnalysisResult>> AnalyzeVideoAsync(string videoId)
+    public async Task<ServiceResult<VideoAnalysis>> AnalyzeTranscriptAsync(string videoId)
     {
         try
         {
-            _logger.LogInformation("Starting analysis for video {VideoId}", videoId);
+            _logger.LogInformation("Starting transcript analysis for video {VideoId}", videoId);
 
-            // Business logic: Create VideoInfo (in future, this might fetch from YouTube API)
-            var videoInfo = new VideoInfo(
-                VideoId: videoId,
-                Title: "Placeholder", // TODO: Fetch actual metadata
-                Description: string.Empty,
-                ChannelTitle: string.Empty,
-                PublishedAt: DateTimeOffset.UtcNow,
-                ThumbnailUrl: string.Empty
-            );
+            // Step 1: Compose prompt using the pipeline
+            var prompt = new Prompt();
 
-            // Business logic: Determine preferred languages from configuration
-            var preferredLanguages = _options.PreferredLanguages ?? ["en"];
-
-            // Fetch transcript (caching is transparent)
-            var transcriptResult = await _transcriptProvider.GetTranscriptAsync(
-                videoId,
-                preferredLanguages);
-
-            if (!transcriptResult.IsSuccess || transcriptResult.Data == null)
+            foreach (var composer in _promptComposers)
             {
-                return ServiceResult<TranscriptAnalysisResult>.Failure(
-                    transcriptResult.ErrorMessage ?? "Failed to fetch transcript",
-                    transcriptResult.Exception);
+                await composer.ComposeAsync(prompt, videoId);
             }
 
-            var transcript = transcriptResult.Data;
-
-            if (string.IsNullOrEmpty(transcript.Text))
-            {
-                _logger.LogWarning("No transcript available for video {VideoId}", videoId);
-                return ServiceResult<TranscriptAnalysisResult>.Success(
-                    new TranscriptAnalysisResult(
-                        VideoId: videoId,
-                        Title: videoInfo.Title,
-                        TranscriptText: string.Empty,
-                        Language: "unknown",
-                        CharacterCount: 0,
-                        WordCount: 0,
-                        IsEmpty: true,
-                        ReadyForLlm: false
-                    ));
-            }
-
-            // Prepare transcript for LLM analysis
-            var wordCount = CountWords(transcript.Text);
-            var charCount = transcript.Text.Length;
+            var promptText = prompt.Build();
 
             _logger.LogInformation(
-                "Transcript retrieved for video {VideoId}. Language: {Language}, Words: {WordCount}, Characters: {CharCount}",
-                videoId, transcript.Language, wordCount, charCount);
+                "Composed prompt for video {VideoId}. Prompt length: {PromptLength} characters",
+                videoId, promptText.Length);
 
-            // TODO: Pass transcript to LLM for analysis
-            // This would be the next step in the pipeline
+            // Step 2: Call LLM service with composed prompt
+            var llmResult = await _llmService.CallAsync(promptText);
 
-            var result = new TranscriptAnalysisResult(
-                VideoId: videoId,
-                Title: videoInfo.Title,
-                TranscriptText: transcript.Text,
-                Language: transcript.Language,
-                CharacterCount: charCount,
-                WordCount: wordCount,
-                IsEmpty: false,
-                ReadyForLlm: true
-            );
+            if (!llmResult.IsSuccess || llmResult.Data == null)
+            {
+                return ServiceResult<VideoAnalysis>.Failure(
+                    $"LLM analysis failed: {llmResult.ErrorMessage}",
+                    llmResult.Exception);
+            }
 
-            _logger.LogInformation("Video {VideoId} is ready for LLM analysis", videoId);
+            // Step 3: Parse LLM response into VideoAnalysis object
+            var analysis = ParseLlmResponse(videoId, llmResult.Data);
 
-            return ServiceResult<TranscriptAnalysisResult>.Success(result);
+            _logger.LogInformation(
+                "Completed transcript analysis for video {VideoId}. Found {AchievementCount} achievements",
+                videoId, analysis.Achievements.Length);
+
+            return ServiceResult<VideoAnalysis>.Success(analysis);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error analyzing video {VideoId}", videoId);
-            return ServiceResult<TranscriptAnalysisResult>.Failure(
-                $"Failed to analyze video: {ex.Message}",
+            _logger.LogError(ex, "Error analyzing transcript for video {VideoId}", videoId);
+            return ServiceResult<VideoAnalysis>.Failure(
+                $"Failed to analyze transcript: {ex.Message}",
                 ex);
         }
     }
 
-    private static int CountWords(string text)
+    /// <summary>
+    /// Parses the LLM JSON response into a VideoAnalysis object.
+    /// Uses System.Text.Json deserialization for simplicity.
+    /// </summary>
+    private VideoAnalysis ParseLlmResponse(string videoId, JsonDocument llmResponse)
     {
-        if (string.IsNullOrWhiteSpace(text))
-            return 0;
+        var options = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
 
-        return text.Split(new[] { ' ', '\t', '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries).Length;
+        // Deserialize to a DTO that matches the LLM response structure
+        var dto = JsonSerializer.Deserialize<LlmResponseDto>(llmResponse, options);
+
+        if (dto == null)
+        {
+            throw new InvalidOperationException("Failed to deserialize LLM response");
+        }
+
+        return new VideoAnalysis(
+            Id: videoId,
+            AnalyzedAt: DateTimeOffset.UtcNow,
+            ModelVersion: dto.ModelVersion ?? "gpt-4o-mini",
+            PromptVersion: PromptVersion,
+            TaxonomyVersion: "v1.0", // TODO: Get from TaxonomyPromptComposer
+            Achievements: dto.Achievements ?? Array.Empty<Achievement>(),
+            Timeframe: dto.Timeframe,
+            Practices: dto.Practices ?? Array.Empty<string>(),
+            SentimentScore: dto.SentimentScore,
+            ConfidenceScore: dto.ConfidenceScore,
+            Proposals: dto.Proposals
+        );
     }
-}
 
-/// <summary>
-/// Configuration options for video analysis.
-/// </summary>
-public class VideoAnalysisOptions
-{
-    public string[]? PreferredLanguages { get; set; }
+    /// <summary>
+    /// DTO for deserializing LLM response JSON.
+    /// </summary>
+    private sealed record LlmResponseDto(
+        string? ModelVersion,
+        Achievement[]? Achievements,
+        Timeframe? Timeframe,
+        string[]? Practices,
+        double SentimentScore,
+        double ConfidenceScore,
+        TaxonomyProposal[]? Proposals
+    );
 }
-
-/// <summary>
-/// Result of transcript analysis, ready for LLM processing.
-/// </summary>
-public record TranscriptAnalysisResult(
-    string VideoId,
-    string Title,
-    string TranscriptText,
-    string Language,
-    int CharacterCount,
-    int WordCount,
-    bool IsEmpty,
-    bool ReadyForLlm
-);

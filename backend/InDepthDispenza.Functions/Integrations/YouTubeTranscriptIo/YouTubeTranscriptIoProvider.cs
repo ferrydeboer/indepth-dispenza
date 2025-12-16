@@ -29,7 +29,7 @@ public class YouTubeTranscriptIoProvider : ITranscriptProvider
         _options = options.Value;
     }
 
-    public async Task<ServiceResult<TranscriptData>> GetTranscriptAsync(string videoId, string[] preferredLanguages)
+    public async Task<ServiceResult<TranscriptDocument>> GetTranscriptAsync(string videoId, string[] preferredLanguages)
     {
         try
         {
@@ -52,7 +52,7 @@ public class YouTubeTranscriptIoProvider : ITranscriptProvider
                 var errorContent = await response.Content.ReadAsStringAsync();
                 _logger.LogWarning("YouTube Transcript API returned {StatusCode}: {Error}",
                     response.StatusCode, errorContent);
-                return ServiceResult<TranscriptData>.Failure($"API error: {response.StatusCode}");
+                return ServiceResult<TranscriptDocument>.Failure($"API error: {response.StatusCode}");
             }
 
             var jsonContent = await response.Content.ReadAsStringAsync();
@@ -62,15 +62,22 @@ public class YouTubeTranscriptIoProvider : ITranscriptProvider
             var apiResponse = JsonSerializer.Deserialize<YouTubeTranscriptIoResponse[]>(jsonContent);
             if (apiResponse == null || apiResponse.Length == 0)
             {
-                return ServiceResult<TranscriptData>.Failure("No transcript data in response");
+                return ServiceResult<TranscriptDocument>.Failure("No transcript data in response");
             }
 
             var videoData = apiResponse[0];
             if (videoData.Tracks == null || videoData.Tracks.Length == 0)
             {
                 _logger.LogWarning("No transcript tracks available for video {VideoId}", videoId);
-                return ServiceResult<TranscriptData>.Success(
-                    new TranscriptData(string.Empty, UnknownLanguage, Array.Empty<TranscriptSegment>()));
+                return ServiceResult<TranscriptDocument>.Success(
+                    new TranscriptDocument(
+                        Id: videoId,
+                        Segments: Array.Empty<TranscriptSegment>(),
+                        Language: UnknownLanguage,
+                        FetchedAt: DateTimeOffset.UtcNow,
+                        VideoTitle: videoData.Title ?? string.Empty,
+                        VideoDescription: string.Empty,
+                        Duration: 0));
             }
 
             // Try to find preferred language track, otherwise use first available
@@ -85,9 +92,6 @@ public class YouTubeTranscriptIoProvider : ITranscriptProvider
                     Text: segment.Text))
                 .ToArray();
 
-            // Combine all segment text into full transcript
-            var fullText = string.Join(" ", segments.Select(s => s.Text));
-
             // Extract metadata from the rich API response
             var metadata = ExtractMetadata(videoData);
 
@@ -95,13 +99,23 @@ public class YouTubeTranscriptIoProvider : ITranscriptProvider
                 "Successfully fetched transcript for video {VideoId} in language {Language} with {SegmentCount} segments",
                 videoId, language, segments.Length);
 
-            return ServiceResult<TranscriptData>.Success(
-                new TranscriptData(fullText, language, segments, metadata));
+            // Create TranscriptDocument with all data and segments
+            var document = new TranscriptDocument(
+                Id: videoId,
+                Segments: segments,
+                Language: language,
+                FetchedAt: DateTimeOffset.UtcNow,
+                VideoTitle: metadata?.Title ?? videoData.Title ?? string.Empty,
+                VideoDescription: metadata?.Description ?? string.Empty,
+                Duration: metadata?.LengthSeconds ?? 0
+            );
+
+            return ServiceResult<TranscriptDocument>.Success(document);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error fetching transcript from API for video {VideoId}", videoId);
-            return ServiceResult<TranscriptData>.Failure($"Failed to fetch transcript: {ex.Message}", ex);
+            return ServiceResult<TranscriptDocument>.Failure($"Failed to fetch transcript: {ex.Message}", ex);
         }
     }
 

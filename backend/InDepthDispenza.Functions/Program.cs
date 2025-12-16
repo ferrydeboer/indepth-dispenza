@@ -24,7 +24,6 @@ var configBuilder = new ConfigurationBuilder()
 var configuration = configBuilder.Build();
 builder.Configuration.AddConfiguration(configuration);
 
-builder.Services.Configure<VideoAnalysisOptions>(builder.Configuration.GetSection("VideoAnalysis"));
 builder.ConfigureFunctionsWebApplication();
 
 builder.Services
@@ -52,7 +51,12 @@ builder.Services.AddScoped<ITranscriptProvider>(sp =>
 });
 
 // 4. Business logic layer (VideoAnalysis namespace)
-builder.Services.AddScoped<TranscriptAnalyzer>();
+builder.Services.AddScoped<ILlmService, StubLlmService>();
+builder.Services.AddScoped<ITranscriptAnalyzer, TranscriptAnalyzer>();
+
+// 5. Prompt composers (registered in order they'll be used)
+builder.Services.AddScoped<IPromptComposer, TaxonomyPromptComposer>();
+builder.Services.AddScoped<IPromptComposer, TranscriptPromptComposer>();
 
 
 await builder.Build().RunAsync();

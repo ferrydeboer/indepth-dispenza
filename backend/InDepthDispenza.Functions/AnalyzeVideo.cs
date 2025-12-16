@@ -14,9 +14,9 @@ namespace InDepthDispenza.Functions;
 public class AnalyzeVideo
 {
     private readonly ILogger<AnalyzeVideo> _logger;
-    private readonly TranscriptAnalyzer _transcriptAnalyzer;
+    private readonly ITranscriptAnalyzer _transcriptAnalyzer;
 
-    public AnalyzeVideo(ILogger<AnalyzeVideo> logger, TranscriptAnalyzer transcriptAnalyzer)
+    public AnalyzeVideo(ILogger<AnalyzeVideo> logger, ITranscriptAnalyzer transcriptAnalyzer)
     {
         _logger = logger;
         _transcriptAnalyzer = transcriptAnalyzer;
@@ -35,8 +35,8 @@ public class AnalyzeVideo
             return new BadRequestObjectResult("Missing required parameter: videoId");
         }
 
-        // Delegate to business logic layer
-        var result = await _transcriptAnalyzer.AnalyzeVideoAsync(videoId);
+        // Delegate to business logic layer (TranscriptAnalyzer handles everything)
+        var result = await _transcriptAnalyzer.AnalyzeTranscriptAsync(videoId);
 
         // HTTP concern: Map business result to HTTP response
         if (!result.IsSuccess)
@@ -51,14 +51,18 @@ public class AnalyzeVideo
         var analysis = result.Data!;
         return new OkObjectResult(new
         {
-            videoId = analysis.VideoId,
-            title = analysis.Title,
-            transcriptLength = analysis.CharacterCount,
-            wordCount = analysis.WordCount,
-            language = analysis.Language,
-            isEmpty = analysis.IsEmpty,
-            readyForLlm = analysis.ReadyForLlm,
-            message = "Video analysis complete. Ready for LLM processing."
+            videoId = analysis.Id,
+            analyzedAt = analysis.AnalyzedAt,
+            modelVersion = analysis.ModelVersion,
+            promptVersion = analysis.PromptVersion,
+            taxonomyVersion = analysis.TaxonomyVersion,
+            achievements = analysis.Achievements,
+            timeframe = analysis.Timeframe,
+            practices = analysis.Practices,
+            sentimentScore = analysis.SentimentScore,
+            confidenceScore = analysis.ConfidenceScore,
+            proposals = analysis.Proposals,
+            message = "Video analysis complete."
         });
     }
 }

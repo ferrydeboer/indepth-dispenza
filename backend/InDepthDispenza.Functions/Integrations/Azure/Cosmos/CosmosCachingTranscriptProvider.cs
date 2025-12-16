@@ -23,7 +23,7 @@ public class CosmosCachingTranscriptProvider : ITranscriptProvider
         _repository = repository;
     }
 
-    public async Task<ServiceResult<TranscriptData>> GetTranscriptAsync(string videoId, string[] preferredLanguages)
+    public async Task<ServiceResult<TranscriptDocument>> GetTranscriptAsync(string videoId, string[] preferredLanguages)
     {
         try
         {
@@ -40,13 +40,8 @@ public class CosmosCachingTranscriptProvider : ITranscriptProvider
             else if (cachedResult.Data != null)
             {
                 _logger.LogInformation("Cache hit for video {VideoId}", videoId);
-                // Note: Cached data doesn't include segments or metadata - those are lost in caching
-                // This is acceptable as the cache is primarily for the text content
-                return ServiceResult<TranscriptData>.Success(
-                    new TranscriptData(
-                        cachedResult.Data.Transcript ?? string.Empty,
-                        cachedResult.Data.Language,
-                        Array.Empty<TranscriptSegment>()));
+                // Return complete cached document with segments
+                return ServiceResult<TranscriptDocument>.Success(cachedResult.Data);
             }
 
             // Cache miss - fetch from inner provider
@@ -58,22 +53,13 @@ public class CosmosCachingTranscriptProvider : ITranscriptProvider
                 return fetchResult;
             }
 
+            // Inner provider now returns TranscriptDocument, so we can save it directly
             // Save to cache (fire and forget - don't block on cache failures)
             _ = Task.Run(async () =>
             {
                 try
                 {
-                    var document = new TranscriptDocument(
-                        Id: videoId,
-                        Transcript: fetchResult.Data.Text,
-                        Language: fetchResult.Data.Language,
-                        FetchedAt: DateTimeOffset.UtcNow,
-                        VideoTitle: fetchResult.Data?.Metadata?.Title ?? string.Empty,
-                        VideoDescription: fetchResult.Data?.Metadata?.Description ?? string.Empty,
-                        Duration: fetchResult.Data?.Metadata?.LengthSeconds ?? 0
-                    );
-
-                    var saveResult = await _repository.SaveTranscriptAsync(document);
+                    var saveResult = await _repository.SaveTranscriptAsync(fetchResult.Data);
                     if (!saveResult.IsSuccess)
                     {
                         _logger.LogWarning("Failed to cache transcript for video {VideoId}: {Error}",
@@ -95,7 +81,7 @@ public class CosmosCachingTranscriptProvider : ITranscriptProvider
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error in caching transcript provider for video {VideoId}", videoId);
-            return ServiceResult<TranscriptData>.Failure($"Failed to get transcript: {ex.Message}", ex);
+            return ServiceResult<TranscriptDocument>.Failure($"Failed to get transcript: {ex.Message}", ex);
         }
     }
 }

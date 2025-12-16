@@ -31,7 +31,7 @@
   - Allows for indexable / aggregatable classification of what the person overcame.
     - i.e., people can heal an autoimmune disease hashimoto's or cancer, lung cancer to be specific.
     - or someone manifested financial wealth
-  - And for debugging purposes at least contains:
+  - Json representation of the analyzed video object.
     ```json  
     {  
       "id": "videoId",  
@@ -105,14 +105,16 @@ These steps are designed for sequential development, suitable for feeding into a
   - **Output**: Collections created/verified; initial taxonomy JSON stored.
   - **Test**: Run setup code; query collections via SDK.
 
-2. **Update Azure Function Trigger and Retrieval Logic**
-  - **Input**: Queue message with `videoId`.
+2. **Implement basic `ITranscriptAnalyzer` called by VideoAnalyzer**
+  - **Input**: The loaded transcript
   - **Actions**:
-    - In `AnalyzeTranscript` function: Retrieve transcript from `transcript-cache` using Cosmos DB SDK.
     - Query `taxonomy-versions` for the latest version (sort by `updatedAt` descending, limit 1).
     - If no taxonomy found, use a fallback default taxonomy from code/config.
-  - **Output**: Loaded transcript and taxonomy as strings/objects.
-  - **Test**: Local run with mock queue message; verify retrieval logs.
+    - Call into LLM interface with a stub command for now that contains:
+      - The transcript
+      - The taxonomy
+  - **Output**: A VideoAnalysis object as described in the above specs.
+  - **Test**: Unit test of the analysis flow in the Transcript Analyzer.
 
 3. **Design and Implement LLM Prompt**
   - **Input**: Transcript text, taxonomy JSON.

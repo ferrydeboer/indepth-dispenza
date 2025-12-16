@@ -1,17 +1,19 @@
 namespace InDepthDispenza.Functions.Interfaces;
 
 /// <summary>
-/// Provides access to video transcripts from various sources.
+/// Provides access to video transcripts from various sources with caching.
+/// Returns complete TranscriptDocument with all metadata and segments.
 /// </summary>
 public interface ITranscriptProvider
 {
     /// <summary>
-    /// Gets the transcript for a video.
+    /// Gets the complete transcript document for a video, including metadata and segments.
+    /// Handles caching transparently.
     /// </summary>
     /// <param name="videoId">The video ID</param>
     /// <param name="preferredLanguages">Preferred languages in order of preference</param>
-    /// <returns>Service result containing the transcript text and language, or empty if not available</returns>
-    Task<ServiceResult<TranscriptData>> GetTranscriptAsync(string videoId, string[] preferredLanguages);
+    /// <returns>Service result containing the complete transcript document</returns>
+    Task<ServiceResult<TranscriptDocument>> GetTranscriptAsync(string videoId, string[] preferredLanguages);
 }
 
 /// <summary>

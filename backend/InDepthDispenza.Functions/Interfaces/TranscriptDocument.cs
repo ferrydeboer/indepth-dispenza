@@ -1,24 +1,40 @@
 namespace InDepthDispenza.Functions.Interfaces;
 
 /// <summary>
-/// Intent of this document is to store all information that can be used for analysis & caching operations. 
+/// Document storing all transcript information for caching and analysis operations.
+/// Stores segments with timing information, from which full text can be derived.
 /// </summary>
-/// <remarks>At this point it does not store the timing of the captions. This might prove valuable later in segmenting
-/// the video for browsing</remarks>
-/// <param name="Id"></param>
-/// <param name="Transcript">The actual transcript.</param>
-/// <param name="Language">ISO based language of the transcript. Might need comma separation since some videos contain
-/// tolks translating</param>
-/// <param name="FetchedAt">The moment the transcript was fetched. Can be used for eviction of certain caches to
-/// accomodate for changes.</param>
-/// <param name="VideoTitle">The title of video.</param>
-/// <param name="VideoDescription">The description as listed under the video.</param>
-/// <param name="Duration">The length of the video in seconds</param>
+/// <param name="Id">Video ID</param>
+/// <param name="Segments">Array of transcript segments with timing information</param>
+/// <param name="Language">ISO-based language code of the transcript</param>
+/// <param name="FetchedAt">Timestamp when transcript was fetched</param>
+/// <param name="VideoTitle">Title of the video</param>
+/// <param name="VideoDescription">Description from the video</param>
+/// <param name="Duration">Video length in seconds</param>
 public record TranscriptDocument(
     string Id,
-    string? Transcript,
+    TranscriptSegment[] Segments,
     string Language,
     DateTimeOffset FetchedAt,
     string VideoTitle,
     string VideoDescription,
-    int Duration);
+    int Duration)
+{
+    /// <summary>
+    /// Gets the full transcript text by concatenating all segments.
+    /// This is derived on-demand rather than stored to minimize cache size.
+    /// </summary>
+    public string GetFullText()
+    {
+        if (Segments == null || Segments.Length == 0)
+            return string.Empty;
+
+        return string.Join(" ", Segments.Select(s => s.Text));
+    }
+
+    /// <summary>
+    /// Legacy property for backwards compatibility.
+    /// Use GetFullText() for explicit text retrieval.
+    /// </summary>
+    public string? Transcript => GetFullText();
+};

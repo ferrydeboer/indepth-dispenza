@@ -74,7 +74,7 @@ public class CosmosDbTranscriptRepository : CosmosRepositoryBase, ITranscriptRep
     private sealed class CosmosTranscriptDocument
     {
         public string id { get; set; } = string.Empty;
-        public string? transcript { get; set; }
+        public CosmosTranscriptSegment[] segments { get; set; } = Array.Empty<CosmosTranscriptSegment>();
         public string language { get; set; } = string.Empty;
         public DateTimeOffset fetchedAt { get; set; }
         public string videoTitle { get; set; } = string.Empty;
@@ -86,7 +86,12 @@ public class CosmosDbTranscriptRepository : CosmosRepositoryBase, ITranscriptRep
             return new CosmosTranscriptDocument
             {
                 id = document.Id,
-                transcript = document.Transcript,
+                segments = document.Segments?.Select(s => new CosmosTranscriptSegment
+                {
+                    startSeconds = s.StartSeconds,
+                    durationSeconds = s.DurationSeconds,
+                    text = s.Text
+                }).ToArray() ?? Array.Empty<CosmosTranscriptSegment>(),
                 language = document.Language,
                 fetchedAt = document.FetchedAt,
                 videoTitle = document.VideoTitle,
@@ -99,7 +104,11 @@ public class CosmosDbTranscriptRepository : CosmosRepositoryBase, ITranscriptRep
         {
             return new TranscriptDocument(
                 Id: id,
-                Transcript: transcript,
+                Segments: segments?.Select(s => new TranscriptSegment(
+                    StartSeconds: s.startSeconds,
+                    DurationSeconds: s.durationSeconds,
+                    Text: s.text
+                )).ToArray() ?? Array.Empty<TranscriptSegment>(),
                 Language: language,
                 FetchedAt: fetchedAt,
                 VideoTitle: videoTitle,
@@ -107,5 +116,12 @@ public class CosmosDbTranscriptRepository : CosmosRepositoryBase, ITranscriptRep
                 Duration: duration
             );
         }
+    }
+
+    private sealed class CosmosTranscriptSegment
+    {
+        public decimal startSeconds { get; set; }
+        public decimal durationSeconds { get; set; }
+        public string text { get; set; } = string.Empty;
     }
 }
