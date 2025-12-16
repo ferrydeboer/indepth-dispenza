@@ -61,9 +61,9 @@ public class CosmosHealthCheck : IHealthCheck
                 options.AccountKey,
                 clientOptions);
 
-            // Test connectivity by reading database properties
+            // Test connectivity by reading database properties (simpler than ReadThroughputAsync)
             var database = cosmosClient.GetDatabase(options.DatabaseName);
-            await database.ReadThroughputAsync(cancellationToken);
+            var response = await database.ReadAsync(cancellationToken: cancellationToken);
 
             _logger.LogInformation("Cosmos DB health check succeeded");
             return HealthCheckResult.Healthy(
@@ -71,7 +71,8 @@ public class CosmosHealthCheck : IHealthCheck
                 new Dictionary<string, object>
                 {
                     { "databaseName", options.DatabaseName },
-                    { "containerName", options.TranscriptCacheContainer }
+                    { "containerName", options.TranscriptCacheContainer },
+                    { "statusCode", (int)response.StatusCode }
                 });
         }
         catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
