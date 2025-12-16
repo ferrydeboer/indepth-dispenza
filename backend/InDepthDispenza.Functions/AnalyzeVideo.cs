@@ -1,4 +1,3 @@
-using InDepthDispenza.Functions.VideoAnalysis;
 using InDepthDispenza.Functions.VideoAnalysis.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

@@ -65,9 +65,20 @@ public class TaxonomyPromptComposer : IPromptComposer
         content.AppendLine("```");
         content.AppendLine();
         content.AppendLine("**Taxonomy Rules:**");
-        content.AppendLine("- Use snake_case for all tags (e.g., 'cervical_cancer', not 'Cervical Cancer')");
-        content.AppendLine("- Include parent categories when relevant (e.g., both 'cancer' and 'lung_cancer')");
-        content.AppendLine("- If proposing new tags, provide clear justification in the 'proposals' array");
+        string rules = """
+                       "
+                       1. **ALWAYS use existing tags from the taxonomy above when applicable**
+                       2. **ONLY propose new tags if:**
+                         - The content describes a specific condition/practice NOT in the taxonomy
+                         - The new tag would be used by multiple testimonials (not one-off mentions)
+                         - You can clearly identify where it belongs in the hierarchy
+                       3. **NEVER propose tags that already exist in the taxonomy**
+                       4. **Check the entire taxonomy tree before proposing - if 'cervical_cancer' exists anywhere, don't propose it**"
+                       """;
+        content.AppendLine(rules);
+        // content.AppendLine("- Use snake_case for all tags (e.g., 'cervical_cancer', not 'Cervical Cancer')");
+        // content.AppendLine("- Include parent categories when relevant (e.g., both 'cancer' and 'lung_cancer')");
+        // content.AppendLine("- If proposing new tags, provide clear justification in the 'proposals' array");
 
         prompt.AddSegment(new PromptSegment(content.ToString(), Order: 10));
     }

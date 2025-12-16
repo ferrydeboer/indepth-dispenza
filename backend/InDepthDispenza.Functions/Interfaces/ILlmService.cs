@@ -1,7 +1,6 @@
 using System.Text.Json;
-using InDepthDispenza.Functions.Interfaces;
 
-namespace InDepthDispenza.Functions.VideoAnalysis.Interfaces;
+namespace InDepthDispenza.Functions.Interfaces;
 
 /// <summary>
 /// Service for making LLM API calls.

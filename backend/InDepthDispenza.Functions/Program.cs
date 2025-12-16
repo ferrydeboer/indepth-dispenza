@@ -1,6 +1,7 @@
 using InDepthDispenza.Functions.Integrations.Azure.Cosmos;
 using InDepthDispenza.Functions.Integrations.Azure.Storage;
 using InDepthDispenza.Functions.Integrations.YouTube;
+using InDepthDispenza.Functions.Integrations.XAi.Grok;
 using InDepthDispenza.Functions.Integrations.YouTubeTranscriptIo;
 using InDepthDispenza.Functions.Interfaces;
 using InDepthDispenza.Functions.VideoAnalysis;
@@ -37,6 +38,13 @@ builder.Services.AddYouTubeModule(configuration);
 builder.Services.AddCosmosModule(configuration);
 builder.Services.AddStorageModule(configuration);
 builder.Services.AddYouTubeTranscriptIoModule(configuration);
+// Register Grok module if explicitly enabled and API key is provided (manual test friendly)
+var grokEnabled = configuration.GetValue<bool>("Grok:Enabled");
+var grokApiKey = configuration["Grok:ApiKey"];
+if (grokEnabled && !string.IsNullOrWhiteSpace(grokApiKey))
+{
+    builder.Services.AddGrokModule(configuration);
+}
 
 // Register other services
 builder.Services.AddScoped<IPlaylistScanService, PlaylistScanService>();
@@ -53,7 +61,11 @@ builder.Services.AddScoped<ITranscriptProvider>(sp =>
 });
 
 // 4. Business logic layer (VideoAnalysis namespace)
-builder.Services.AddScoped<ILlmService, StubLlmService>();
+// If Grok is configured, GrokModule registers ILlmService. Otherwise, fall back to stub.
+if (!(grokEnabled && !string.IsNullOrWhiteSpace(grokApiKey)))
+{
+    builder.Services.AddScoped<ILlmService, StubLlmService>();
+}
 builder.Services.AddScoped<ITranscriptAnalyzer, TranscriptAnalyzer>();
 
 // 5. Prompt composers (registered in order they'll be used)

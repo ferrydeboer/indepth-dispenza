@@ -1,6 +1,7 @@
-using InDepthDispenza.Functions.VideoAnalysis.Interfaces;
+using InDepthDispenza.Functions.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace InDepthDispenza.Functions.Integrations.Azure.OpenAI;
 
@@ -24,8 +25,8 @@ public static class OpenAIModule
         // 2. Register HTTP client for Azure OpenAI
         services.AddHttpClient("AzureOpenAI", (sp, client) =>
         {
-            var config = sp.GetRequiredService<IConfiguration>();
-            var endpoint = config["AzureOpenAI:Endpoint"];
+            var opts = sp.GetRequiredService<IOptions<OpenAIOptions>>().Value;
+            var endpoint = opts.Endpoint;
             if (!string.IsNullOrWhiteSpace(endpoint))
             {
                 client.BaseAddress = new Uri(endpoint);

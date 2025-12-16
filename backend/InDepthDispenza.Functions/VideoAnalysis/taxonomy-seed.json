@@ -2,7 +2,7 @@
   "taxonomy": {
     "healing": {
       "physical_health": {
-        "subcategories": ["obesity", "high_blood_pressure", "acid_reflux", "insomnia"],
+        "subcategories": ["obesity", "high_blood_pressure", "acid_reflux", "insomnia", "mast_cell_activation_syndrome", "heart_attack", "postural_orthostatic_tachycardia_syndrome", "neuropathy"],
         "attributes": ["weight_loss", "chronic", "acute"]
       },
       "mental_health": {
@@ -10,7 +10,7 @@
         "attributes": ["alcohol_addiction", "nicotine_addiction", "cannabis_addiction"]
       },
       "cancer": {
-        "subcategories": ["cervical_cancer", "lung_cancer", "breast_cancer"],  // Add more as discovered
+        "subcategories": ["cervical_cancer", "lung_cancer", "breast_cancer", "bone_cancer"],
         "attributes": ["stage_one", "stage_two", "stage_three", "stage_four", "recurrent", "metastatic"]
       },
       "auto_immune": {
@@ -34,7 +34,7 @@
         "attributes": ["emotional_release", "insight"]
       }
     },
-    "other": {}  // Catch-all for uncategorized
+    "other": {}
   },
   "rules": {
     "naming": "Use snake_case, lowercase, no abbreviations unless standard (e.g., 'bp' not allowed; use 'high_blood_pressure').",

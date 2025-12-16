@@ -1,8 +1,6 @@
-using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using InDepthDispenza.Functions.Interfaces;
-using InDepthDispenza.Functions.VideoAnalysis.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 

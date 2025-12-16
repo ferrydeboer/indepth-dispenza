@@ -1,6 +1,5 @@
 using System.Text.Json;
 using InDepthDispenza.Functions.Interfaces;
-using InDepthDispenza.Functions.VideoAnalysis.Interfaces;
 using Microsoft.Extensions.Logging;
 
 namespace InDepthDispenza.Functions.VideoAnalysis.Prompting;

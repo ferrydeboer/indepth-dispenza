@@ -197,16 +197,18 @@ public class CosmosTaxonomyRepository : CosmosRepositoryBase, ITaxonomyRepositor
     private sealed class CosmosTaxonomyDocument
     {
         public string id { get; set; } = string.Empty;
-        public JsonDocument taxonomy { get; set; } = JsonDocument.Parse("{}");
+        public string taxonomy { get; set; }
         public DateTimeOffset updatedAt { get; set; }
         public string[] changes { get; set; } = Array.Empty<string>();
 
         public static CosmosTaxonomyDocument FromTaxonomyDocument(TaxonomyDocument document)
         {
+            var taxonomy = document.Taxonomy.RootElement.GetRawText();
+            
             return new CosmosTaxonomyDocument
             {
                 id = document.Id,
-                taxonomy = document.Taxonomy,
+                taxonomy = taxonomy,
                 updatedAt = document.UpdatedAt,
                 changes = document.Changes
             };
@@ -216,7 +218,7 @@ public class CosmosTaxonomyRepository : CosmosRepositoryBase, ITaxonomyRepositor
         {
             return new TaxonomyDocument(
                 Id: id,
-                Taxonomy: taxonomy,
+                Taxonomy: JsonDocument.Parse(taxonomy),
                 UpdatedAt: updatedAt,
                 Changes: changes
             );
