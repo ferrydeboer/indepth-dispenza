@@ -68,8 +68,9 @@ public class CosmosCachingTranscriptProvider : ITranscriptProvider
                         Transcript: fetchResult.Data.Text,
                         Language: fetchResult.Data.Language,
                         FetchedAt: DateTimeOffset.UtcNow,
-                        VideoTitle: string.Empty, // Will be set by caller if needed
-                        Duration: string.Empty
+                        VideoTitle: fetchResult.Data?.Metadata?.Title ?? string.Empty,
+                        VideoDescription: fetchResult.Data?.Metadata?.Description ?? string.Empty,
+                        Duration: fetchResult.Data?.Metadata?.LengthSeconds ?? 0
                     );
 
                     var saveResult = await _repository.SaveTranscriptAsync(document);
