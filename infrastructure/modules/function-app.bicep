@@ -21,9 +21,6 @@ param appInsightsInstrumentationKey string
 @secure()
 param appInsightsConnectionString string
 
-@description('Cosmos DB account name')
-param cosmosDbAccountName string
-
 @description('Cosmos DB endpoint')
 param cosmosDbEndpoint string
 
