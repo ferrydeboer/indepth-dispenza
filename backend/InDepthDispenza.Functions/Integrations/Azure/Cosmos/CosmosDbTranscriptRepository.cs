@@ -5,75 +5,25 @@ using Microsoft.Extensions.Options;
 
 namespace InDepthDispenza.Functions.Integrations.Azure.Cosmos;
 
-public class CosmosDbTranscriptRepository : ITranscriptRepository
+public class CosmosDbTranscriptRepository : CosmosRepositoryBase, ITranscriptRepository
 {
-    private readonly ILogger<CosmosDbTranscriptRepository> _logger;
-    private readonly CosmosClient _cosmosClient;
-    private readonly string _databaseName;
-    private readonly string _containerName;
-    private Container? _container;
-    private readonly SemaphoreSlim _initializationLock = new(1, 1);
-
     public CosmosDbTranscriptRepository(
         ILogger<CosmosDbTranscriptRepository> logger,
         CosmosClient cosmosClient,
         IOptions<CosmosDbOptions> options)
+        : base(
+            logger,
+            cosmosClient,
+            options.Value.DatabaseName ?? throw new InvalidOperationException("CosmosDb DatabaseName configuration is missing"),
+            options.Value.TranscriptCacheContainer ?? throw new InvalidOperationException("CosmosDb TranscriptCacheContainer configuration is missing"))
     {
-        _logger = logger;
-        _cosmosClient = cosmosClient;
-        var cosmosDbOptions = options.Value;
-
-        _databaseName = cosmosDbOptions.DatabaseName
-            ?? throw new InvalidOperationException("CosmosDb DatabaseName configuration is missing");
-        _containerName = cosmosDbOptions.TranscriptCacheContainer
-            ?? throw new InvalidOperationException("CosmosDb TranscriptCacheContainer configuration is missing");
-    }
-
-    private async Task<Container> GetOrCreateContainerAsync()
-    {
-        if (_container != null)
-            return _container;
-
-        await _initializationLock.WaitAsync();
-        try
-        {
-            if (_container != null)
-                return _container;
-
-            _logger.LogInformation("Ensuring Cosmos DB database {DatabaseName} and container {ContainerName} exist",
-                _databaseName, _containerName);
-
-            // Create database if it doesn't exist
-            var databaseResponse = await _cosmosClient.CreateDatabaseIfNotExistsAsync(
-                _databaseName,
-                ThroughputProperties.CreateAutoscaleThroughput(1000));
-
-            _logger.LogInformation("Database {DatabaseName} ready (created: {Created})",
-                _databaseName, databaseResponse.StatusCode == System.Net.HttpStatusCode.Created);
-
-            // Create container if it doesn't exist
-            var containerProperties = new ContainerProperties(_containerName, "/id");
-            var containerResponse = await databaseResponse.Database.CreateContainerIfNotExistsAsync(
-                containerProperties,
-                ThroughputProperties.CreateAutoscaleThroughput(1000));
-
-            _logger.LogInformation("Container {ContainerName} ready (created: {Created})",
-                _containerName, containerResponse.StatusCode == System.Net.HttpStatusCode.Created);
-
-            _container = containerResponse.Container;
-            return _container;
-        }
-        finally
-        {
-            _initializationLock.Release();
-        }
     }
 
     public async Task<ServiceResult<TranscriptDocument?>> GetTranscriptAsync(string videoId)
     {
         try
         {
-            _logger.LogInformation("Retrieving transcript from cache for video {VideoId}", videoId);
+            Logger.LogInformation("Retrieving transcript from cache for video {VideoId}", videoId);
 
             var container = await GetOrCreateContainerAsync();
             var response = await container.ReadItemAsync<CosmosTranscriptDocument>(
@@ -82,17 +32,17 @@ public class CosmosDbTranscriptRepository : ITranscriptRepository
 
             var document = response.Resource.ToTranscriptDocument();
 
-            _logger.LogInformation("Successfully retrieved cached transcript for video {VideoId}", videoId);
+            Logger.LogInformation("Successfully retrieved cached transcript for video {VideoId}", videoId);
             return ServiceResult<TranscriptDocument?>.Success(document);
         }
         catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
         {
-            _logger.LogInformation("No cached transcript found for video {VideoId}", videoId);
+            Logger.LogInformation("No cached transcript found for video {VideoId}", videoId);
             return ServiceResult<TranscriptDocument?>.Success(null);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving transcript from cache for video {VideoId}", videoId);
+            Logger.LogError(ex, "Error retrieving transcript from cache for video {VideoId}", videoId);
             return ServiceResult<TranscriptDocument?>.Failure($"Failed to retrieve transcript: {ex.Message}", ex);
         }
     }
@@ -101,7 +51,7 @@ public class CosmosDbTranscriptRepository : ITranscriptRepository
     {
         try
         {
-            _logger.LogInformation("Saving transcript to cache for video {VideoId}", document.Id);
+            Logger.LogInformation("Saving transcript to cache for video {VideoId}", document.Id);
 
             var cosmosDocument = CosmosTranscriptDocument.FromTranscriptDocument(document);
             var container = await GetOrCreateContainerAsync();
@@ -110,12 +60,12 @@ public class CosmosDbTranscriptRepository : ITranscriptRepository
                 cosmosDocument,
                 new PartitionKey(cosmosDocument.id));
 
-            _logger.LogInformation("Successfully saved transcript to cache for video {VideoId}", document.Id);
+            Logger.LogInformation("Successfully saved transcript to cache for video {VideoId}", document.Id);
             return ServiceResult.Success();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error saving transcript to cache for video {VideoId}", document.Id);
+            Logger.LogError(ex, "Error saving transcript to cache for video {VideoId}", document.Id);
             return ServiceResult.Failure($"Failed to save transcript: {ex.Message}", ex);
         }
     }

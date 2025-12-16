@@ -23,24 +23,24 @@
 ## Acceptance Criteria
 
 ### Functionality
-- [ ] Given a videoId, system fetches available transcripts (prioritize English, Dutch)
-- [ ] Transcripts stored in Cosmos DB collection: `transcript-cache` with videoId as partition key
-- [ ] Fetch operation is idempotent (checks Cosmos DB cache before YouTube API call)
+- [x] Given a videoId, system fetches available transcripts (prioritize English, Dutch)
+- [x] Transcripts stored in Cosmos DB collection: `transcript-cache` with videoId as partition key
+- [x] Fetch operation is idempotent (checks Cosmos DB cache before YouTube API call)
 - [ ] Handle videos without transcripts gracefully (log warning, store document with `transcript: null`)
 - [ ] Support multiple languages (fetch English first, fallback to Dutch, then any available)
 - [ ] Transcript fetch function can be invoked independently for debugging
 
 ### Infrastructure & Testing
-- [ ] Cosmos DB `transcript-cache` collection created via Bicep (from Story 0)
-- [ ] Function can connect to local Cosmos DB emulator (docker-compose)
-- [ ] Integration tests run against Testcontainers Cosmos DB emulator
-- [ ] Integration tests verify Cosmos DB writes and cache hit/miss scenarios
-- [ ] CI/CD pipeline deploys function to Azure after tests pass
+- [ ] ~~Cosmos DB `transcript-cache` collection created via Bicep (from Story 0)~~
+- [x] Function can connect to local Cosmos DB emulator (docker-compose)
+- [x] Integration tests run against Testcontainers Cosmos DB emulator
+- [x] Integration tests verify Cosmos DB writes and cache hit/miss scenarios
+- [x] CI/CD pipeline deploys function to Azure after tests pass
 
 ### Local Development
-- [ ] Function runs locally using Azure Functions Core Tools
-- [ ] `local.settings.json` template includes Cosmos DB connection string
-- [ ] Developer documentation for local setup and testing
+- [x] Function runs locally using Azure Functions Core Tools
+- [x] `local.settings.json` template includes Cosmos DB connection string
+- [x] Developer documentation for local setup and testing
 
 ## Cost Considerations
 - YouTube Transcript API: Free (no official rate limits for public captions)

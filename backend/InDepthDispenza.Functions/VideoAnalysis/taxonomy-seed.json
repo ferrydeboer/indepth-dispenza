@@ -1,0 +1,44 @@
+{
+  "taxonomy": {
+    "healing": {
+      "physical_health": {
+        "subcategories": ["obesity", "high_blood_pressure", "acid_reflux", "insomnia"],
+        "attributes": ["weight_loss", "chronic", "acute"]
+      },
+      "mental_health": {
+        "subcategories": ["depression", "anxiety", "addiction"],
+        "attributes": ["alcohol_addiction", "nicotine_addiction", "cannabis_addiction"]
+      },
+      "cancer": {
+        "subcategories": ["cervical_cancer", "lung_cancer", "breast_cancer"],  // Add more as discovered
+        "attributes": ["stage_one", "stage_two", "stage_three", "stage_four", "recurrent", "metastatic"]
+      },
+      "auto_immune": {
+        "subcategories": ["hashimotos", "lupus", "rheumatoid_arthritis"],
+        "attributes": ["flare_ups", "remission"]
+      }
+    },
+    "manifestation": {
+      "financial": {
+        "subcategories": ["manifested_money", "debt_reduction"],
+        "attributes": ["amount_1k_to_10k", "amount_over_10k"]
+      },
+      "career": {
+        "subcategories": ["job_promotion", "new_job"],
+        "attributes": ["remote_work", "salary_increase"]
+      }
+    },
+    "transformation": {
+      "spiritual": {
+        "subcategories": ["mystical_experience", "grief_resolution", "oneness_realization"],
+        "attributes": ["emotional_release", "insight"]
+      }
+    },
+    "other": {}  // Catch-all for uncategorized
+  },
+  "rules": {
+    "naming": "Use snake_case, lowercase, no abbreviations unless standard (e.g., 'bp' not allowed; use 'high_blood_pressure').",
+    "hierarchy": "Always include parent category if applicable (e.g., 'cancer' + 'cervical_cancer').",
+    "multilingual": "English canonical; add translations later (e.g., {'es': 'cancer_cervical'})."
+  }
+}

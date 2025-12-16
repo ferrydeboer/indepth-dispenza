@@ -44,6 +44,7 @@ public static class CosmosModule
 
         // 3. Register services
         services.AddScoped<ITranscriptRepository, CosmosDbTranscriptRepository>();
+        services.AddScoped<ITaxonomyRepository, CosmosTaxonomyRepository>();
 
         // 4. Register health check
         services.AddHealthChecks()
