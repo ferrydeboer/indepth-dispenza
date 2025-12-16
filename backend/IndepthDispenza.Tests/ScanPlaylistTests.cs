@@ -5,8 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using InDepthDispenza.Functions;
 using InDepthDispenza.Functions.Interfaces;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace IndepthDispenza.Tests;
 

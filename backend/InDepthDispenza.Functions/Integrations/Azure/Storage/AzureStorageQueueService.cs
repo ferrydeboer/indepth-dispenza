@@ -1,22 +1,24 @@
 using System.Text.Json;
 using Azure.Storage.Queues;
 using InDepthDispenza.Functions.Interfaces;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
-namespace InDepthDispenza.Functions.Integrations.Azure;
+namespace InDepthDispenza.Functions.Integrations.Azure.Storage;
 
 public class AzureStorageQueueService : IQueueService
 {
     private readonly ILogger<AzureStorageQueueService> _logger;
     private readonly QueueClient _queueClient;
 
-    public AzureStorageQueueService(IConfiguration configuration, ILogger<AzureStorageQueueService> logger)
+    public AzureStorageQueueService(IOptions<StorageOptions> options, ILogger<AzureStorageQueueService> logger)
     {
         _logger = logger;
-        var connectionString = configuration["AzureWebJobsStorage"] ??
+        var storageOptions = options.Value;
+
+        var connectionString = storageOptions.AzureWebJobsStorage ??
                               throw new InvalidOperationException("AzureWebJobsStorage configuration is missing");
-        var queueName = configuration["VideoQueueName"] ?? "videos";
+        var queueName = storageOptions.VideoQueueName;
 
         _queueClient = new QueueClient(connectionString, queueName);
     }

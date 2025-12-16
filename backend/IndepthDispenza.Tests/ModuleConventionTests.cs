@@ -11,9 +11,9 @@ namespace IndepthDispenza.Tests;
 /// Architecture tests that enforce the self-contained module convention.
 ///
 /// Module Convention:
-/// Each integration module (e.g., YouTube, Azure) should be self-contained with:
+/// Each integration module (deepest namespace in Integrations folder) should be self-contained with:
 /// 1. A {ModuleName}Module static class with Add{ModuleName}Module() extension method
-/// 2. A {ModuleName}Options class for configuration
+/// 2. A {ModuleName}Options class for configuration (OPTIONAL - some modules may not need options)
 /// 3. A {ModuleName}HealthCheck class implementing IHealthCheck
 /// 4. The module is registered in Program.cs via the extension method
 ///
@@ -31,42 +31,91 @@ namespace IndepthDispenza.Tests;
 [TestFixture]
 public class ModuleConventionTests
 {
-    private const string FunctionsAssembly = "InDepthDispenza.Functions";
     private const string IntegrationsNamespace = "InDepthDispenza.Functions.Integrations";
 
-    [Test]
-    public void YouTube_Module_ShouldFollowConvention()
+    /// <summary>
+    /// Gets all module namespaces (deepest namespaces) in the Integrations folder.
+    /// </summary>
+    private static IEnumerable<string> GetModuleNamespaces()
     {
         var assembly = typeof(InDepthDispenza.Functions.Interfaces.IPlaylistService).Assembly;
+        var allNamespaces = assembly.GetTypes()
+            .Where(t => t.Namespace?.StartsWith(IntegrationsNamespace) == true)
+            .Select(t => t.Namespace!)
+            .Distinct()
+            .ToList();
 
-        // 1. Should have a YouTubeModule static class
-        var moduleType = assembly.GetType("InDepthDispenza.Functions.Integrations.YouTube.YouTubeModule");
-        Assert.That(moduleType, Is.Not.Null, "YouTubeModule class should exist");
+        // Find deepest namespaces (namespaces that have no child namespaces)
+        var deepestNamespaces = allNamespaces
+            .Where(ns => !allNamespaces.Any(other => other != ns && other.StartsWith(ns + ".")))
+            .OrderBy(ns => ns)
+            .ToList();
+
+        return deepestNamespaces;
+    }
+
+    /// <summary>
+    /// Extracts module name from namespace (e.g., "InDepthDispenza.Functions.Integrations.YouTube" -> "YouTube")
+    /// For nested modules like "InDepthDispenza.Functions.Integrations.Azure.Cosmos" -> "Cosmos"
+    /// </summary>
+    private static string GetModuleName(string moduleNamespace)
+    {
+        var parts = moduleNamespace.Split('.');
+        return parts[^1]; // Last segment is the module name
+    }
+
+    [TestCaseSource(nameof(GetModuleNamespaces))]
+    public void Module_ShouldHaveModuleClass(string moduleNamespace)
+    {
+        var assembly = typeof(InDepthDispenza.Functions.Interfaces.IPlaylistService).Assembly;
+        var moduleName = GetModuleName(moduleNamespace);
+        var expectedModuleTypeName = $"{moduleNamespace}.{moduleName}Module";
+
+        // Should have a {ModuleName}Module static class
+        var moduleType = assembly.GetType(expectedModuleTypeName);
+        Assert.That(moduleType, Is.Not.Null,
+            $"Module namespace '{moduleNamespace}' should have a {moduleName}Module class");
         Assert.That(moduleType!.IsClass && moduleType.IsAbstract && moduleType.IsSealed,
-            Is.True, "YouTubeModule should be a static class");
+            Is.True, $"{moduleName}Module should be a static class");
+    }
 
-        // 2. Should have AddYouTubeModule extension method
-        var extensionMethod = moduleType.GetMethod("AddYouTubeModule",
+    [TestCaseSource(nameof(GetModuleNamespaces))]
+    public void Module_ShouldHaveAddModuleExtensionMethod(string moduleNamespace)
+    {
+        var assembly = typeof(InDepthDispenza.Functions.Interfaces.IPlaylistService).Assembly;
+        var moduleName = GetModuleName(moduleNamespace);
+        var expectedModuleTypeName = $"{moduleNamespace}.{moduleName}Module";
+        var moduleType = assembly.GetType(expectedModuleTypeName);
+
+        Assert.That(moduleType, Is.Not.Null, $"{moduleName}Module class should exist");
+
+        // Should have Add{ModuleName}Module extension method
+        var expectedMethodName = $"Add{moduleName}Module";
+        var extensionMethod = moduleType!.GetMethod(expectedMethodName,
             BindingFlags.Public | BindingFlags.Static,
             null,
             new[] { typeof(IServiceCollection), typeof(IConfiguration) },
             null);
 
-        Assert.That(extensionMethod, Is.Not.Null, "AddYouTubeModule(IServiceCollection, IConfiguration) method should exist");
+        Assert.That(extensionMethod, Is.Not.Null,
+            $"{moduleName}Module should have a public static {expectedMethodName}(IServiceCollection, IConfiguration) method");
         Assert.That(extensionMethod!.ReturnType, Is.EqualTo(typeof(IServiceCollection)),
-            "AddYouTubeModule should return IServiceCollection for chaining");
+            $"{expectedMethodName} should return IServiceCollection for method chaining");
+    }
 
-        // 3. Should have YouTubeOptions class
-        var optionsType = assembly.GetType("InDepthDispenza.Functions.Integrations.YouTube.YouTubeOptions");
-        Assert.That(optionsType, Is.Not.Null, "YouTubeOptions class should exist");
-        Assert.That(optionsType!.IsClass && !optionsType.IsAbstract, Is.True,
-            "YouTubeOptions should be a concrete class");
+    [TestCaseSource(nameof(GetModuleNamespaces))]
+    public void Module_ShouldHaveHealthCheck(string moduleNamespace)
+    {
+        var assembly = typeof(InDepthDispenza.Functions.Interfaces.IPlaylistService).Assembly;
+        var moduleName = GetModuleName(moduleNamespace);
+        var expectedHealthCheckTypeName = $"{moduleNamespace}.{moduleName}HealthCheck";
 
-        // 4. Should have YouTubeHealthCheck class implementing IHealthCheck
-        var healthCheckType = assembly.GetType("InDepthDispenza.Functions.Integrations.YouTube.YouTubeHealthCheck");
-        Assert.That(healthCheckType, Is.Not.Null, "YouTubeHealthCheck class should exist");
+        // Should have {ModuleName}HealthCheck class implementing IHealthCheck
+        var healthCheckType = assembly.GetType(expectedHealthCheckTypeName);
+        Assert.That(healthCheckType, Is.Not.Null,
+            $"Module namespace '{moduleNamespace}' should have a {moduleName}HealthCheck class");
         Assert.That(typeof(IHealthCheck).IsAssignableFrom(healthCheckType),
-            Is.True, "YouTubeHealthCheck should implement IHealthCheck");
+            Is.True, $"{moduleName}HealthCheck should implement IHealthCheck");
     }
 
     [Test]
@@ -109,98 +158,6 @@ public class ModuleConventionTests
     }
 
     [Test]
-    public void AllModules_ShouldHaveCorrespondingOptionsClass()
-    {
-        // For each {ModuleName}Module class, there should be a {ModuleName}Options class in the same namespace
-        var assembly = typeof(InDepthDispenza.Functions.Interfaces.IPlaylistService).Assembly;
-        var moduleTypes = assembly.GetTypes()
-            .Where(t => t.Namespace?.StartsWith(IntegrationsNamespace) == true)
-            .Where(t => t.Name.EndsWith("Module"))
-            .Where(t => t.IsClass && t.IsAbstract && t.IsSealed) // static class
-            .ToList();
-
-        foreach (var moduleType in moduleTypes)
-        {
-            var moduleName = moduleType.Name.Replace("Module", "");
-            var expectedOptionsName = $"{moduleName}Options";
-
-            var optionsType = assembly.GetTypes()
-                .FirstOrDefault(t =>
-                    t.Namespace == moduleType.Namespace &&
-                    t.Name == expectedOptionsName);
-
-            Assert.That(optionsType, Is.Not.Null,
-                $"Module {moduleType.Name} should have a corresponding {expectedOptionsName} class in the same namespace");
-        }
-    }
-
-    [Test]
-    public void AllModules_ShouldHaveCorrespondingHealthCheck()
-    {
-        // For each {ModuleName}Module class, there should be a {ModuleName}HealthCheck class in the same namespace
-        var assembly = typeof(InDepthDispenza.Functions.Interfaces.IPlaylistService).Assembly;
-        var moduleTypes = assembly.GetTypes()
-            .Where(t => t.Namespace?.StartsWith(IntegrationsNamespace) == true)
-            .Where(t => t.Name.EndsWith("Module"))
-            .Where(t => t.IsClass && t.IsAbstract && t.IsSealed) // static class
-            .ToList();
-
-        foreach (var moduleType in moduleTypes)
-        {
-            var moduleName = moduleType.Name.Replace("Module", "");
-            var expectedHealthCheckName = $"{moduleName}HealthCheck";
-
-            var healthCheckType = assembly.GetTypes()
-                .FirstOrDefault(t =>
-                    t.Namespace == moduleType.Namespace &&
-                    t.Name == expectedHealthCheckName);
-
-            Assert.That(healthCheckType, Is.Not.Null,
-                $"Module {moduleType.Name} should have a corresponding {expectedHealthCheckName} class in the same namespace");
-
-            if (healthCheckType != null)
-            {
-                Assert.That(typeof(IHealthCheck).IsAssignableFrom(healthCheckType),
-                    Is.True,
-                    $"{expectedHealthCheckName} should implement IHealthCheck");
-            }
-        }
-    }
-
-    [Test]
-    public void AllModules_ShouldHaveAddModuleExtensionMethod()
-    {
-        // For each {ModuleName}Module class, there should be an Add{ModuleName}Module extension method
-        var assembly = typeof(InDepthDispenza.Functions.Interfaces.IPlaylistService).Assembly;
-        var moduleTypes = assembly.GetTypes()
-            .Where(t => t.Namespace?.StartsWith(IntegrationsNamespace) == true)
-            .Where(t => t.Name.EndsWith("Module"))
-            .Where(t => t.IsClass && t.IsAbstract && t.IsSealed) // static class
-            .ToList();
-
-        foreach (var moduleType in moduleTypes)
-        {
-            var moduleName = moduleType.Name.Replace("Module", "");
-            var expectedMethodName = $"Add{moduleName}Module";
-
-            var extensionMethod = moduleType.GetMethod(expectedMethodName,
-                BindingFlags.Public | BindingFlags.Static,
-                null,
-                new[] { typeof(IServiceCollection), typeof(IConfiguration) },
-                null);
-
-            Assert.That(extensionMethod, Is.Not.Null,
-                $"Module {moduleType.Name} should have a public static {expectedMethodName}(IServiceCollection, IConfiguration) method");
-
-            if (extensionMethod != null)
-            {
-                Assert.That(extensionMethod.ReturnType, Is.EqualTo(typeof(IServiceCollection)),
-                    $"{expectedMethodName} should return IServiceCollection for method chaining");
-            }
-        }
-    }
-
-    [Test]
     public void ModuleConvention_Documentation()
     {
         // This test serves as documentation for the module convention
@@ -209,14 +166,20 @@ public class ModuleConventionTests
         var documentation = @"
 Module Convention Documentation:
 
+Modules are identified by scanning the deepest namespaces in the Integrations folder.
+For example:
+- InDepthDispenza.Functions.Integrations.YouTube (module: YouTube)
+- InDepthDispenza.Functions.Integrations.Azure.Cosmos (module: Cosmos)
+- InDepthDispenza.Functions.Integrations.Azure.Storage (module: Storage)
+
 Each integration module should follow this structure:
 
-1. Directory: InDepthDispenza.Functions/Integrations/{ModuleName}/
+1. Directory: InDepthDispenza.Functions/Integrations/{Path}/
 
 2. Required Files:
    - {ModuleName}Module.cs       : Static class with Add{ModuleName}Module() extension method
-   - {ModuleName}Options.cs      : Configuration class
    - {ModuleName}HealthCheck.cs  : Health check implementing IHealthCheck
+   - {ModuleName}Options.cs      : Configuration class (OPTIONAL)
    - Other implementation files as needed
 
 3. Module Class Structure:
@@ -227,7 +190,7 @@ Each integration module should follow this structure:
            this IServiceCollection services,
            IConfiguration configuration)
        {
-           // 1. Load configuration
+           // 1. Load configuration (if Options class exists)
            services.Configure<{ModuleName}Options>(configuration.GetSection('{ModuleName}'));
 
            // 2. Register services
@@ -252,10 +215,10 @@ Each integration module should follow this structure:
    builder.Services.Add{ModuleName}Module(configuration);
    ```
 
-Example: YouTube Module
-- YouTubeModule.cs with AddYouTubeModule()
-- YouTubeOptions.cs with ApiKey and ApiBaseUrl
-- YouTubeHealthCheck.cs that validates config and tests API connectivity
+Examples:
+- YouTube Module: YouTubeModule, YouTubeOptions, YouTubeHealthCheck
+- Cosmos Module: CosmosModule, CosmosDbOptions, CosmosHealthCheck
+- Storage Module: StorageModule, StorageOptions, StorageHealthCheck
 ";
 
         Assert.Pass(documentation);

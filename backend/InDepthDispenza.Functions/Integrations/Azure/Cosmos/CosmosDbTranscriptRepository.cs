@@ -3,7 +3,7 @@ using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace InDepthDispenza.Functions.Integrations.Azure;
+namespace InDepthDispenza.Functions.Integrations.Azure.Cosmos;
 
 public class CosmosDbTranscriptRepository : ITranscriptRepository
 {

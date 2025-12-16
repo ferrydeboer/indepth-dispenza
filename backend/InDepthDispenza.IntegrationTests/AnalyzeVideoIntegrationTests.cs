@@ -1,5 +1,4 @@
 using System.Text.Json;
-using AutoFixture;
 using FluentAssertions;
 using InDepthDispenza.IntegrationTests.Infrastructure;
 using WireMock.Admin.Mappings;

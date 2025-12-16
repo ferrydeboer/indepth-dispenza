@@ -1,5 +1,3 @@
-using AutoFixture;
-using Azure.Storage.Queues.Models;
 using FluentAssertions;
 using InDepthDispenza.Functions.Interfaces;
 using InDepthDispenza.IntegrationTests.Infrastructure;

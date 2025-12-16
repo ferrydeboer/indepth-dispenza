@@ -1,7 +1,7 @@
 using AutoFixture;
 using Azure.Storage.Queues;
 using FluentAssertions;
-using InDepthDispenza.Functions.Integrations.Azure;
+using InDepthDispenza.Functions.Integrations.Azure.Storage;
 using InDepthDispenza.Functions.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -42,7 +42,12 @@ public class AzureStorageQueueServiceIntegrationTests
             .Build();
 
         // Create the service under test
-        _queueService = new AzureStorageQueueService(configuration, NullLogger<AzureStorageQueueService>.Instance);
+        var storageOptions = Microsoft.Extensions.Options.Options.Create(new InDepthDispenza.Functions.Integrations.Azure.Storage.StorageOptions
+        {
+            AzureWebJobsStorage = connectionString,
+            VideoQueueName = TestQueueName
+        });
+        _queueService = new AzureStorageQueueService(storageOptions, NullLogger<AzureStorageQueueService>.Instance);
 
         // Create a queue client for verification
         _queueClient = new QueueClient(connectionString, TestQueueName);

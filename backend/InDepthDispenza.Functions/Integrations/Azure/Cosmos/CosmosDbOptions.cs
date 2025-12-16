@@ -1,4 +1,4 @@
-namespace InDepthDispenza.Functions.Integrations.Azure;
+namespace InDepthDispenza.Functions.Integrations.Azure.Cosmos;
 
 public class CosmosDbOptions
 {

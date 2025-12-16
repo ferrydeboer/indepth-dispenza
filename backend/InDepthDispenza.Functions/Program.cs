@@ -1,10 +1,9 @@
-using InDepthDispenza.Functions.Integrations;
-using InDepthDispenza.Functions.Integrations.Azure;
+using InDepthDispenza.Functions.Integrations.Azure.Cosmos;
+using InDepthDispenza.Functions.Integrations.Azure.Storage;
 using InDepthDispenza.Functions.Integrations.YouTube;
 using InDepthDispenza.Functions.Integrations.YouTubeTranscriptIo;
 using InDepthDispenza.Functions.Interfaces;
 using InDepthDispenza.Functions.VideoAnalysis;
-using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Builder;
 using Microsoft.Extensions.Configuration;
@@ -25,7 +24,6 @@ var configBuilder = new ConfigurationBuilder()
 var configuration = configBuilder.Build();
 builder.Configuration.AddConfiguration(configuration);
 
-builder.Services.Configure<CosmosDbOptions>(builder.Configuration.GetSection("CosmosDb"));
 builder.Services.Configure<YouTubeTranscriptApiOptions>(builder.Configuration.GetSection("YouTubeTranscriptApi"));
 builder.Services.Configure<VideoAnalysisOptions>(builder.Configuration.GetSection("VideoAnalysis"));
 builder.ConfigureFunctionsWebApplication();
@@ -34,8 +32,10 @@ builder.Services
     .AddApplicationInsightsTelemetryWorkerService()
     .ConfigureFunctionsApplicationInsights();
 
-// Add YouTube module (self-contained configuration, services, and health checks)
+// Add self-contained modules (configuration, services, and health checks)
 builder.Services.AddYouTubeModule(configuration);
+builder.Services.AddCosmosModule(configuration);
+builder.Services.AddStorageModule(configuration);
 
 // Register HTTP client for YouTube Transcript API
 builder.Services.AddHttpClient("YouTubeTranscriptApi", (sp, client) =>
@@ -45,36 +45,10 @@ builder.Services.AddHttpClient("YouTubeTranscriptApi", (sp, client) =>
     client.BaseAddress = new Uri(baseUrl);
 });
 
-// Register Cosmos DB client
-builder.Services.AddSingleton(sp =>
-{
-    var config = sp.GetRequiredService<IConfiguration>();
-    var cosmosOptions = config.GetSection("CosmosDb").Get<CosmosDbOptions>()
-        ?? throw new InvalidOperationException("CosmosDb configuration is missing");
-
-    var endpoint = cosmosOptions.AccountEndpoint
-        ?? throw new InvalidOperationException("CosmosDb AccountEndpoint is missing");
-    var key = cosmosOptions.AccountKey
-        ?? throw new InvalidOperationException("CosmosDb AccountKey is missing");
-
-    // Use Gateway mode for compatibility with HTTP emulator
-    var clientOptions = new CosmosClientOptions
-    {
-        ConnectionMode = ConnectionMode.Gateway,
-        LimitToEndpoint = true
-    };
-
-    return new CosmosClient(endpoint, key, clientOptions);
-});
-
 // Register other services
-builder.Services
-    .AddScoped<IQueueService, AzureStorageQueueService>()
-    .AddScoped<IPlaylistScanService, PlaylistScanService>();
+builder.Services.AddScoped<IPlaylistScanService, PlaylistScanService>();
 
 // Register transcript services with proper layering:
-// 1. Repository for Cosmos DB access
-builder.Services.AddScoped<ITranscriptRepository, CosmosDbTranscriptRepository>();
 
 // 2. Base provider (YouTube Transcript API)
 builder.Services.AddScoped<YouTubeTranscriptIoProvider>();
