@@ -1,3 +1,5 @@
+using InDepthDispenza.Functions.VideoAnalysis.Prompting;
+
 namespace InDepthDispenza.Functions.VideoAnalysis;
 
 /// <summary>
@@ -54,11 +56,9 @@ public record Timeframe(
 /// <summary>
 /// Represents a taxonomy addition proposed by the LLM.
 /// </summary>
-/// <param name="NewTag">The new tag being proposed</param>
-/// <param name="Parent">The parent category in the taxonomy</param>
+/// <param name="Suggestion">The new Taxonomy hierarchy.</param>
 /// <param name="Justification">Explanation for why this addition is needed</param>
 public record TaxonomyProposal(
-    string NewTag,
-    string Parent,
+    AchievementTypeGroup Suggestion,
     string Justification
 );
