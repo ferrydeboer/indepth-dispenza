@@ -1,4 +1,5 @@
 using InDepthDispenza.Functions.Interfaces;
+using InDepthDispenza.Functions.VideoAnalysis.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;

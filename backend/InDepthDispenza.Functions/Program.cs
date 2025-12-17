@@ -71,6 +71,7 @@ builder.Services.AddScoped<ITranscriptAnalyzer, TranscriptAnalyzer>();
 // 5. Prompt composers (registered in order they'll be used)
 builder.Services.AddScoped<IPromptComposer, TaxonomyPromptComposer>();
 builder.Services.AddScoped<IPromptComposer, TranscriptPromptComposer>();
+builder.Services.AddScoped<IPromptComposer, OutputPromptComposer>();
 
 
 await builder.Build().RunAsync();

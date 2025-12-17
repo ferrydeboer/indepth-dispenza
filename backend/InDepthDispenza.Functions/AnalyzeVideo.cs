@@ -54,8 +54,6 @@ public class AnalyzeVideo
             videoId = analysis.Id,
             analyzedAt = analysis.AnalyzedAt,
             modelVersion = analysis.ModelVersion,
-            promptVersion = analysis.PromptVersion,
-            taxonomyVersion = analysis.TaxonomyVersion,
             achievements = analysis.Achievements,
             timeframe = analysis.Timeframe,
             practices = analysis.Practices,

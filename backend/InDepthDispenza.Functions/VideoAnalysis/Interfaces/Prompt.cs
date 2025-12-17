@@ -38,39 +38,39 @@ public class Prompt
         }
 
         // Add output schema
-        builder.AppendLine("# Expected Output Schema");
-        builder.AppendLine();
-        builder.AppendLine("Return a JSON object with this structure:");
-        builder.AppendLine("```json");
-        builder.AppendLine("""
-            {
-              "modelVersion": "gpt-4o-mini",
-              "achievements": [
-                {
-                  "type": "healing | manifestation | transformation | other",
-                  "tags": ["array", "of", "snake_case_tags"],
-                  "details": "optional brief narrative"
-                }
-              ],
-              "timeframe": {
-                "noticeEffects": "time string (e.g., '2 weeks')",
-                "fullHealing": "time string (e.g., '6 months')"
-              },
-              "practices": ["meditation", "breath_work", "workshops"],
-              "sentimentScore": 0.85,
-              "confidenceScore": 0.9,
-              "proposals": [
-                {
-                  "newTag": "proposed_new_tag",
-                  "parent": "parent_category",
-                  "justification": "why this tag is needed"
-                }
-              ]
-            }
-            """);
-        builder.AppendLine("```");
-        builder.AppendLine();
-        builder.AppendLine("**Important:** Return ONLY the JSON object, no additional text or explanation.");
+        // builder.AppendLine("# Expected Output Schema");
+        // builder.AppendLine();
+        // builder.AppendLine("Return a JSON object with this structure:");
+        // builder.AppendLine("```json");
+        // builder.AppendLine("""
+        //     {
+        //       "modelVersion": "gpt-4o-mini",
+        //       "achievements": [
+        //         {
+        //           "type": "healing | manifestation | transformation | other",
+        //           "tags": ["array", "of", "snake_case_tags"],
+        //           "details": "optional brief narrative"
+        //         }
+        //       ],
+        //       "timeframe": {
+        //         "noticeEffects": "time string (e.g., '2 weeks')",
+        //         "fullHealing": "time string (e.g., '6 months')"
+        //       },
+        //       "practices": ["meditation", "breath_work", "workshops"],
+        //       "sentimentScore": 0.85,
+        //       "confidenceScore": 0.9,
+        //       "proposals": [
+        //         {
+        //           "newTag": "proposed_new_tag",
+        //           "parent": "parent_category",
+        //           "justification": "why this tag is needed"
+        //         }
+        //       ]
+        //     }
+        //     """);
+        // builder.AppendLine("```");
+        // builder.AppendLine();
+        // builder.AppendLine("**Important:** Return ONLY the JSON object, no additional text or explanation.");
 
         return builder.ToString();
     }

@@ -1,5 +1,5 @@
-using System.Text.Json;
 using InDepthDispenza.Functions.Interfaces;
+using System.Text.Json;
 using InDepthDispenza.Functions.VideoAnalysis.Interfaces;
 using Microsoft.Extensions.Logging;
 
@@ -83,51 +83,42 @@ public class TranscriptAnalyzer : ITranscriptAnalyzer
     }
 
     /// <summary>
-    /// Parses the LLM JSON response into a VideoAnalysis object.
-    /// Uses System.Text.Json deserialization for simplicity.
+    /// Maps the typed LLM response into the domain VideoAnalysis.
     /// </summary>
-    private VideoAnalysis ParseLlmResponse(string videoId, JsonDocument llmResponse)
+    private VideoAnalysis ParseLlmResponse(string videoId, CommonLlmResponse common)
     {
-        var options = new JsonSerializerOptions
+        // Convert common assistant payload into domain DTO
+        LlmVideoAnalysisResponseDto dto;
+        var opts = new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
 
-        // Deserialize to a DTO that matches the LLM response structure
-        var dto = JsonSerializer.Deserialize<LlmResponseDto>(llmResponse, options);
-
-        if (dto == null)
+        if (string.Equals(common.Assistant.ContentType, "application/json", StringComparison.OrdinalIgnoreCase)
+            && common.Assistant.JsonContent is System.Text.Json.JsonElement json)
         {
-            throw new InvalidOperationException("Failed to deserialize LLM response");
+            dto = JsonSerializer.Deserialize<LlmVideoAnalysisResponseDto>(json.GetRawText(), opts)
+                  ?? new LlmVideoAnalysisResponseDto(new AnalysisDto(null, null, null, null, null), new ProposalsDto(null));
+        }
+        else
+        {
+            dto = JsonSerializer.Deserialize<LlmVideoAnalysisResponseDto>(common.Assistant.RawContent, opts)
+                  ?? new LlmVideoAnalysisResponseDto(new AnalysisDto(null, null, null, null, null), new ProposalsDto(null));
         }
 
+        var analysis = dto.Analysis;
         return new VideoAnalysis(
             Id: videoId,
             AnalyzedAt: DateTimeOffset.UtcNow,
-            ModelVersion: dto.ModelVersion ?? "gpt-4o-mini",
-            PromptVersion: dto.PromptVersion ?? "v1.0",
-            TaxonomyVersion: "v1.0", // TODO: Get from TaxonomyPromptComposer
-            Achievements: dto.Achievements ?? Array.Empty<Achievement>(),
-            Timeframe: dto.Timeframe,
-            Practices: dto.Practices ?? Array.Empty<string>(),
-            SentimentScore: dto.SentimentScore,
-            ConfidenceScore: dto.ConfidenceScore,
-            Proposals: dto.Proposals
+            Achievements: dto.Analysis.Achievements ?? Array.Empty<Achievement>(),
+            Timeframe: dto.Analysis.Timeframe,
+            Practices: dto.Analysis.Practices ?? Array.Empty<string>(),
+            ModelVersion: common.Call.Model,
+            SentimentScore: analysis.SentimentScore ?? 0.0,
+            ConfidenceScore: analysis.ConfidenceScore ?? 0.0,
+            Proposals: dto.Proposals.Taxonomy
         );
     }
-
-    /// <summary>
-    /// DTO for deserializing LLM response JSON.
-    /// </summary>
-    private sealed record LlmResponseDto(
-        string? ModelVersion,
-        string? PromptVersion,
-        Achievement[]? Achievements,
-        Timeframe? Timeframe,
-        string[]? Practices,
-        double SentimentScore,
-        double ConfidenceScore,
-        TaxonomyProposal[]? Proposals
-    );
 }
+

@@ -13,5 +13,5 @@ public interface ILlmService
     /// </summary>
     /// <param name="prompt">The complete prompt to send to the LLM</param>
     /// <returns>The LLM's response as a JSON document</returns>
-    Task<ServiceResult<JsonDocument>> CallAsync(string prompt);
+    Task<ServiceResult<CommonLlmResponse>> CallAsync(string prompt);
 }

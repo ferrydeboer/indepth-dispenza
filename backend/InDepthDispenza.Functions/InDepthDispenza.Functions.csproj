@@ -39,6 +39,9 @@
       <None Update="VideoAnalysis\Prompting\taxonomy-prompt.md">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
+      <None Update="VideoAnalysis\Prompting\output-prompt.md">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
 </Project>
