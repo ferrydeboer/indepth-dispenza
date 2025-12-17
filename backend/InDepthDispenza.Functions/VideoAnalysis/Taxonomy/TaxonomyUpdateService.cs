@@ -1,5 +1,4 @@
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using InDepthDispenza.Functions.Interfaces;
 using InDepthDispenza.Functions.VideoAnalysis.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -40,16 +39,11 @@ public sealed class TaxonomyUpdateService : ITaxonomyUpdateService
             return ServiceResult<string?>.Failure("No taxonomy available to update.");
         }
 
-        // Parse existing taxonomy JSON into mutable nodes
-        var rootNode = JsonNode.Parse(latest.Taxonomy.RootElement.GetRawText()) as JsonObject
-                        ?? new JsonObject();
-
-        // Ensure we have a taxonomy object inside the root
-        var taxonomyNode = rootNode["taxonomy"] as JsonObject;
-        if (taxonomyNode is null)
+        // Work directly with strong-typed taxonomy (latest inherits TaxonomySpecification)
+        var spec = new TaxonomySpecification { Version = latest.Version };
+        foreach (var kv in latest.Taxonomy)
         {
-            taxonomyNode = new JsonObject();
-            rootNode["taxonomy"] = taxonomyNode;
+            spec.Taxonomy[kv.Key] = kv.Value;
         }
 
         var changeNotes = new List<string>();
@@ -60,12 +54,11 @@ public sealed class TaxonomyUpdateService : ITaxonomyUpdateService
             if (string.IsNullOrWhiteSpace(domainName))
                 continue;
 
-            // Ensure domain object exists
-            var domainNode = taxonomyNode[domainName] as JsonObject;
-            if (domainNode is null)
+            // Ensure domain group exists
+            if (!spec.Taxonomy.TryGetValue(domainName, out var domainGroup))
             {
-                domainNode = new JsonObject();
-                taxonomyNode[domainName] = domainNode;
+                domainGroup = new AchievementTypeGroup();
+                spec.Taxonomy[domainName] = domainGroup;
                 changeNotes.Add($"Add domain '{domainName}'");
             }
 
@@ -73,27 +66,24 @@ public sealed class TaxonomyUpdateService : ITaxonomyUpdateService
             foreach (var kvp in proposal.Group)
             {
                 var categoryName = kvp.Key;
-                var category = kvp.Value;
+                var proposalNode = kvp.Value;
 
-                if (domainNode[categoryName] is JsonObject existingCategory)
+                if (domainGroup.TryGetValue(categoryName, out var existingCategory))
                 {
                     // Merge arrays: subcategories, attributes
-                    MergeStringArrayProperty(existingCategory, "subcategories", category.Subcategories);
-                    MergeStringArrayProperty(existingCategory, "attributes", category.Attributes);
+                    existingCategory = existingCategory ?? new CategoryNode();
+                    var merged = MergeCategory(existingCategory, proposalNode);
+                    domainGroup[categoryName] = merged;
                     changeNotes.Add($"Merge category '{domainName}.{categoryName}'");
                 }
                 else
                 {
-                    var newCategory = new JsonObject();
-                    if (category.Subcategories is { Count: > 0 })
+                    // Insert new category
+                    domainGroup[categoryName] = new CategoryNode
                     {
-                        newCategory["subcategories"] = new JsonArray(category.Subcategories.Select(s => (JsonNode)s).ToArray());
-                    }
-                    if (category.Attributes is { Count: > 0 })
-                    {
-                        newCategory["attributes"] = new JsonArray(category.Attributes.Select(s => (JsonNode)s).ToArray());
-                    }
-                    domainNode[categoryName] = newCategory;
+                        Subcategories = proposalNode.Subcategories?.Where(NotNullOrWhiteSpace).Distinct(StringComparer.OrdinalIgnoreCase).ToList(),
+                        Attributes = proposalNode.Attributes?.Where(NotNullOrWhiteSpace).Distinct(StringComparer.OrdinalIgnoreCase).ToList()
+                    };
                     changeNotes.Add($"Add category '{domainName}.{categoryName}'");
                 }
             }
@@ -106,21 +96,20 @@ public sealed class TaxonomyUpdateService : ITaxonomyUpdateService
         }
 
         // Compute next version id: increment minor version (v1.0 -> v1.1)
-        var nextVersionId = IncrementVersion(latest.Id);
+        var nextVersionId = IncrementVersion(latest.Version);
 
-        // Build new TaxonomyDocument
-        var newJson = JsonDocument.Parse(rootNode.ToJsonString(new JsonSerializerOptions
+        // Build new TaxonomyDocument with strong types only
+        var newDoc = new TaxonomyDocument
         {
-            WriteIndented = false
-        }));
-
-        var newDoc = new TaxonomyDocument(
-            Id: nextVersionId,
-            Taxonomy: newJson,
-            UpdatedAt: DateTimeOffset.UtcNow,
-            Changes: changeNotes.ToArray(),
-            ProposedFromVideoId: analysis.Id
-        );
+            Version = nextVersionId,
+            UpdatedAt = DateTimeOffset.UtcNow,
+            Changes = changeNotes.ToArray(),
+            ProposedFromVideoId = analysis.Id
+        };
+        foreach (var kv in spec.Taxonomy)
+        {
+            newDoc.Taxonomy[kv.Key] = kv.Value;
+        }
 
         var saveResult = await _taxonomyRepository.SaveTaxonomyAsync(newDoc);
         if (!saveResult.IsSuccess)
@@ -132,31 +121,29 @@ public sealed class TaxonomyUpdateService : ITaxonomyUpdateService
         return ServiceResult<string?>.Success(nextVersionId);
     }
 
-    private static void MergeStringArrayProperty(JsonObject target, string propertyName, IList<string>? additions)
+    private static CategoryNode MergeCategory(CategoryNode existing, CategoryNode proposal)
     {
-        if (additions is null || additions.Count == 0)
-            return;
+        List<string>? MergeLists(List<string>? current, List<string>? incoming)
+        {
+            if (incoming is null || incoming.Count == 0)
+                return current;
 
-        if (target[propertyName] is JsonArray arr)
-        {
-            var existing = new HashSet<string>(arr.Select(n => n?.GetValue<string>() ?? string.Empty), StringComparer.OrdinalIgnoreCase);
-            foreach (var add in additions)
+            var set = new HashSet<string>(current ?? Enumerable.Empty<string>(), StringComparer.OrdinalIgnoreCase);
+            foreach (var item in incoming)
             {
-                if (string.IsNullOrWhiteSpace(add)) continue;
-                if (existing.Add(add))
-                {
-                    arr.Add(add);
-                }
+                if (NotNullOrWhiteSpace(item)) set.Add(item);
             }
+            return set.ToList();
         }
-        else
+
+        return new CategoryNode
         {
-            target[propertyName] = new JsonArray(additions
-                .Where(s => !string.IsNullOrWhiteSpace(s))
-                .Select(s => (JsonNode)s)
-                .ToArray());
-        }
+            Subcategories = MergeLists(existing.Subcategories, proposal.Subcategories),
+            Attributes = MergeLists(existing.Attributes, proposal.Attributes)
+        };
     }
+
+    private static bool NotNullOrWhiteSpace(string? s) => !string.IsNullOrWhiteSpace(s);
 
     private static string IncrementVersion(string current)
     {

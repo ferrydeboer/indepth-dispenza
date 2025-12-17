@@ -30,21 +30,16 @@ public class TaxonomyPromptComposerTests
     {
         // Arrange
         var mockRepo = new Mock<ITaxonomyRepository>();
-        const string simpleTaxonomy = """
+        var doc = new TaxonomyDocument
         {
-          "taxonomy": {
-            "simple_root": {
-              "child": {}
-            }
-          }
-        }
-        """;
-        var doc = new TaxonomyDocument(
-            Id: "v-test",
-            Taxonomy: JsonDocument.Parse(simpleTaxonomy),
-            UpdatedAt: DateTimeOffset.UtcNow,
-            Changes: Array.Empty<string>()
-        );
+            Version = "v-test",
+            UpdatedAt = DateTimeOffset.UtcNow,
+            Changes = Array.Empty<string>()
+        };
+        doc.Taxonomy["simple_root"] = new AchievementTypeGroup
+        {
+            ["child"] = new CategoryNode()
+        };
 
         mockRepo
             .Setup(r => r.GetLatestTaxonomyAsync())

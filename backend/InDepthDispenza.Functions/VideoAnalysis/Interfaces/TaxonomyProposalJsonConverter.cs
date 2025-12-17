@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using InDepthDispenza.Functions.VideoAnalysis.Prompting;
+using InDepthDispenza.Functions.Interfaces;
 
 namespace InDepthDispenza.Functions.VideoAnalysis.Interfaces;
 

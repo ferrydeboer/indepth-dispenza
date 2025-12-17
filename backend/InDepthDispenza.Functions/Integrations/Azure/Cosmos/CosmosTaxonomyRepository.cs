@@ -25,6 +25,7 @@ public class CosmosTaxonomyRepository : CosmosRepositoryBase, ITaxonomyRepositor
         _taxonomySeedFilePath = Path.Combine(
             AppContext.BaseDirectory,
             "VideoAnalysis",
+            "Taxonomy",
             "taxonomy-seed.json");
     }
 
@@ -50,7 +51,7 @@ public class CosmosTaxonomyRepository : CosmosRepositoryBase, ITaxonomyRepositor
                 if (cosmosDoc != null)
                 {
                     var document = cosmosDoc.ToTaxonomyDocument();
-                    Logger.LogInformation("Successfully retrieved latest taxonomy version: {VersionId}", document.Id);
+                    Logger.LogInformation("Successfully retrieved latest taxonomy version: {VersionId}", document.Version);
                     return ServiceResult<TaxonomyDocument?>.Success(document);
                 }
             }
@@ -70,7 +71,7 @@ public class CosmosTaxonomyRepository : CosmosRepositoryBase, ITaxonomyRepositor
                 if (cosmosDoc != null)
                 {
                     var document = cosmosDoc.ToTaxonomyDocument();
-                    Logger.LogInformation("Successfully retrieved taxonomy version after seeding: {VersionId}", document.Id);
+                    Logger.LogInformation("Successfully retrieved taxonomy version after seeding: {VersionId}", document.Version);
                     return ServiceResult<TaxonomyDocument?>.Success(document);
                 }
             }
@@ -116,7 +117,7 @@ public class CosmosTaxonomyRepository : CosmosRepositoryBase, ITaxonomyRepositor
     {
         try
         {
-            Logger.LogInformation("Saving taxonomy version {VersionId} to database", document.Id);
+            Logger.LogInformation("Saving taxonomy version {VersionId} to database", document.Version);
 
             var cosmosDocument = CosmosTaxonomyDocument.FromTaxonomyDocument(document);
             var container = await GetOrCreateContainerAsync();
@@ -125,12 +126,12 @@ public class CosmosTaxonomyRepository : CosmosRepositoryBase, ITaxonomyRepositor
                 cosmosDocument,
                 new PartitionKey(cosmosDocument.id));
 
-            Logger.LogInformation("Successfully saved taxonomy version {VersionId}", document.Id);
+            Logger.LogInformation("Successfully saved taxonomy version {VersionId}", document.Version);
             return ServiceResult.Success();
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error saving taxonomy version {VersionId} to database", document.Id);
+            Logger.LogError(ex, "Error saving taxonomy version {VersionId} to database", document.Version);
             return ServiceResult.Failure($"Failed to save taxonomy: {ex.Message}", ex);
         }
     }
@@ -162,16 +163,22 @@ public class CosmosTaxonomyRepository : CosmosRepositoryBase, ITaxonomyRepositor
             Logger.LogInformation("Seeding initial taxonomy from {FilePath}", _taxonomySeedFilePath);
 
             var jsonString = await File.ReadAllTextAsync(_taxonomySeedFilePath);
-            var taxonomyJson = JsonDocument.Parse(jsonString);
+            // Seed can be either flat map or wrapped under {"taxonomy": ...} and may contain a top-level "version".
+            var spec = TryDeserializeSeed(jsonString) ?? new TaxonomySpecification { Version = "v1.0" };
+            var initial = new TaxonomyDocument
+            {
+                Version = string.IsNullOrWhiteSpace(spec.Version) ? "v1.0" : spec.Version,
+                UpdatedAt = DateTimeOffset.UtcNow,
+                Changes = new[] { "Initial taxonomy version" },
+                ProposedFromVideoId = null
+            };
+            // copy map entries
+            foreach (var kv in spec.Taxonomy)
+            {
+                initial.Taxonomy[kv.Key] = kv.Value;
+            }
 
-            var initialTaxonomy = new TaxonomyDocument(
-                Id: "v1.0",
-                Taxonomy: taxonomyJson,
-                UpdatedAt: DateTimeOffset.UtcNow,
-                Changes: new[] { "Initial taxonomy version" }
-            );
-
-            var saveResult = await SaveTaxonomyAsync(initialTaxonomy);
+            var saveResult = await SaveTaxonomyAsync(initial);
 
             if (saveResult.IsSuccess)
             {
@@ -197,19 +204,18 @@ public class CosmosTaxonomyRepository : CosmosRepositoryBase, ITaxonomyRepositor
     private sealed class CosmosTaxonomyDocument
     {
         public string id { get; set; } = string.Empty;
-        public string taxonomy { get; set; }
+        // Store only the taxonomy map (no version) for readability
+        public Dictionary<string, AchievementTypeGroup> taxonomy { get; set; } = new();
         public DateTimeOffset updatedAt { get; set; }
         public string[] changes { get; set; } = Array.Empty<string>();
         public string? proposedFromVideoId { get; set; }
 
         public static CosmosTaxonomyDocument FromTaxonomyDocument(TaxonomyDocument document)
         {
-            var taxonomy = document.Taxonomy.RootElement.GetRawText();
-            
             return new CosmosTaxonomyDocument
             {
-                id = document.Id,
-                taxonomy = taxonomy,
+                id = document.Version,
+                taxonomy = new Dictionary<string, AchievementTypeGroup>(document.Taxonomy, StringComparer.OrdinalIgnoreCase),
                 updatedAt = document.UpdatedAt,
                 changes = document.Changes,
                 proposedFromVideoId = document.ProposedFromVideoId
@@ -218,13 +224,68 @@ public class CosmosTaxonomyRepository : CosmosRepositoryBase, ITaxonomyRepositor
 
         public TaxonomyDocument ToTaxonomyDocument()
         {
-            return new TaxonomyDocument(
-                Id: id,
-                Taxonomy: JsonDocument.Parse(taxonomy),
-                UpdatedAt: updatedAt,
-                Changes: changes,
-                ProposedFromVideoId: proposedFromVideoId
-            );
+            var doc = new TaxonomyDocument
+            {
+                Version = id,
+                UpdatedAt = updatedAt,
+                Changes = changes,
+                ProposedFromVideoId = proposedFromVideoId
+            };
+            foreach (var kv in taxonomy)
+            {
+                doc.Taxonomy[kv.Key] = kv.Value;
+            }
+            return doc;
+        }
+    }
+
+    private static TaxonomySpecification? TryDeserializeSeed(string json)
+    {
+        try
+        {
+            // Preferred: explicit model with { "version": ..., "taxonomy": { ... } }
+            var explicitModel = JsonSerializer.Deserialize<TaxonomySpecification>(json, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+            if (explicitModel is not null && explicitModel.Taxonomy.Count > 0)
+                return explicitModel;
+
+            // Fallback: try to parse either wrapped or flat into the explicit model
+            using var doc = JsonDocument.Parse(json);
+            var root = doc.RootElement;
+            var spec = new TaxonomySpecification();
+            if (root.TryGetProperty("version", out var ver) && ver.ValueKind == JsonValueKind.String)
+            {
+                spec.Version = ver.GetString() ?? spec.Version;
+            }
+            if (root.TryGetProperty("taxonomy", out var tx) && tx.ValueKind == JsonValueKind.Object)
+            {
+                foreach (var domain in tx.EnumerateObject())
+                {
+                    var group = JsonSerializer.Deserialize<AchievementTypeGroup>(domain.Value.GetRawText()) ?? new AchievementTypeGroup();
+                    spec.Taxonomy[domain.Name] = group;
+                }
+                return spec;
+            }
+
+            // Flat: domains at root
+            if (root.ValueKind == JsonValueKind.Object)
+            {
+                foreach (var domain in root.EnumerateObject())
+                {
+                    if (string.Equals(domain.Name, "version", StringComparison.OrdinalIgnoreCase)) continue;
+                    var group = JsonSerializer.Deserialize<AchievementTypeGroup>(domain.Value.GetRawText()) ?? new AchievementTypeGroup();
+                    spec.Taxonomy[domain.Name] = group;
+                }
+                return spec;
+            }
+
+            return null;
+        }
+        catch
+        {
+            return null;
         }
     }
 }

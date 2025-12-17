@@ -33,13 +33,13 @@
       <None Update="appsettings.Production.json">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
-      <None Update="VideoAnalysis\Prompting\taxonomy-seed.json">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
       <None Update="VideoAnalysis\Prompting\taxonomy-prompt.md">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
       <None Update="VideoAnalysis\Prompting\output-prompt.md">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="VideoAnalysis\Taxonomy\taxonomy-seed.json">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
     </ItemGroup>

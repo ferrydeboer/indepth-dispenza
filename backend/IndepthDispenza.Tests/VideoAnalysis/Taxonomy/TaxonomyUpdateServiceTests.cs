@@ -1,5 +1,3 @@
-using System.Text.Json;
-using System.Text.Json.Nodes;
 using InDepthDispenza.Functions.Interfaces;
 using InDepthDispenza.Functions.VideoAnalysis.Interfaces;
 using InDepthDispenza.Functions.VideoAnalysis.Prompting;
@@ -12,44 +10,41 @@ namespace IndepthDispenza.Tests.VideoAnalysis.Taxonomy;
 
 public class TaxonomyUpdateServiceTests
 {
-    private static JsonDocument BuildInitialTaxonomy(bool includeHealing = true, bool includePhysicalHealth = true)
+    private static TaxonomyDocument BuildInitialTaxonomy(bool includeHealing = true, bool includePhysicalHealth = true)
     {
-        var root = new JsonObject();
-        var taxonomy = new JsonObject();
-        root["taxonomy"] = taxonomy;
+        var doc = new TaxonomyDocument
+        {
+            Version = "v1.0",
+            UpdatedAt = DateTimeOffset.UtcNow,
+            Changes = Array.Empty<string>()
+        };
 
         if (includeHealing)
         {
-            var healing = new JsonObject();
-            taxonomy["healing"] = healing;
+            var healing = new AchievementTypeGroup();
+            doc.Taxonomy["healing"] = healing;
 
             if (includePhysicalHealth)
             {
-                var physical = new JsonObject
+                healing["physical_health"] = new CategoryNode
                 {
-                    ["subcategories"] = new JsonArray("obesity"),
-                    ["attributes"] = new JsonArray("chronic")
+                    Subcategories = new List<string> { "obesity" },
+                    Attributes = new List<string> { "chronic" }
                 };
-                healing["physical_health"] = physical;
             }
         }
 
-        return JsonDocument.Parse(root.ToJsonString());
+        return doc;
     }
 
     private sealed class SaveHolder { public TaxonomyDocument? Saved { get; set; } }
 
     private static (TaxonomyUpdateService service, Mock<ITaxonomyRepository> repoMock, SaveHolder holder) CreateService(
-        JsonDocument initialTaxonomy)
+        TaxonomyDocument initialTaxonomy)
     {
         var repoMock = new Mock<ITaxonomyRepository>();
         var holder = new SaveHolder();
-
-        var latest = new TaxonomyDocument(
-            Id: "v1.0",
-            Taxonomy: initialTaxonomy,
-            UpdatedAt: DateTimeOffset.UtcNow,
-            Changes: []);
+        var latest = initialTaxonomy;
 
         repoMock
             .Setup(r => r.GetLatestTaxonomyAsync())
@@ -95,13 +90,10 @@ public class TaxonomyUpdateServiceTests
         return new TaxonomyProposal(domain, group, "because");
     }
 
-    private static JsonObject GetTaxonomyRoot(JsonDocument doc)
+    private static AchievementTypeGroup GetDomain(TaxonomyDocument doc, string domain)
     {
-        var root = JsonNode.Parse(doc.RootElement.GetRawText()) as JsonObject;
-        Assert.That(root, Is.Not.Null);
-        var taxonomy = root!["taxonomy"] as JsonObject;
-        Assert.That(taxonomy, Is.Not.Null);
-        return taxonomy!;
+        Assert.That(doc.Taxonomy.ContainsKey(domain), Is.True, $"Domain '{domain}' should exist");
+        return doc.Taxonomy[domain];
     }
 
     [Test]
@@ -131,17 +123,11 @@ public class TaxonomyUpdateServiceTests
         Assert.That(holder.Saved!.Changes, Does.Contain("Add domain 'new_domain'"));
         Assert.That(holder.Saved!.Changes, Does.Contain("Add category 'new_domain.new_category'"));
 
-        var taxonomy = GetTaxonomyRoot(holder.Saved.Taxonomy);
-        var domainNode = taxonomy["new_domain"] as JsonObject;
-        Assert.That(domainNode, Is.Not.Null);
-        var categoryNode = domainNode!["new_category"] as JsonObject;
-        Assert.That(categoryNode, Is.Not.Null);
-        var subs = categoryNode!["subcategories"] as JsonArray;
-        var attrs = categoryNode!["attributes"] as JsonArray;
-        Assert.That(subs, Is.Not.Null);
-        Assert.That(attrs, Is.Not.Null);
-        Assert.That(subs!.Select(n => n!.GetValue<string>()), Is.EquivalentTo(["sub1", "sub2"]));
-        Assert.That(attrs!.Select(n => n!.GetValue<string>()), Is.EquivalentTo(["attr1"]));
+        var domainNode = GetDomain(holder.Saved!, "new_domain");
+        Assert.That(domainNode.ContainsKey("new_category"), Is.True);
+        var categoryNode = domainNode["new_category"];
+        Assert.That(categoryNode.Subcategories ?? new List<string>(), Is.EquivalentTo(new[] { "sub1", "sub2" }));
+        Assert.That(categoryNode.Attributes ?? new List<string>(), Is.EquivalentTo(new[] { "attr1" }));
     }
 
     [Test]
@@ -168,15 +154,11 @@ public class TaxonomyUpdateServiceTests
         Assert.That(holder.Saved, Is.Not.Null);
         Assert.That(holder.Saved!.Changes, Does.Contain("Add category 'healing.mental_health'"));
 
-        var taxonomy = GetTaxonomyRoot(holder.Saved.Taxonomy);
-        var healing = taxonomy["healing"] as JsonObject;
-        Assert.That(healing, Is.Not.Null);
-        var cat = healing!["mental_health"] as JsonObject;
-        Assert.That(cat, Is.Not.Null);
-        var subs = cat!["subcategories"] as JsonArray;
-        var attrs = cat!["attributes"] as JsonArray;
-        Assert.That(subs!.Select(n => n!.GetValue<string>()), Is.EquivalentTo(["anxiety"]));
-        Assert.That(attrs!.Select(n => n!.GetValue<string>()), Is.EquivalentTo(["chronic"]));
+        var healing = GetDomain(holder.Saved!, "healing");
+        Assert.That(healing.ContainsKey("mental_health"), Is.True);
+        var cat = healing["mental_health"];
+        Assert.That(cat.Subcategories ?? new List<string>(), Is.EquivalentTo(new[] { "anxiety" }));
+        Assert.That(cat.Attributes ?? new List<string>(), Is.EquivalentTo(new[] { "chronic" }));
     }
 
     [Test]
@@ -201,11 +183,9 @@ public class TaxonomyUpdateServiceTests
         Assert.That(holder.Saved, Is.Not.Null);
         Assert.That(holder.Saved!.Changes, Does.Contain("Merge category 'healing.physical_health'"));
 
-        var taxonomy = GetTaxonomyRoot(holder.Saved.Taxonomy);
-        var subs = ((taxonomy["healing"] as JsonObject)!["physical_health"] as JsonObject)!["subcategories"] as JsonArray;
-        Assert.That(subs, Is.Not.Null);
-        // Should contain existing + new without duplicates
-        Assert.That(subs!.Select(n => n!.GetValue<string>()), Is.EquivalentTo(["obesity", "diabetes"]));
+        var healing = GetDomain(holder.Saved!, "healing");
+        var ph = healing["physical_health"];
+        Assert.That(ph.Subcategories ?? new List<string>(), Is.EquivalentTo(new[] { "obesity", "diabetes" }));
     }
 
     [Test]
@@ -230,9 +210,8 @@ public class TaxonomyUpdateServiceTests
         Assert.That(holder.Saved, Is.Not.Null);
         Assert.That(holder.Saved!.Changes, Does.Contain("Merge category 'healing.physical_health'"));
 
-        var taxonomy = GetTaxonomyRoot(holder.Saved.Taxonomy);
-        var attrs = ((taxonomy["healing"] as JsonObject)!["physical_health"] as JsonObject)!["attributes"] as JsonArray;
-        Assert.That(attrs, Is.Not.Null);
-        Assert.That(attrs!.Select(n => n!.GetValue<string>()), Is.EquivalentTo(["chronic", "acute"]));
+        var healing = GetDomain(holder.Saved!, "healing");
+        var ph = healing["physical_health"];
+        Assert.That(ph.Attributes ?? new List<string>(), Is.EquivalentTo(new[] { "chronic", "acute" }));
     }
 }

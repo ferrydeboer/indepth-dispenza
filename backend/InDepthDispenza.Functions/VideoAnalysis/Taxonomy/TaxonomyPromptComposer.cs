@@ -74,7 +74,17 @@ public class TaxonomyPromptComposer : IPromptComposer
                 return FallbackTaxonomyJson;
             }
 
-            return result.Data.Taxonomy.RootElement.GetRawText();
+            // Serialize strong-typed taxonomy into the wrapped prompt shape { "taxonomy": ... }
+            var doc = result.Data;
+            var wrapper = new System.Collections.Generic.Dictionary<string, object?>
+            {
+                ["taxonomy"] = new System.Collections.Generic.Dictionary<string, AchievementTypeGroup>(doc.Taxonomy)
+            };
+            return System.Text.Json.JsonSerializer.Serialize(wrapper, new System.Text.Json.JsonSerializerOptions
+            {
+                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+                WriteIndented = true
+            });
         }
         catch (Exception ex)
         {

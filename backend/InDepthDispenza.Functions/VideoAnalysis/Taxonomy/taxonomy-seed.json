@@ -1,0 +1,107 @@
+{
+  "version": "v3.0",
+  "taxonomy": {
+    "healing": {
+      "physical_health": {
+        "subcategories": [
+          "obesity",
+          "high_blood_pressure",
+          "acid_reflux",
+          "insomnia",
+          "mast_cell_activation_syndrome",
+          "heart_attack",
+          "postural_orthostatic_tachycardia_syndrome",
+          "neuropathy",
+          "glaucoma",
+          "uveitis"
+        ],
+        "attributes": [
+          "weight_loss",
+          "chronic",
+          "acute",
+          "high_eye_pressure",
+          "color_vision_loss"
+        ]
+      },
+      "mental_health": {
+        "subcategories": [
+          "depression",
+          "anxiety",
+          "addiction"
+        ],
+        "attributes": [
+          "alcohol_addiction",
+          "nicotine_addiction",
+          "cannabis_addiction"
+        ]
+      },
+      "cancer": {
+        "subcategories": [
+          "cervical_cancer",
+          "lung_cancer",
+          "breast_cancer"
+        ],
+        "attributes": [
+          "stage_one",
+          "stage_two",
+          "stage_three",
+          "stage_four",
+          "recurrent",
+          "metastatic"
+        ]
+      },
+      "auto_immune": {
+        "subcategories": [
+          "hashimotos",
+          "lupus",
+          "rheumatoid_arthritis"
+        ],
+        "attributes": [
+          "flare_ups",
+          "remission"
+        ]
+      }
+    },
+    "manifestation": {
+      "financial": {
+        "subcategories": [
+          "manifested_money",
+          "debt_reduction"
+        ],
+        "attributes": [
+          "amount_1k_to_10k",
+          "amount_over_10k"
+        ]
+      },
+      "career": {
+        "subcategories": [
+          "job_promotion",
+          "new_job"
+        ],
+        "attributes": [
+          "remote_work",
+          "salary_increase"
+        ]
+      }
+    },
+    "transformation": {
+      "spiritual": {
+        "subcategories": [
+          "mystical_experience",
+          "grief_resolution",
+          "oneness_realization"
+        ],
+        "attributes": [
+          "emotional_release",
+          "insight"
+        ]
+      }
+    },
+    "other": {}
+  },
+  "rules": {
+    "naming": "Use snake_case, lowercase, no abbreviations unless standard (e.g., \\u0027bp\\u0027 not allowed; use \\u0027high_blood_pressure\\u0027).",
+    "hierarchy": "Always include parent category if applicable (e.g., \\u0027cancer\\u0027 \\u002B \\u0027cervical_cancer\\u0027).",
+    "multilingual": "English canonical; add translations later (e.g., {\\u0027es\\u0027: \\u0027cancer_cervical\\u0027})."
+  }
+}
