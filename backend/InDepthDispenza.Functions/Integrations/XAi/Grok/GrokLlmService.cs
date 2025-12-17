@@ -96,7 +96,7 @@ public class GrokLlmService : ILlmService
             _logger.LogInformation("Grok call completed in {ms}ms. Tokens P:{p} C:{c} T:{t}", dur.TotalMilliseconds, promptTokens, completionTokens, totalTokens);
 
             // Build provider-agnostic common response
-            System.Text.Json.JsonElement? jsonElem = null;
+            JsonElement? jsonElem = null;
             try
             {
                 using var doc = JsonDocument.Parse(content);

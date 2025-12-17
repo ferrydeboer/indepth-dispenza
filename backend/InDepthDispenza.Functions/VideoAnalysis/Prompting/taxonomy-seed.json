@@ -2,7 +2,7 @@
   "taxonomy": {
     "healing": {
       "physical_health": {
-        "subcategories": ["obesity", "high_blood_pressure", "acid_reflux", "insomnia", "mast_cell_activation_syndrome", "heart_attack", "postural_orthostatic_tachycardia_syndrome", "neuropathy"],
+        "subcategories": ["obesity", "high_blood_pressure", "acid_reflux", "insomnia", "mast_cell_activation_syndrome", "heart_attack", "postural_orthostatic_tachycardia_syndrome", "neuropathy", "arrhythmia"],
         "attributes": ["weight_loss", "chronic", "acute"]
       },
       "mental_health": {

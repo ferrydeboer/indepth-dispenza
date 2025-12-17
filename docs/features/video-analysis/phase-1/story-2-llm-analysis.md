@@ -116,25 +116,38 @@ These steps are designed for sequential development, suitable for feeding into a
   - **Output**: A VideoAnalysis object as described in the above specs.
   - **Test**: Unit test of the analysis flow in the Transcript Analyzer.
 
-3. **Design and Implement LLM Prompt**
+3. ✅ **Design and Implement LLM Prompt**
   - **Input**: Transcript text, taxonomy JSON.
   - **Actions**:
-    1. ✅ Craft prompt template: Include taxonomy, instruct LLM to extract per schema, propose additions only if needed.
+    1. Craft prompt template: Include taxonomy, instruct LLM to extract per schema, propose additions only if needed.
     2. Use Azure OpenAI SDK to call model (e.g., GPT-4o-mini) with prompt.
     3. Parse LLM response as JSON;
   - **Output**: Extracted analysis JSON, including optional `proposals` array.
   - **Test**: Mock LLM response; validate JSON schema compliance.
 
-4. **Store Analysis and Handle Proposals Automatically**
+4. **Store Analysis**
   - **Input**: Extracted JSON from LLM.
   - **Actions**:
-    - Add metadata (e.g., `analyzedAt`, `taxonomyVersion`) to JSON.
+    - ✅ Add metadata (e.g., `analyzedAt`, `taxonomyVersion`) to JSON.
     - Upsert to `video-analysis` collection using Cosmos DB SDK.
     - If `proposals` present, load current taxonomy, automatically apply changes (e.g., add new subcategories/attributes based on proposals), create new version document with incremented ID (e.g., v1.1), and log the update.
   - **Output**: Stored documents; logs for tokens/cost and taxonomy changes.
   - **Test**: Integration test from queue trigger to storage; check for automatic taxonomy updates.
 
-5. **Add Logging, Monitoring, and Mock Modes**
+5. **Handle new Taxonomy Proposals**
+   - **Input**: The stored Video Analysis data.
+   - **Actions**:
+     - Only execute this if `proposals` are present on the video.
+     - Extract the Taxonomy proposals from the Analysis
+     - Load the latest taxonomy from the database.
+     - Merge the proposal into a new version of the Taxonomy.
+       - Add a property to the Taxonomy document that references the videoId so we can find the original proposal.
+     - Insert the new incremented version 1 becomes 2, then 3 etc to `taxonomy-versions` collection using Cosmos DB SDK.
+   - **Output**: New Taxonomy version.
+   - **Test**: Integration test from queue trigger to storage; check for automatic taxonomy updates.
+
+
+6. **Add Logging, Monitoring, and Mock Modes**
   - **Input**: Function execution context.
   - **Actions**:
     - Use Application Insights for logging tokens, costs, errors, and taxonomy updates.
@@ -142,7 +155,7 @@ These steps are designed for sequential development, suitable for feeding into a
   - **Output**: Comprehensive logs; cost tracking.
   - **Test**: Run in mock mode; verify no API calls.
 
-6. **CI/CD and Deployment**
+7. **CI/CD and Deployment**
   - **Input**: Updated code.
   - **Actions**:
     - Extend pipeline from Story 0 to deploy function and run setup code for collections.

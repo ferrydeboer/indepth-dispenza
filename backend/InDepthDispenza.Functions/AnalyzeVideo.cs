@@ -1,3 +1,4 @@
+using InDepthDispenza.Functions.Interfaces;
 using InDepthDispenza.Functions.VideoAnalysis.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -15,11 +16,13 @@ public class AnalyzeVideo
 {
     private readonly ILogger<AnalyzeVideo> _logger;
     private readonly ITranscriptAnalyzer _transcriptAnalyzer;
+    private readonly ITaxonomyUpdateService _taxonomyUpdateService;
 
-    public AnalyzeVideo(ILogger<AnalyzeVideo> logger, ITranscriptAnalyzer transcriptAnalyzer)
+    public AnalyzeVideo(ILogger<AnalyzeVideo> logger, ITranscriptAnalyzer transcriptAnalyzer, ITaxonomyUpdateService taxonomyUpdateService)
     {
         _logger = logger;
         _transcriptAnalyzer = transcriptAnalyzer;
+        _taxonomyUpdateService = taxonomyUpdateService;
     }
 
     [Function("AnalyzeVideo")]
@@ -49,6 +52,21 @@ public class AnalyzeVideo
         }
 
         var analysis = result.Data!;
+
+        // If proposals are present, attempt to update taxonomy and create a new version
+        string? newTaxonomyVersion = null;
+        if (analysis.Proposals is { Length: > 0 })
+        {
+            var updateResult = await _taxonomyUpdateService.ApplyProposalsAsync(analysis);
+            if (!updateResult.IsSuccess)
+            {
+                _logger.LogWarning("Taxonomy update from proposals failed: {Error}", updateResult.ErrorMessage);
+            }
+            else
+            {
+                newTaxonomyVersion = updateResult.Data;
+            }
+        }
         return new OkObjectResult(new
         {
             videoId = analysis.Id,
@@ -60,6 +78,7 @@ public class AnalyzeVideo
             sentimentScore = analysis.SentimentScore,
             confidenceScore = analysis.ConfidenceScore,
             proposals = analysis.Proposals,
+            taxonomyVersionCreated = newTaxonomyVersion,
             message = "Video analysis complete."
         });
     }

@@ -200,6 +200,7 @@ public class CosmosTaxonomyRepository : CosmosRepositoryBase, ITaxonomyRepositor
         public string taxonomy { get; set; }
         public DateTimeOffset updatedAt { get; set; }
         public string[] changes { get; set; } = Array.Empty<string>();
+        public string? proposedFromVideoId { get; set; }
 
         public static CosmosTaxonomyDocument FromTaxonomyDocument(TaxonomyDocument document)
         {
@@ -210,7 +211,8 @@ public class CosmosTaxonomyRepository : CosmosRepositoryBase, ITaxonomyRepositor
                 id = document.Id,
                 taxonomy = taxonomy,
                 updatedAt = document.UpdatedAt,
-                changes = document.Changes
+                changes = document.Changes,
+                proposedFromVideoId = document.ProposedFromVideoId
             };
         }
 
@@ -220,7 +222,8 @@ public class CosmosTaxonomyRepository : CosmosRepositoryBase, ITaxonomyRepositor
                 Id: id,
                 Taxonomy: JsonDocument.Parse(taxonomy),
                 UpdatedAt: updatedAt,
-                Changes: changes
+                Changes: changes,
+                ProposedFromVideoId: proposedFromVideoId
             );
         }
     }

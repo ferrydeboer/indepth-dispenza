@@ -7,6 +7,7 @@ using InDepthDispenza.Functions.Interfaces;
 using InDepthDispenza.Functions.VideoAnalysis;
 using InDepthDispenza.Functions.VideoAnalysis.Interfaces;
 using InDepthDispenza.Functions.VideoAnalysis.Prompting;
+using InDepthDispenza.Functions.VideoAnalysis.Taxonomy;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Builder;
 using Microsoft.Extensions.Configuration;
@@ -67,6 +68,7 @@ if (!(grokEnabled && !string.IsNullOrWhiteSpace(grokApiKey)))
     builder.Services.AddScoped<ILlmService, StubLlmService>();
 }
 builder.Services.AddScoped<ITranscriptAnalyzer, TranscriptAnalyzer>();
+builder.Services.AddScoped<ITaxonomyUpdateService, TaxonomyUpdateService>();
 
 // 5. Prompt composers (registered in order they'll be used)
 builder.Services.AddScoped<IPromptComposer, TaxonomyPromptComposer>();

@@ -10,9 +10,11 @@ namespace InDepthDispenza.Functions.Interfaces;
 /// <param name="Taxonomy">The taxonomy JSON structure</param>
 /// <param name="UpdatedAt">When this version was created</param>
 /// <param name="Changes">Array of changes made in this version (for auditing)</param>
+/// <param name="ProposedFromVideoId">Optional reference to the videoId that proposed this version</param>
 public record TaxonomyDocument(
     string Id,
     JsonDocument Taxonomy,
     DateTimeOffset UpdatedAt,
-    string[] Changes
+    string[] Changes,
+    string? ProposedFromVideoId = null
 );
