@@ -10,9 +10,9 @@ namespace InDepthDispenza.Functions.Interfaces;
 public class TaxonomySpecification
 {
     [JsonProperty("version")]
-    [global::Newtonsoft.Json.JsonConverter(typeof(NewtonsoftTaxonomyVersionConverter))]
+    [JsonConverter(typeof(NewtonsoftTaxonomyVersionConverter))]
     [global::System.Text.Json.Serialization.JsonConverter(typeof(SystemTextJsonTaxonomyVersionConverter))]
-    public TaxonomyVersion Version { get; set; } = new TaxonomyVersion(1, 0);
+    public TaxonomyVersion Version { get; set; } = new(1, 0);
 
     /// <summary>
     /// Top-level taxonomy map. Keys are domain names, values are groups of categories.

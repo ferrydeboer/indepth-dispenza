@@ -52,6 +52,7 @@ public sealed record ProposalsDto(
 /// <param name="Suggestion">The new Taxonomy hierarchy.</param>
 /// <param name="Justification">Explanation for why this addition is needed</param>
 [JsonConverter(typeof(TaxonomyProposalJsonConverter))]
+[Newtonsoft.Json.JsonConverter(typeof(NewtonsoftTaxonomyProposalConverter))]
 public class TaxonomyProposal
 {
     public TaxonomyProposal(string achievementCategory, AchievementTypeGroup group, string justification)
