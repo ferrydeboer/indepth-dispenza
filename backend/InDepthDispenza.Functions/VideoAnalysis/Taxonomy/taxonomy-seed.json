@@ -1,5 +1,5 @@
 {
-  "version": "v3.0",
+  "version": "v4.0",
   "taxonomy": {
     "healing": {
       "physical_health": {
@@ -13,14 +13,22 @@
           "postural_orthostatic_tachycardia_syndrome",
           "neuropathy",
           "glaucoma",
-          "uveitis"
+          "uveitis",
+          "chronic_fatigue_syndrome",
+          "hearing_loss",
+          "tinnitus",
+          "vertigo",
+          "chronic_pain",
+          "migraines",
+          "sepsis"
         ],
         "attributes": [
           "weight_loss",
           "chronic",
           "acute",
           "high_eye_pressure",
-          "color_vision_loss"
+          "color_vision_loss",
+          "hereditary"
         ]
       },
       "mental_health": {
@@ -54,11 +62,39 @@
         "subcategories": [
           "hashimotos",
           "lupus",
-          "rheumatoid_arthritis"
+          "rheumatoid_arthritis",
+          "crohns_disease"
         ],
         "attributes": [
           "flare_ups",
+          "remission",
+          "multiple_autoimmune"
+        ]
+      },
+      "neurological": {
+        "subcategories": [
+          "traumatic_brain_injury",
+          "multiple_sclerosis",
+          "brain_fog"
+        ],
+        "attributes": [
+          "vision_impairment",
+          "mobility_impairment",
+          "seizures",
+          "hypothyroidism",
+          "lesion_reduction",
           "remission"
+        ]
+      },
+      "musculoskeletal": {
+        "subcategories": [
+          "spinal_injury",
+          "broken_bones",
+          "back_pain"
+        ],
+        "attributes": [
+          "acute_trauma",
+          "post_surgical"
         ]
       }
     },
@@ -97,11 +133,21 @@
         ]
       }
     },
-    "other": {}
+    "other": {
+    }
   },
   "rules": {
-    "naming": "Use snake_case, lowercase, no abbreviations unless standard (e.g., \\u0027bp\\u0027 not allowed; use \\u0027high_blood_pressure\\u0027).",
-    "hierarchy": "Always include parent category if applicable (e.g., \\u0027cancer\\u0027 \\u002B \\u0027cervical_cancer\\u0027).",
-    "multilingual": "English canonical; add translations later (e.g., {\\u0027es\\u0027: \\u0027cancer_cervical\\u0027})."
-  }
+    "naming": "Use snake_case, lowercase only. No abbreviations unless standard (e.g., 'high_blood_pressure' not 'bp_high'). Avoid duplicates—check existing subcategories/attributes first.",
+    "hierarchy": "Propose new subcategories under the most relevant parent (e.g., new cancers under 'cancer'). Include the parent tag in extractions. Do not create new top-level parents unless the type (healing/manifestation/etc.) doesn't fit. Attributes are modifiers (e.g., 'chronic', 'stage_four'); subcategories are specific conditions.",
+    "proposals": "Only propose if no exact match exists. Justify with transcript evidence. Suggest placement (e.g., 'under healing.physical_health.subcategories').",
+    "multilingual": "English is canonical; future additions can include a 'translations' object per tag (e.g., {'es': 'cancer_cervical'})."
+  },
+  "changes": [
+    "Standardized key casing for subcategories and attributes",
+    "Expanded healing.physical_health.subcategories with chronic_pain, migraines, sepsis",
+    "Expanded healing.neurological.subcategories with brain_fog",
+    "Added new healing.musculoskeletal category",
+    "Expanded healing.auto_immune.attributes with multiple_autoimmune",
+    "Structured other with empty subcategories and attributes arrays"
+  ]
 }

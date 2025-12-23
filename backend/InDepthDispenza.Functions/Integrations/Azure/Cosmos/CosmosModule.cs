@@ -2,6 +2,8 @@ using InDepthDispenza.Functions.Interfaces;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace InDepthDispenza.Functions.Integrations.Azure.Cosmos;
 
@@ -31,12 +33,16 @@ public static class CosmosModule
                 ?? throw new InvalidOperationException("CosmosDb AccountEndpoint is missing");
             var key = cosmosOptions.AccountKey
                 ?? throw new InvalidOperationException("CosmosDb AccountKey is missing");
-
+            
             // Use Gateway mode for compatibility with HTTP emulator
             var clientOptions = new CosmosClientOptions
             {
                 ConnectionMode = ConnectionMode.Gateway,
-                LimitToEndpoint = true
+                LimitToEndpoint = true,
+                SerializerOptions = new CosmosSerializationOptions()
+                {
+                    PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase
+                }
             };
 
             return new CosmosClient(endpoint, key, clientOptions);

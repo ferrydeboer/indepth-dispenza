@@ -33,6 +33,9 @@ public class CosmosTaxonomyRepository : CosmosRepositoryBase, ITaxonomyRepositor
     {
         try
         {
+            // Ensure seed is applied if it's newer than what's stored
+            await SeedTaxonomyIfNeededAsync();
+
             Logger.LogInformation("Retrieving latest taxonomy version from database");
 
             var container = await GetOrCreateContainerAsync();
@@ -56,27 +59,7 @@ public class CosmosTaxonomyRepository : CosmosRepositoryBase, ITaxonomyRepositor
                 }
             }
 
-            Logger.LogInformation("No taxonomy versions found in database");
-
-            // No taxonomy exists - seed it on first use (lazy initialization)
-            await SeedTaxonomyIfNeededAsync();
-
-            // Try again after seeding - need to create a new iterator
-            var retryIterator = container.GetItemQueryIterator<CosmosTaxonomyDocument>(queryDefinition);
-            if (retryIterator.HasMoreResults)
-            {
-                var retryResponse = await retryIterator.ReadNextAsync();
-                var cosmosDoc = retryResponse.FirstOrDefault();
-
-                if (cosmosDoc != null)
-                {
-                    var document = cosmosDoc.ToTaxonomyDocument();
-                    Logger.LogInformation("Successfully retrieved taxonomy version after seeding: {VersionId}", document.Version);
-                    return ServiceResult<TaxonomyDocument?>.Success(document);
-                }
-            }
-
-            return ServiceResult<TaxonomyDocument?>.Success(null);
+            return ServiceResult<TaxonomyDocument?>.Failure("Expected a taxonomy by now.");
         }
         catch (Exception ex)
         {
@@ -137,8 +120,9 @@ public class CosmosTaxonomyRepository : CosmosRepositoryBase, ITaxonomyRepositor
     }
 
     /// <summary>
-    /// Seeds the initial taxonomy from file if it doesn't exist yet.
-    /// Uses semaphore to ensure only one thread seeds the taxonomy.
+    /// Ensures the taxonomy in Cosmos is at least the version provided in the seed file.
+    /// If Cosmos is empty, seeds the seed version. If Cosmos has an older version than the seed,
+    /// upgrades by inserting the seed version as a new document. Thread-safe via semaphore.
     /// </summary>
     private async Task SeedTaxonomyIfNeededAsync()
     {
@@ -151,7 +135,7 @@ public class CosmosTaxonomyRepository : CosmosRepositoryBase, ITaxonomyRepositor
             if (_taxonomySeeded)
                 return;
 
-            Logger.LogInformation("Checking if taxonomy needs seeding");
+            Logger.LogInformation("Checking if taxonomy needs seeding or upgrade");
 
             if (!File.Exists(_taxonomySeedFilePath))
             {
@@ -160,35 +144,73 @@ public class CosmosTaxonomyRepository : CosmosRepositoryBase, ITaxonomyRepositor
                 return;
             }
 
-            Logger.LogInformation("Seeding initial taxonomy from {FilePath}", _taxonomySeedFilePath);
+            Logger.LogInformation("Reading taxonomy seed from {FilePath}", _taxonomySeedFilePath);
 
             var jsonString = await File.ReadAllTextAsync(_taxonomySeedFilePath);
             // Seed can be either flat map or wrapped under {"taxonomy": ...} and may contain a top-level "version".
-            var spec = TryDeserializeSeed(jsonString) ?? new TaxonomySpecification { Version = "v1.0" };
-            var initial = new TaxonomyDocument
+            var spec = TryDeserializeSeed(jsonString) ?? new TaxonomySpecification { Version = new TaxonomyVersion(1, 0) };
+            var seedVersion = spec.Version;
+
+            // Determine latest stored version in Cosmos
+            var container = await GetOrCreateContainerAsync();
+            var queryDefinition = new QueryDefinition("SELECT TOP 1 c.id, c.updatedAt FROM c ORDER BY c.updatedAt DESC");
+            var iterator = container.GetItemQueryIterator<CosmosTaxonomyDocument>(queryDefinition);
+            CosmosTaxonomyDocument? latestDoc = null;
+            if (iterator.HasMoreResults)
             {
-                Version = string.IsNullOrWhiteSpace(spec.Version) ? "v1.0" : spec.Version,
-                UpdatedAt = DateTimeOffset.UtcNow,
-                Changes = new[] { "Initial taxonomy version" },
-                ProposedFromVideoId = null
-            };
-            // copy map entries
-            foreach (var kv in spec.Taxonomy)
-            {
-                initial.Taxonomy[kv.Key] = kv.Value;
+                var response = await iterator.ReadNextAsync();
+                latestDoc = response.FirstOrDefault();
             }
 
-            var saveResult = await SaveTaxonomyAsync(initial);
-
-            if (saveResult.IsSuccess)
+            bool shouldSeed;
+            if (latestDoc is null)
             {
-                Logger.LogInformation("Successfully seeded initial taxonomy version v1.0");
-                _taxonomySeeded = true;
+                Logger.LogInformation("No taxonomy found in Cosmos. Will seed version {SeedVersion}.", seedVersion);
+                shouldSeed = true;
             }
             else
             {
-                Logger.LogError("Failed to seed taxonomy: {Error}", saveResult.ErrorMessage);
+                var latestVersion = (TaxonomyVersion)latestDoc.id;
+                if (seedVersion > latestVersion)
+                {
+                    Logger.LogInformation("Seed version {SeedVersion} is newer than latest in Cosmos {LatestVersion}. Will upgrade.", seedVersion, latestVersion);
+                    shouldSeed = true;
+                }
+                else
+                {
+                    Logger.LogInformation("Seed version {SeedVersion} is not newer than Cosmos {LatestVersion}. No action.", seedVersion, latestVersion);
+                    shouldSeed = false;
+                }
             }
+
+            if (shouldSeed)
+            {
+                var newDoc = new TaxonomyDocument
+                {
+                    Version = seedVersion,
+                    UpdatedAt = DateTimeOffset.UtcNow,
+                    Changes = new[] { latestDoc is null ? "Initial taxonomy version" : $"Upgraded taxonomy to seed version {seedVersion}" },
+                    ProposedFromVideoId = null
+                };
+                // copy map entries
+                foreach (var kv in spec.Taxonomy)
+                {
+                    newDoc.Taxonomy[kv.Key] = kv.Value;
+                }
+
+                var saveResult = await SaveTaxonomyAsync(newDoc);
+
+                if (saveResult.IsSuccess)
+                {
+                    Logger.LogInformation("Successfully saved taxonomy version {Version}", newDoc.Version);
+                }
+                else
+                {
+                    Logger.LogError("Failed to save taxonomy: {Error}", saveResult.ErrorMessage);
+                }
+            }
+
+            _taxonomySeeded = true;
         }
         catch (Exception ex)
         {
@@ -199,6 +221,7 @@ public class CosmosTaxonomyRepository : CosmosRepositoryBase, ITaxonomyRepositor
             _seedingLock.Release();
         }
     }
+
 
     // Internal Cosmos document representation with lowercase 'id' for Cosmos DB
     private sealed class CosmosTaxonomyDocument
@@ -214,7 +237,7 @@ public class CosmosTaxonomyRepository : CosmosRepositoryBase, ITaxonomyRepositor
         {
             return new CosmosTaxonomyDocument
             {
-                id = document.Version,
+                id = document.Version.ToString(),
                 taxonomy = new Dictionary<string, AchievementTypeGroup>(document.Taxonomy, StringComparer.OrdinalIgnoreCase),
                 updatedAt = document.UpdatedAt,
                 changes = document.Changes,
@@ -226,7 +249,7 @@ public class CosmosTaxonomyRepository : CosmosRepositoryBase, ITaxonomyRepositor
         {
             var doc = new TaxonomyDocument
             {
-                Version = id,
+                Version = (TaxonomyVersion)id,
                 UpdatedAt = updatedAt,
                 Changes = changes,
                 ProposedFromVideoId = proposedFromVideoId
@@ -257,7 +280,11 @@ public class CosmosTaxonomyRepository : CosmosRepositoryBase, ITaxonomyRepositor
             var spec = new TaxonomySpecification();
             if (root.TryGetProperty("version", out var ver) && ver.ValueKind == JsonValueKind.String)
             {
-                spec.Version = ver.GetString() ?? spec.Version;
+                var v = ver.GetString();
+                if (!string.IsNullOrWhiteSpace(v))
+                {
+                    spec.Version = TaxonomyVersion.Parse(v!);
+                }
             }
             if (root.TryGetProperty("taxonomy", out var tx) && tx.ValueKind == JsonValueKind.Object)
             {

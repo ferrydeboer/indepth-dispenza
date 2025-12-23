@@ -15,12 +15,6 @@ public sealed class TaxonomyDocument : TaxonomySpecification
     public DateTimeOffset UpdatedAt { get; set; }
 
     /// <summary>
-    /// Array of change notes for auditing.
-    /// </summary>
-    [JsonIgnore]
-    public string[] Changes { get; set; } = Array.Empty<string>();
-
-    /// <summary>
     /// Optional reference to the videoId that proposed this version.
     /// </summary>
     [JsonIgnore]

@@ -1,4 +1,3 @@
-using System.Text.Json;
 using InDepthDispenza.Functions.Interfaces;
 using InDepthDispenza.Functions.VideoAnalysis.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -54,6 +53,7 @@ public sealed class TaxonomyUpdateService : ITaxonomyUpdateService
             if (string.IsNullOrWhiteSpace(domainName))
                 continue;
 
+            changeNotes.Add(proposal.Justification);
             // Ensure domain group exists
             if (!spec.Taxonomy.TryGetValue(domainName, out var domainGroup))
             {
@@ -96,7 +96,7 @@ public sealed class TaxonomyUpdateService : ITaxonomyUpdateService
         }
 
         // Compute next version id: increment minor version (v1.0 -> v1.1)
-        var nextVersionId = IncrementVersion(latest.Version);
+        var nextVersionId = latest.Version.IncrementMinor();
 
         // Build new TaxonomyDocument with strong types only
         var newDoc = new TaxonomyDocument
@@ -144,22 +144,4 @@ public sealed class TaxonomyUpdateService : ITaxonomyUpdateService
     }
 
     private static bool NotNullOrWhiteSpace(string? s) => !string.IsNullOrWhiteSpace(s);
-
-    private static string IncrementVersion(string current)
-    {
-        // Expected formats: "v1.0", "v2.3". If parsing fails, fallback to timestamp-based.
-        if (current.StartsWith('v') && current.Contains('.'))
-        {
-            var body = current.Substring(1);
-            var parts = body.Split('.', 2);
-            if (int.TryParse(parts[0], out var major) && int.TryParse(parts[1], out var minor))
-            {
-                // increment minor
-                minor += 1;
-                return $"v{major}.{minor}";
-            }
-        }
-        // Fallback
-        return $"v{DateTimeOffset.UtcNow:yyyyMMddHHmmss}";
-    }
 }

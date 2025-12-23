@@ -32,7 +32,7 @@ public class TaxonomyPromptComposerTests
         var mockRepo = new Mock<ITaxonomyRepository>();
         var doc = new TaxonomyDocument
         {
-            Version = "v-test",
+            Version = "v1.0",
             UpdatedAt = DateTimeOffset.UtcNow,
             Changes = Array.Empty<string>()
         };

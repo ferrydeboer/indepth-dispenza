@@ -8,7 +8,7 @@ Use the following taxonomy to extract structured tags from the transcript.
 
 ## Tag Extraction Rules
 1. **Use existing tags**: Always prefer existing taxonomy tags
-3. **Maintain hierarchy**: Tags must respect the parent-child relationships shown above in the taxonomy.
+2. **Maintain hierarchy**: Tags must respect the parent-child relationships shown above in the taxonomy.
 
 **CRITICAL RULES:**
 1. **ALWAYS use existing tags from the taxonomy above when applicable**
@@ -24,6 +24,9 @@ Use the following taxonomy to extract structured tags from the transcript.
 4. **NEVER propose tags that already exist in the taxonomy**
 5. **Check the entire taxonomy tree before proposing - if "cervical_cancer" exists anywhere, don't propose it**
 6. You are allowed to make proposals on the complete hierarchy. So you can propose a whole new or partial hierarchy.
+
+**CRITICAL RULES:**
+1. **ALWAYS add your proposals in the related achievement.**
 
 **Never propose:**
 - Tags that already exist (search ALL categories first)

@@ -25,9 +25,14 @@ public abstract class IntegrationTestBase
         WireMockConfig = new WireMockConfiguration(EnvironmentSetup.WireMockContainer);
 
         // Test runner (on host) uses public connection string
+        var queueClientOptions = new QueueClientOptions
+        {
+            MessageEncoding = QueueMessageEncoding.Base64
+        };
         QueueClient = new QueueClient(
             EnvironmentSetup.AzureWebJobsStorageForHost,
-            EnvironmentSetup.VideoQueueName);
+            EnvironmentSetup.VideoQueueName,
+            queueClientOptions);
 
         await QueueClient.CreateIfNotExistsAsync();
 

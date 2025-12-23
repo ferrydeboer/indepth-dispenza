@@ -1,4 +1,5 @@
-using System.Text.Json.Serialization;
+using System.Data;
+using Newtonsoft.Json;
 
 namespace InDepthDispenza.Functions.Interfaces;
 
@@ -8,14 +9,25 @@ namespace InDepthDispenza.Functions.Interfaces;
 /// </summary>
 public class TaxonomySpecification
 {
-    [JsonPropertyName("version")]
-    public string Version { get; set; } = "v1.0";
+    [JsonProperty("version")]
+    [global::Newtonsoft.Json.JsonConverter(typeof(NewtonsoftTaxonomyVersionConverter))]
+    [global::System.Text.Json.Serialization.JsonConverter(typeof(SystemTextJsonTaxonomyVersionConverter))]
+    public TaxonomyVersion Version { get; set; } = new TaxonomyVersion(1, 0);
 
     /// <summary>
     /// Top-level taxonomy map. Keys are domain names, values are groups of categories.
     /// </summary>
-    [JsonPropertyName("taxonomy")]
+    [JsonProperty("taxonomy")]
     public Dictionary<string, AchievementTypeGroup> Taxonomy { get; init; } = new(StringComparer.OrdinalIgnoreCase);
+    
+    [JsonProperty("rules")]
+    public Dictionary<string, string> Rules { get; init; } = new(StringComparer.OrdinalIgnoreCase);
+    
+    /// <summary>
+    /// Array of change notes for auditing.
+    /// </summary>
+    [JsonIgnore]
+    public string[] Changes { get; set; } = Array.Empty<string>();
 }
 
 /// <summary>
@@ -30,9 +42,9 @@ public sealed class AchievementTypeGroup : Dictionary<string, CategoryNode>
 /// </summary>
 public sealed class CategoryNode
 {
-    [JsonPropertyName("subcategories")]
+    [JsonProperty("subcategories")]
     public List<string>? Subcategories { get; init; }
 
-    [JsonPropertyName("attributes")]
+    [JsonProperty("attributes")]
     public List<string>? Attributes { get; init; }
 }

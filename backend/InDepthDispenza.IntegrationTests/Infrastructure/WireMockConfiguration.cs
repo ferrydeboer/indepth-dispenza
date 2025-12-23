@@ -53,6 +53,7 @@ public class WireMockConfiguration
             }).ToList()
         };
 
+        // Mapping for playlist items (snippet + optional contentDetails)
         var mappingModel = new MappingModel
         {
             Request = new RequestModel
@@ -90,8 +91,9 @@ public class WireMockConfiguration
                         {
                             new MatcherModel
                             {
-                                Name = "ExactMatcher",
-                                Pattern = "snippet"
+                                // Accept "snippet" or "snippet, contentDetails" (with optional space)
+                                Name = "RegexMatcher",
+                                Pattern = "^snippet(,\\s*contentDetails)?$"
                             }
                         }
                     }
@@ -109,6 +111,79 @@ public class WireMockConfiguration
         };
 
         await _adminClient.PostMappingAsync(mappingModel);
+
+        // Mapping for videos details (contentDetails.duration)
+        var idList = string.Join(",", videos.Select(v => v.VideoId));
+        var videosResponse = new
+        {
+            items = videos.Select((video, index) => new
+            {
+                id = video.VideoId,
+                contentDetails = new
+                {
+                    // Generate deterministic-ish ISO8601 durations between ~1 and ~20 minutes
+                    duration = $"PT{(index % 20) + 1}M{(index * 7 % 55)}S"
+                }
+            }).ToList()
+        };
+
+        var videosMapping = new MappingModel
+        {
+            Request = new RequestModel
+            {
+                Path = new PathModel
+                {
+                    Matchers = new[]
+                    {
+                        new MatcherModel
+                        {
+                            Name = "WildcardMatcher",
+                            Pattern = "/youtube/v3/videos"
+                        }
+                    }
+                },
+                Methods = new[] { "GET" },
+                Params = new[]
+                {
+                    new ParamModel
+                    {
+                        Name = "part",
+                        Matchers = new[]
+                        {
+                            new MatcherModel
+                            {
+                                Name = "ExactMatcher",
+                                Pattern = "contentDetails"
+                            }
+                        }
+                    },
+                    new ParamModel
+                    {
+                        Name = "id",
+                        Matchers = new[]
+                        {
+                            new MatcherModel
+                            {
+                                // Match the exact comma-separated list as sent by the service
+                                Name = "ExactMatcher",
+                                Pattern = idList
+                            }
+                        }
+                    }
+                }
+            },
+            Response = new ResponseModel
+            {
+                StatusCode = statusCode ?? 200,
+                Headers = new Dictionary<string, object>
+                {
+                    { "Content-Type", "application/json" }
+                },
+                Body = JsonSerializer.Serialize(videosResponse)
+            }
+        };
+
+        await _adminClient.PostMappingAsync(videosMapping);
     }
 
     public async Task SetupPlaylistErrorResponse(string playlistId, int statusCode, string errorMessage)

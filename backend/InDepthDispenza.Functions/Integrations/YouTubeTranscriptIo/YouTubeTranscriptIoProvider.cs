@@ -52,7 +52,7 @@ public class YouTubeTranscriptIoProvider : ITranscriptProvider
                 var errorContent = await response.Content.ReadAsStringAsync();
                 _logger.LogWarning("YouTube Transcript API returned {StatusCode}: {Error}",
                     response.StatusCode, errorContent);
-                return ServiceResult<TranscriptDocument>.Failure($"API error: {response.StatusCode}");
+                return ServiceResult<TranscriptDocument>.Failure($"API error ({response.StatusCode}): {errorContent}");
             }
 
             var jsonContent = await response.Content.ReadAsStringAsync();

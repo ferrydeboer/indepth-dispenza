@@ -5,6 +5,7 @@ using InDepthDispenza.Functions.Integrations.Azure.Storage;
 using InDepthDispenza.Functions.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
+using MimeKit.Encodings;
 using Testcontainers.Azurite;
 
 namespace InDepthDispenza.IntegrationTests;
@@ -90,7 +91,8 @@ public class AzureStorageQueueServiceIntegrationTests
 
         var messages = await _queueClient.ReceiveMessagesAsync(maxMessages: 1);
         messages.Value.Should().HaveCount(1);
-        messages.Value[0].MessageText.Should().Contain(video.VideoId);
+        var decodedMessage = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(messages.Value[0].MessageText));
+        decodedMessage.Should().Contain(video.VideoId);
     }
 
     [Test]
