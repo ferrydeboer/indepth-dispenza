@@ -36,6 +36,10 @@ param youTubeApiKey string
 @secure()
 param youTubeTranscriptApiToken string
 
+@description('Grok API Key for xAI Grok LLM access')
+@secure()
+param grokApiKey string
+
 var functionAppName = '${projectName}-${environment}-func'
 var hostingPlanName = '${projectName}-${environment}-plan'
 
@@ -137,6 +141,10 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
         {
           name: 'YouTubeTranscriptApi__ApiToken'
           value: youTubeTranscriptApiToken
+        }
+        {
+          name: 'Grok__ApiKey'
+          value: grokApiKey
         }
       ]
     }

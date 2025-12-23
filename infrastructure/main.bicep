@@ -24,6 +24,10 @@ param youTubeApiKey string
 @secure()
 param youTubeTranscriptApiToken string
 
+@description('Grok API Key for xAI Grok LLM access')
+@secure()
+param grokApiKey string
+
 // Create resource group
 resource rg 'Microsoft.Resources/resourceGroups@2024-03-01' = {
   name: '${projectName}-${environment}-rg'
@@ -102,6 +106,7 @@ module functionApp 'modules/function-app.bicep' = {
     cosmosDbAccountKey: cosmosDb.outputs.accountKey
     youTubeApiKey: youTubeApiKey
     youTubeTranscriptApiToken: youTubeTranscriptApiToken
+    grokApiKey: grokApiKey
   }
 }
 

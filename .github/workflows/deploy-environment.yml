@@ -20,6 +20,8 @@ on:
         required: true
       YOUTUBE_TRANSCRIPT_API_TOKEN:
         required: true
+      GROK_API_KEY:
+        required: true
 
 permissions:
   contents: read
@@ -50,7 +52,8 @@ jobs:
             --template-file main.bicep \
             --parameters parameters/${{ inputs.environment }}.parameters.json \
             --parameters youTubeApiKey="${{ secrets.YOUTUBE_API_KEY }}" \
-            --parameters youTubeTranscriptApiToken="${{ secrets.YOUTUBE_TRANSCRIPT_API_TOKEN }}"
+            --parameters youTubeTranscriptApiToken="${{ secrets.YOUTUBE_TRANSCRIPT_API_TOKEN }}" \
+            --parameters grokApiKey="${{ secrets.GROK_API_KEY }}"
 
       - name: Get Deployment Outputs
         id: outputs
