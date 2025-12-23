@@ -4,6 +4,8 @@ using InDepthDispenza.Functions.VideoAnalysis;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
+using System;
+using System.Collections.Generic;
 
 namespace IndepthDispenza.Tests.VideoAnalysis
 {
@@ -33,8 +35,8 @@ namespace IndepthDispenza.Tests.VideoAnalysis
             var request = _fixture.Create<PlaylistScanRequest>();
             var videos = _fixture.CreateMany<VideoInfo>(5).ToList();
 
-            _playlistServiceMock.Setup(x => x.GetPlaylistVideosAsync(request.PlaylistId, request.Limit))
-                .ReturnsAsync(ServiceResult<IEnumerable<VideoInfo>>.Success(videos));
+            _playlistServiceMock.Setup(x => x.GetPlaylistVideosAsync(request.PlaylistId, request.Limit, It.IsAny<Func<VideoInfo, bool>>()))
+                .Returns(ToAsyncEnumerable(videos));
 
             _queueServiceMock.Setup(x => x.EnqueueVideoAsync(It.IsAny<VideoInfo>()))
                 .ReturnsAsync(ServiceResult.Success());
@@ -49,13 +51,22 @@ namespace IndepthDispenza.Tests.VideoAnalysis
                 Assert.That(result.Data, Is.EqualTo(videos.Count));
             }
 
-            _playlistServiceMock.Verify(x => x.GetPlaylistVideosAsync(request.PlaylistId, request.Limit), Times.Once);
+            _playlistServiceMock.Verify(x => x.GetPlaylistVideosAsync(request.PlaylistId, request.Limit, It.IsAny<Func<VideoInfo, bool>>()), Times.Once);
             _queueServiceMock.Verify(x => x.EnqueueVideoAsync(It.IsAny<VideoInfo>()), Times.Exactly(videos.Count));
         }
 
         private async Task<ServiceResult<int>> InvokeScanPlaylistAsync(PlaylistScanRequest request)
         {
             return await _testSubject.ScanPlaylistAsync(request);
+        }
+
+        private static async IAsyncEnumerable<VideoInfo> ToAsyncEnumerable(IEnumerable<VideoInfo> items)
+        {
+            foreach (var item in items)
+            {
+                yield return item;
+                await Task.Yield();
+            }
         }
     }
 }

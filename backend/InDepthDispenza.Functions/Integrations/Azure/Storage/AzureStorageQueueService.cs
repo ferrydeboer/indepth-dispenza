@@ -20,7 +20,11 @@ public class AzureStorageQueueService : IQueueService
                               throw new InvalidOperationException("AzureWebJobsStorage configuration is missing");
         var queueName = storageOptions.VideoQueueName;
 
-        _queueClient = new QueueClient(connectionString, queueName);
+        var opt = new QueueClientOptions
+        {
+            MessageEncoding = QueueMessageEncoding.Base64
+        };
+        _queueClient = new QueueClient(connectionString, queueName, opt);
     }
 
     public async Task<ServiceResult> EnqueueVideoAsync(VideoInfo video)

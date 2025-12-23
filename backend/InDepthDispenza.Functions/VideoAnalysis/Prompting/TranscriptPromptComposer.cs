@@ -33,7 +33,7 @@ public class TranscriptPromptComposer : IPromptComposer
                 "Failed to fetch transcript for video {VideoId}: {Error}",
                 videoId, transcriptResult.ErrorMessage);
             throw new InvalidOperationException(
-                $"Cannot compose prompt: transcript not available for video {videoId}");
+                $"Transcript extraction failed for video {videoId}");
         }
 
         var doc = transcriptResult.Data;

@@ -45,7 +45,7 @@ public class TranscriptAnalyzer : ITranscriptAnalyzer
 
             _logger.LogInformation(
                 "Composed prompt for video {VideoId}. Prompt length: {PromptLength} characters",
-                videoId, promptText.Length);
+                videoId, promptText.Length);    
 
             // Step 2: Call LLM service with composed prompt
             var llmResult = await _llmService.CallAsync(promptText);

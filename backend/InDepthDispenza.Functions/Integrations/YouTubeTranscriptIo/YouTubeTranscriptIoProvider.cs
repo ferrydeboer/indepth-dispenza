@@ -86,10 +86,15 @@ public class YouTubeTranscriptIoProvider : ITranscriptProvider
 
             // Map API transcript segments to our common model
             var segments = selectedTrack.Transcript
-                .Select(segment => new TranscriptSegment(
-                    StartSeconds: decimal.Parse(segment.Start, CultureInfo.InvariantCulture),
-                    DurationSeconds: decimal.Parse(segment.Dur, CultureInfo.InvariantCulture),
-                    Text: segment.Text))
+                .Select(segment =>
+                {
+                    decimal.TryParse(segment.Start, CultureInfo.InvariantCulture, out var start);
+                    decimal.TryParse(segment.Dur, CultureInfo.InvariantCulture, out var duration);
+                    return new TranscriptSegment(
+                        StartSeconds: start,
+                        DurationSeconds: duration,
+                        Text: segment.Text);
+                })
                 .ToArray();
 
             // Extract metadata from the rich API response
@@ -111,6 +116,11 @@ public class YouTubeTranscriptIoProvider : ITranscriptProvider
             );
 
             return ServiceResult<TranscriptDocument>.Success(document);
+        }
+        catch (FormatException ex)
+        {
+            _logger.LogError(ex, "Error converting transcription for {VideoId}", videoId);
+            return ServiceResult<TranscriptDocument>.Failure($"Failed to convert transcript: {ex.Message}", ex);
         }
         catch (Exception ex)
         {

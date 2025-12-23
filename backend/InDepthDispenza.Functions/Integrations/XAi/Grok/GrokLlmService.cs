@@ -2,7 +2,6 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using InDepthDispenza.Functions.Interfaces;
-// using InDepthDispenza.Functions.VideoAnalysis.Interfaces; // Avoid dependency from Integrations to VideoAnalysis
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 

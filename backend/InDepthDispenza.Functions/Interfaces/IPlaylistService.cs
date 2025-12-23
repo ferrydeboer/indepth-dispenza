@@ -1,7 +1,9 @@
 
+using System;
+
 namespace InDepthDispenza.Functions.Interfaces;
 
 public interface IPlaylistService
 {
-    Task<ServiceResult<IEnumerable<VideoInfo>>> GetPlaylistVideosAsync(string playlistId, int? limit = null);
+    IAsyncEnumerable<VideoInfo> GetPlaylistVideosAsync(string playlistId, int? limit = null, Func<VideoInfo, bool>? filter = null);
 }

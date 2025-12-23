@@ -29,36 +29,27 @@ public class PlaylistScanService : IPlaylistScanService
             _logger.LogInformation("Starting playlist scan for playlist: {PlaylistId} with limit: {Limit}",
                 request.PlaylistId, request.Limit);
 
-            // Retrieve videos from YouTube
-            var videosResult = await _playlistService.GetPlaylistVideosAsync(request.PlaylistId, request.Limit);
-            if (!videosResult.IsSuccess)
-            {
-                return ServiceResult<int>.Failure(videosResult.ErrorMessage!, videosResult.Exception);
-            }
-
-            var videos = videosResult.Data!.ToList();
-
-            // Enqueue each video
+            // Retrieve and enqueue videos from provider
             var successCount = 0;
-            var tasks = videos.Select(async video =>
+            var totalCount = 0;
+
+            await foreach (var video in _playlistService.GetPlaylistVideosAsync(request.PlaylistId, request.Limit))
             {
+                totalCount++;
                 var result = await _queueService.EnqueueVideoAsync(video);
                 if (result.IsSuccess)
                 {
-                    Interlocked.Increment(ref successCount);
+                    successCount++;
                 }
                 else
                 {
-                    _logger.LogWarning("Failed to enqueue video {VideoId}: {Error}", 
+                    _logger.LogWarning("Failed to enqueue video {VideoId}: {Error}",
                         video.VideoId, result.ErrorMessage);
                 }
-                return result;
-            });
+            }
 
-            await Task.WhenAll(tasks);
-
-            _logger.LogInformation("Playlist scan completed. Successfully enqueued {SuccessCount} out of {TotalCount} videos", 
-                successCount, videos.Count);
+            _logger.LogInformation("Playlist scan completed. Successfully enqueued {SuccessCount} out of {TotalCount} videos",
+                successCount, totalCount);
 
             return ServiceResult<int>.Success(successCount);
         }
