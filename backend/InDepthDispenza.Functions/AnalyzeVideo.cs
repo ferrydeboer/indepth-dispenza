@@ -1,3 +1,5 @@
+using System.Text.Json;
+using InDepthDispenza.Functions.Interfaces;
 using InDepthDispenza.Functions.VideoAnalysis.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -15,13 +17,11 @@ public class AnalyzeVideo
 {
     private readonly ILogger<AnalyzeVideo> _logger;
     private readonly ITranscriptAnalyzer _transcriptAnalyzer;
-    private readonly ITaxonomyUpdateService _taxonomyUpdateService;
 
-    public AnalyzeVideo(ILogger<AnalyzeVideo> logger, ITranscriptAnalyzer transcriptAnalyzer, ITaxonomyUpdateService taxonomyUpdateService)
+    public AnalyzeVideo(ILogger<AnalyzeVideo> logger, ITranscriptAnalyzer transcriptAnalyzer)
     {
         _logger = logger;
         _transcriptAnalyzer = transcriptAnalyzer;
-        _taxonomyUpdateService = taxonomyUpdateService;
     }
 
     [Function("AnalyzeVideo")]
@@ -67,5 +67,36 @@ public class AnalyzeVideo
             proposals = analysis.Proposals,
             message = "Video analysis complete."
         });
+    }
+
+    // Queue-triggered variant: invoked when ScanPlaylist enqueues a new video
+    [Function("AnalyzeVideoFromQueue")]
+    public async Task AnalyzeFromQueueAsync(
+        [QueueTrigger("videos", Connection = "AzureWebJobsStorage")] string message)
+    {
+        _logger.LogInformation("AnalyzeVideoFromQueue triggered with raw message: {Message}", message);
+
+        try
+        {
+            var video = JsonSerializer.Deserialize<VideoInfo>(message);
+            if (video is null || string.IsNullOrWhiteSpace(video.VideoId))
+            {
+                _logger.LogWarning("Queue message could not be deserialized into VideoInfo or missing VideoId");
+                return;
+            }
+
+            var result = await _transcriptAnalyzer.AnalyzeTranscriptAsync(video.VideoId);
+            if (!result.IsSuccess)
+            {
+                _logger.LogError("Queue-based analysis failed for {VideoId}: {Error}", video.VideoId, result.ErrorMessage);
+                return;
+            }
+
+            _logger.LogInformation("Queue-based analysis succeeded for VideoId {VideoId}", video.VideoId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unhandled exception while processing queue message for AnalyzeVideoFromQueue");
+        }
     }
 }
