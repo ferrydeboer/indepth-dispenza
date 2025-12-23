@@ -134,7 +134,7 @@ public class OpenAILlmService : ILlmService
                 duration.TotalMilliseconds, promptTokens, completionTokens, totalTokens);
 
             // Build provider-agnostic common response
-            System.Text.Json.JsonElement? jsonElem = null;
+            JsonElement? jsonElem = null;
             try
             {
                 using var doc = JsonDocument.Parse(messageContent);

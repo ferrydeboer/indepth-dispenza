@@ -1,4 +1,3 @@
-using InDepthDispenza.Functions.Interfaces;
 using InDepthDispenza.Functions.VideoAnalysis.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -53,20 +52,8 @@ public class AnalyzeVideo
 
         var analysis = result.Data!;
 
-        // If proposals are present, attempt to update taxonomy and create a new version
-        string? newTaxonomyVersion = null;
-        if (analysis.Proposals is { Length: > 0 })
-        {
-            var updateResult = await _taxonomyUpdateService.ApplyProposalsAsync(analysis);
-            if (!updateResult.IsSuccess)
-            {
-                _logger.LogWarning("Taxonomy update from proposals failed: {Error}", updateResult.ErrorMessage);
-            }
-            else
-            {
-                newTaxonomyVersion = updateResult.Data;
-            }
-        }
+        // Business orchestration (taxonomy update, persistence) is handled inside TranscriptAnalyzer
+        // The Function only maps the result to HTTP response.
         return new OkObjectResult(new
         {
             videoId = analysis.Id,
@@ -78,7 +65,6 @@ public class AnalyzeVideo
             sentimentScore = analysis.SentimentScore,
             confidenceScore = analysis.ConfidenceScore,
             proposals = analysis.Proposals,
-            taxonomyVersionCreated = newTaxonomyVersion,
             message = "Video analysis complete."
         });
     }

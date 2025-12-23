@@ -1,5 +1,4 @@
 using System.Text.Json.Serialization;
-using InDepthDispenza.Functions.VideoAnalysis.Prompting;
 using InDepthDispenza.Functions.Interfaces;
 
 namespace InDepthDispenza.Functions.VideoAnalysis.Interfaces;
@@ -32,9 +31,15 @@ public sealed record AnalysisDto(
 /// <param name="TokensUsed">The amount of tokens used in the request.</param>
 /// <param name="Duration">The time it took to execute the request.</param>
 public sealed record PromptExecutionInfoDto(
-    string ModelVersion,
-    int TokensUsed,
-    int Duration
+    string Provider,
+    string Model,
+    int DurationMs,
+    int TokensPrompt,
+    int TokensCompletion,
+    int TokensTotal,
+    string? RequestId,
+    DateTimeOffset? CreatedAt,
+    string? FinishReason
 );
 
 public sealed record ProposalsDto(

@@ -13,16 +13,22 @@ public class TranscriptAnalyzer : ITranscriptAnalyzer
 {
     private readonly ILogger<TranscriptAnalyzer> _logger;
     private readonly ILlmService _llmService;
+    private readonly IVideoAnalysisRepository _videoAnalysisRepository;
     private readonly IEnumerable<IPromptComposer> _promptComposers;
+    private readonly ITaxonomyUpdateService _taxonomyUpdateService;
 
     public TranscriptAnalyzer(
         ILogger<TranscriptAnalyzer> logger,
         ILlmService llmService,
-        IEnumerable<IPromptComposer> promptComposers)
+        IEnumerable<IPromptComposer> promptComposers,
+        IVideoAnalysisRepository videoAnalysisRepository,
+        ITaxonomyUpdateService taxonomyUpdateService)
     {
         _logger = logger;
         _llmService = llmService;
         _promptComposers = promptComposers;
+        _videoAnalysisRepository = videoAnalysisRepository;
+        _taxonomyUpdateService = taxonomyUpdateService;
     }
 
     /// <summary>
@@ -51,8 +57,58 @@ public class TranscriptAnalyzer : ITranscriptAnalyzer
                     llmResult.Exception);
             }
 
-            // Step 3: Parse LLM response into VideoAnalysis object
-            var analysis = ParseLlmResponse(videoId, llmResult.Data);
+            // Log LLM token usage and timing
+            var call = llmResult.Data.Call;
+            _logger.LogInformation(
+                "LLM call provider={Provider}, model={Model}, durationMs={Duration}, tokens: prompt={Prompt}, completion={Completion}, total={Total}, requestId={RequestId}",
+                call.Provider,
+                call.Model,
+                call.DurationMs,
+                call.TokensPrompt,
+                call.TokensCompletion,
+                call.TokensTotal,
+                call.RequestId ?? "n/a");
+
+            // Build PromptExecutionInfoDto from LlmCallInfo ensuring parity
+            var promptInfo = new PromptExecutionInfoDto(
+                Provider: call.Provider,
+                Model: call.Model,
+                DurationMs: call.DurationMs,
+                TokensPrompt: call.TokensPrompt,
+                TokensCompletion: call.TokensCompletion,
+                TokensTotal: call.TokensTotal,
+                RequestId: call.RequestId,
+                CreatedAt: call.CreatedAt,
+                FinishReason: call.FinishReason
+            );
+
+            // Step 3: Parse LLM response into VideoAnalysis object and attach prompt info into DTO for storage later
+            var (analysis, responseDto) = ParseLlmResponse(videoId, llmResult.Data, promptInfo);
+            _lastLlmResponse = responseDto; // cache for storage
+            _lastVideoId = videoId;
+            _lastAnalyzedAt = analysis.AnalyzedAt;
+
+            // If proposals exist, perform taxonomy update here (business logic layer)
+            _lastTaxonomyVersion = null;
+            if (analysis.Proposals is { Length: > 0 })
+            {
+                var update = await _taxonomyUpdateService.ApplyProposalsAsync(analysis);
+                if (!update.IsSuccess)
+                {
+                    _logger.LogWarning("Taxonomy update from proposals failed: {Error}", update.ErrorMessage);
+                }
+                else
+                {
+                    _lastTaxonomyVersion = update.Data;
+                }
+            }
+
+            // Persist full LLM response + metadata
+            var persist = await PersistLastAnalysisAsync(null);
+            if (!persist.IsSuccess)
+            {
+                _logger.LogError("Failed to persist video analysis for {VideoId}: {Error}", videoId, persist.ErrorMessage);
+            }
 
             _logger.LogInformation(
                 "Completed transcript analysis for video {VideoId}. Found {AchievementCount} achievements",
@@ -85,7 +141,7 @@ public class TranscriptAnalyzer : ITranscriptAnalyzer
     /// <summary>
     /// Maps the typed LLM response into the domain VideoAnalysis.
     /// </summary>
-    private VideoAnalysis ParseLlmResponse(string videoId, CommonLlmResponse common)
+    private (VideoAnalysis Analysis, LlmResponse Dto) ParseLlmResponse(string videoId, CommonLlmResponse common, PromptExecutionInfoDto promptInfo)
     {
         // Convert common assistant payload into domain DTO
         LlmVideoAnalysisResponseDto dto;
@@ -96,7 +152,7 @@ public class TranscriptAnalyzer : ITranscriptAnalyzer
         };
 
         if (string.Equals(common.Assistant.ContentType, "application/json", StringComparison.OrdinalIgnoreCase)
-            && common.Assistant.JsonContent is System.Text.Json.JsonElement json)
+            && common.Assistant.JsonContent is JsonElement json)
         {
             dto = JsonSerializer.Deserialize<LlmVideoAnalysisResponseDto>(json.GetRawText(), opts)
                   ?? new LlmVideoAnalysisResponseDto(new AnalysisDto(null, null, null, null, null), new ProposalsDto(null));
@@ -108,7 +164,7 @@ public class TranscriptAnalyzer : ITranscriptAnalyzer
         }
 
         var analysis = dto.Analysis;
-        return new VideoAnalysis(
+        var videoAnalysis = new VideoAnalysis(
             Id: videoId,
             AnalyzedAt: DateTimeOffset.UtcNow,
             Achievements: dto.Analysis.Achievements ?? Array.Empty<Achievement>(),
@@ -119,6 +175,40 @@ public class TranscriptAnalyzer : ITranscriptAnalyzer
             ConfidenceScore: analysis.ConfidenceScore ?? 0.0,
             Proposals: dto.Proposals.Taxonomy
         );
+        var response = new LlmResponse(promptInfo, dto);
+        return (videoAnalysis, response);
     }
+
+    // State of the last analysis for persistence
+    private LlmResponse? _lastLlmResponse;
+    private string? _lastVideoId;
+    private DateTimeOffset _lastAnalyzedAt;
+    private string? _lastTaxonomyVersion;
+
+    public async Task<ServiceResult> PersistLastAnalysisAsync(string? taxonomyVersion)
+    {
+        try
+        {
+            if (_lastLlmResponse == null || string.IsNullOrEmpty(_lastVideoId))
+            {
+                return ServiceResult.Failure("No analysis available to persist");
+            }
+
+            var store = await _videoAnalysisRepository.SaveFullLlmResponseAsync(
+                id: _lastVideoId!,
+                analyzedAt: _lastAnalyzedAt,
+                taxonomyVersion: taxonomyVersion ?? _lastTaxonomyVersion,
+                llm: _lastLlmResponse);
+
+            return store;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to persist last analysis for {VideoId}", _lastVideoId);
+            return ServiceResult.Failure($"Failed to persist last analysis: {ex.Message}", ex);
+        }
+    }
+
+    public string? GetLastTaxonomyVersion() => _lastTaxonomyVersion;
 }
 

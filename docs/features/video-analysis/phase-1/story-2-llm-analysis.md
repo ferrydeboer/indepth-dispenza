@@ -130,9 +130,8 @@ These steps are designed for sequential development, suitable for feeding into a
   - **Actions**:
     - ✅ Add metadata (e.g., `analyzedAt`, `taxonomyVersion`) to JSON.
     - Upsert to `video-analysis` collection using Cosmos DB SDK.
-    - If `proposals` present, load current taxonomy, automatically apply changes (e.g., add new subcategories/attributes based on proposals), create new version document with incremented ID (e.g., v1.1), and log the update.
-  - **Output**: Stored documents; logs for tokens/cost and taxonomy changes.
-  - **Test**: Integration test from queue trigger to storage; check for automatic taxonomy updates.
+  - **Output**: Stored video analysis document; logs for tokens/cost.
+  - **Test**: Integration test from http trigger to storage;
 
 5. **Handle new Taxonomy Proposals**
    - **Input**: The stored Video Analysis data.

@@ -76,9 +76,9 @@ public class TaxonomyPromptComposer : IPromptComposer
 
             // Serialize strong-typed taxonomy into the wrapped prompt shape { "taxonomy": ... }
             var doc = result.Data;
-            var wrapper = new System.Collections.Generic.Dictionary<string, object?>
+            var wrapper = new Dictionary<string, object?>
             {
-                ["taxonomy"] = new System.Collections.Generic.Dictionary<string, AchievementTypeGroup>(doc.Taxonomy)
+                ["taxonomy"] = new Dictionary<string, AchievementTypeGroup>(doc.Taxonomy)
             };
             return System.Text.Json.JsonSerializer.Serialize(wrapper, new System.Text.Json.JsonSerializerOptions
             {
