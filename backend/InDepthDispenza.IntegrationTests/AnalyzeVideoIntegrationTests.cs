@@ -1,6 +1,9 @@
+using System.Net;
 using System.Text.Json;
 using FluentAssertions;
+using InDepthDispenza.Functions.VideoAnalysis.Interfaces;
 using InDepthDispenza.IntegrationTests.Infrastructure;
+using Microsoft.Azure.Cosmos;
 using WireMock.Admin.Mappings;
 
 namespace InDepthDispenza.IntegrationTests;
@@ -89,7 +92,7 @@ public class AnalyzeVideoIntegrationTests : IntegrationTestBase
         await SetupTranscriptResponse(TestVideoId, transcriptText);
 
         // And Grok chat completions is stubbed on WireMock and will return a minimal valid payload
-        await SetupGrokChatCompletionsResponse();
+        await WireMockConfig.Grok.SetupAsync();
 
         // When AnalyzeVideo is invoked (inside Functions container)
         var response = await InvokeAnalyzeVideoAsync(TestVideoId);
@@ -174,6 +177,50 @@ public class AnalyzeVideoIntegrationTests : IntegrationTestBase
         }
 
         matched.Should().BeTrue("Transcript text must be included in the LLM prompt body sent to Grok");
+    }
+
+    [Test]
+    public async Task AchievementsFromLlm_AreStoredInCosmos()
+    {
+        // Given a transcript exists
+        const string transcriptText = "patient reports complete remission after meditation";
+        await SetupTranscriptResponse(TestVideoId, transcriptText);
+
+        // And Grok returns an analysis with concrete achievements
+        var expectedAchievements = new[]
+        {
+            new {
+                type = "healing",
+                tags = new[] { "remission", "meditation_practice" },
+                details = "Complete remission after sustained meditation practice"
+            },
+            new {
+                type = "transformation",
+                tags = new[] { "mindset_shift" },
+                details = "Notable positive shift in outlook"
+            }
+        };
+        await WireMockConfig.Grok.SetupAsync(expectedAchievements);
+
+        // When
+        var response = await InvokeAnalyzeVideoAsync(TestVideoId);
+        response.IsSuccess.Should().BeTrue(response.Content);
+
+        // Then the full LLM response document should be stored in Cosmos (video-analysis container)
+        var storedAchievements = await GetStoredLlmAchievementsFromCosmos(TestVideoId);
+
+        storedAchievements.Should().NotBeNull("LLM document should be stored");
+        storedAchievements!.Length.Should().Be(expectedAchievements.Length);
+
+        // Validate content roughly matches (type/tags/details)
+        for (int i = 0; i < expectedAchievements.Length; i++)
+        {
+            var exp = expectedAchievements[i];
+            var got = storedAchievements[i];
+            got.Type.Should().Be(exp.type);
+            got.Tags.Should().BeEquivalentTo(exp.tags);
+            got.Details.Should().Be(exp.details);
+        }
     }
 
     private async Task SetupTranscriptResponse(string videoId, string transcript)
@@ -290,81 +337,56 @@ public class AnalyzeVideoIntegrationTests : IntegrationTestBase
             .Count();
     }
 
-    private async Task SetupGrokChatCompletionsResponse()
+
+    private record StoredAchievement(string Type, string[] Tags, string? Details);
+
+    // Mirror of the stored LLM doc shape in CosmosVideoAnalysisRepository
+    private sealed class StoredLlmDocument
     {
-        // Minimal Grok-compatible chat completions response with JSON content for our app to parse
-        var grokResponse = new
+        public string id { get; set; } = string.Empty;
+        public DateTimeOffset analyzedAt { get; set; }
+        public string? taxonomyVersion { get; set; }
+        public LlmResponse response { get; set; } = null!;
+    }
+
+    private async Task<StoredAchievement[]?> GetStoredLlmAchievementsFromCosmos(string videoId)
+    {
+        // Connect to Cosmos emulator using environment setup values
+        var connectionString = EnvironmentSetup.CosmosDbContainer
+            .GetConnectionString()
+            .Replace("https", "http");
+
+        var clientOptions = new CosmosClientOptions
         {
-            id = "chatcmpl_test_1",
-            @object = "chat.completion",
-            created = 1734990000,
-            model = "grok-4",
-            choices = new[]
+            ConnectionMode = ConnectionMode.Gateway,
+            LimitToEndpoint = true,
+            SerializerOptions = new CosmosSerializationOptions
             {
-                new
-                {
-                    index = 0,
-                    message = new
-                    {
-                        role = "assistant",
-                        // Return a minimal valid LLM JSON our pipeline can parse
-                        content = JsonSerializer.Serialize(new
-                        {
-                            analysis = new
-                            {
-                                achievements = Array.Empty<object>(),
-                                timeframe = (object?)null,
-                                practices = Array.Empty<string>(),
-                                sentimentScore = 0.5,
-                                confidenceScore = 0.5
-                            },
-                            proposals = new
-                            {
-                                taxonomy = Array.Empty<object>()
-                            }
-                        })
-                    },
-                    finish_reason = "stop"
-                }
-            },
-            usage = new
-            {
-                prompt_tokens = 100,
-                completion_tokens = 10,
-                total_tokens = 110
+                PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase
             }
         };
 
-        var mappingModel = new MappingModel
-        {
-            Request = new RequestModel
-            {
-                Path = new PathModel
-                {
-                    Matchers = new[]
-                    {
-                        new MatcherModel
-                        {
-                            Name = "ExactMatcher",
-                            Pattern = "/v1/chat/completions"
-                        }
-                    }
-                },
-                Methods = new[] { "POST" }
-            },
-            Response = new ResponseModel
-            {
-                StatusCode = 200,
-                Headers = new Dictionary<string, object>
-                {
-                    { "Content-Type", "application/json" }
-                },
-                Body = JsonSerializer.Serialize(grokResponse)
-            }
-        };
+        using var cosmos = new CosmosClient(connectionString, clientOptions);
+        var db = cosmos.GetDatabase(EnvironmentSetup.CosmosDbDatabaseName);
+        var container = db.GetContainer("video-analysis");
 
-        var adminClient = WireMockConfig.WireMockContainer.CreateWireMockAdminClient();
-        await adminClient.PostMappingAsync(mappingModel);
+        try
+        {
+            var resp = await container.ReadItemAsync<StoredLlmDocument>(videoId, new PartitionKey(videoId));
+            var dto = resp.Resource;
+
+            var achievements = dto.response.VideoAnalysisResponse.Analysis.Achievements;
+            if (achievements == null || achievements.Length == 0)
+                return [];
+
+            return achievements
+                .Select(a => new StoredAchievement(a.Type, a.Tags, a.Details))
+                .ToArray();
+        }
+        catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+        {
+            return null;
+        }
     }
 
     private async Task<int> GetGrokRequests()

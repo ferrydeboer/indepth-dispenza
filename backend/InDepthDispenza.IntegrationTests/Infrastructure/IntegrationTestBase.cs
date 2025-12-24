@@ -72,7 +72,7 @@ public abstract class IntegrationTestBase
         await WireMockConfig.Reset();
 
         // Provide a default stub for Grok chat completions so tests not focusing on LLM do not fail
-        await SetupDefaultGrokStubAsync();
+        await WireMockConfig.Grok.SetupAsync();
     }
 
     [TearDown]
@@ -84,75 +84,7 @@ public abstract class IntegrationTestBase
             await OutputFunctionContainerLogsAsync();
         }
     }
-
-    private async Task SetupDefaultGrokStubAsync()
-    {
-        // Minimal Grok-compatible chat completions response with JSON content our app can parse
-        var grokResponse = new
-        {
-            id = "chatcmpl_default",
-            @object = "chat.completion",
-            created = 1734990000,
-            model = "grok-4",
-            choices = new[]
-            {
-                new
-                {
-                    index = 0,
-                    message = new
-                    {
-                        role = "assistant",
-                        content = JsonSerializer.Serialize(new
-                        {
-                            analysis = new
-                            {
-                                achievements = Array.Empty<object>(),
-                                timeframe = (object?)null,
-                                practices = Array.Empty<string>(),
-                                sentimentScore = 0.0,
-                                confidenceScore = 0.0
-                            },
-                            proposals = new { taxonomy = Array.Empty<object>() }
-                        })
-                    },
-                    finish_reason = "stop"
-                }
-            },
-            usage = new { prompt_tokens = 1, completion_tokens = 1, total_tokens = 2 }
-        };
-
-        var mappingModel = new WireMock.Admin.Mappings.MappingModel
-        {
-            Request = new WireMock.Admin.Mappings.RequestModel
-            {
-                Path = new WireMock.Admin.Mappings.PathModel
-                {
-                    Matchers = new[]
-                    {
-                        new WireMock.Admin.Mappings.MatcherModel
-                        {
-                            Name = "ExactMatcher",
-                            Pattern = "/v1/chat/completions"
-                        }
-                    }
-                },
-                Methods = new[] { "POST" }
-            },
-            Response = new WireMock.Admin.Mappings.ResponseModel
-            {
-                StatusCode = 200,
-                Headers = new Dictionary<string, object>
-                {
-                    { "Content-Type", "application/json" }
-                },
-                Body = JsonSerializer.Serialize(grokResponse)
-            }
-        };
-
-        var adminClient = WireMockConfig.WireMockContainer.CreateWireMockAdminClient();
-        await adminClient.PostMappingAsync(mappingModel);
-    }
-
+    
     protected virtual IEnvironmentSetupStrategy CreateEnvironmentSetupStrategy()
     {
         return new DockerEnvironmentSetupStrategy();

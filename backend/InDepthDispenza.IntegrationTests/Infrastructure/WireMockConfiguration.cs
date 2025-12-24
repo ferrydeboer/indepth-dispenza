@@ -20,6 +20,8 @@ public class WireMockConfiguration
         _fixture = new Fixture();
     }
 
+    public GrokMockServer Grok => new(this);
+
     public async Task SetupPlaylistResponse(string playlistId, int videoCount, int? statusCode = 200)
     {
         var videos = _fixture.Build<VideoInfo>()

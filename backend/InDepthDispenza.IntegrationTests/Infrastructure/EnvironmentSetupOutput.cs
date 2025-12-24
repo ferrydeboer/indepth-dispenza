@@ -17,4 +17,6 @@ public record EnvironmentSetupOutput(
     string CosmosDbTranscriptCacheContainer,
     WireMockContainer WireMockContainer,
     CosmosDbContainer CosmosDbContainer,
-    INetwork Network);
+    INetwork Network)
+{
+}
