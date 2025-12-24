@@ -25,5 +25,8 @@ public record VideoAnalysis(
     double SentimentScore,
     double ConfidenceScore,
     TaxonomyProposal[]? Proposals
-);
+)
+{
+    public string VideoId => Id;
+}
 

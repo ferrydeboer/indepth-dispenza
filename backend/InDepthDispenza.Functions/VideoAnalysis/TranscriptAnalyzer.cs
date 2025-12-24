@@ -15,20 +15,20 @@ public class TranscriptAnalyzer : ITranscriptAnalyzer
     private readonly ILlmService _llmService;
     private readonly IVideoAnalysisRepository _videoAnalysisRepository;
     private readonly IEnumerable<IPromptComposer> _promptComposers;
-    private readonly ITaxonomyUpdateService _taxonomyUpdateService;
+    private readonly IEnumerable<IVideoAnalyzedHandler> _videosAnalyzedHandlers;
 
     public TranscriptAnalyzer(
         ILogger<TranscriptAnalyzer> logger,
         ILlmService llmService,
         IEnumerable<IPromptComposer> promptComposers,
-        IVideoAnalysisRepository videoAnalysisRepository,
-        ITaxonomyUpdateService taxonomyUpdateService)
+        IEnumerable<IVideoAnalyzedHandler> videosAnalyzedHandlers,
+        IVideoAnalysisRepository videoAnalysisRepository)
     {
         _logger = logger;
         _llmService = llmService;
         _promptComposers = promptComposers;
+        _videosAnalyzedHandlers = videosAnalyzedHandlers;
         _videoAnalysisRepository = videoAnalysisRepository;
-        _taxonomyUpdateService = taxonomyUpdateService;
     }
 
     /// <summary>
@@ -45,7 +45,7 @@ public class TranscriptAnalyzer : ITranscriptAnalyzer
 
             _logger.LogInformation(
                 "Composed prompt for video {VideoId}. Prompt length: {PromptLength} characters",
-                videoId, promptText.Length);    
+                videoId, promptText.Length);
 
             // Step 2: Call LLM service with composed prompt
             var llmResult = await _llmService.CallAsync(promptText);
@@ -88,20 +88,13 @@ public class TranscriptAnalyzer : ITranscriptAnalyzer
             _lastVideoId = videoId;
             _lastAnalyzedAt = analysis.AnalyzedAt;
 
-            // If proposals exist, perform taxonomy update here (business logic layer)
+            // Post-processing handlers (ordered); isolate exceptions per handler
             _lastTaxonomyVersion = null;
-            if (analysis.Proposals is { Length: > 0 })
-            {
-                var update = await _taxonomyUpdateService.ApplyProposalsAsync(analysis);
-                if (!update.IsSuccess)
-                {
-                    _logger.LogWarning("Taxonomy update from proposals failed: {Error}", update.ErrorMessage);
-                }
-                else
-                {
-                    _lastTaxonomyVersion = update.Data;
-                }
-            }
+            var context = new VideosAnalyzedContext(
+                videoId,
+                _logger);
+
+            await OnVideoAnalyzed(analysis, context);
 
             // Persist full LLM response + metadata
             var persist = await PersistLastAnalysisAsync(null);
@@ -122,6 +115,21 @@ public class TranscriptAnalyzer : ITranscriptAnalyzer
             return ServiceResult<VideoAnalysis>.Failure(
                 $"Failed to analyze transcript: {ex.Message}",
                 ex);
+        }
+    }
+
+    private async Task OnVideoAnalyzed(VideoAnalysis analysis, VideosAnalyzedContext context)
+    {
+        foreach (var handler in _videosAnalyzedHandlers)
+        {
+            try
+            {
+                await handler.HandleAsync(analysis, context);
+            }
+            catch (Exception handlerEx)
+            {
+                _logger.LogError(handlerEx, "Post-processing handler {Handler} failed for video {VideoId}", handler.GetType().Name, analysis.VideoId);
+            }
         }
     }
 

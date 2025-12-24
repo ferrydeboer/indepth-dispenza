@@ -81,6 +81,101 @@ public class AnalyzeVideoIntegrationTests : IntegrationTestBase
         content!.transcriptLength.Should().Be(0);
     }
 
+    [Test]
+    public async Task LlmPromptContainsTranscript_WhenAnalyzingVideo()
+    {
+        // Given a transcript available from YouTubeTranscriptIO
+        const string transcriptText = "TRANSCRIPT_TOKEN_12345";
+        await SetupTranscriptResponse(TestVideoId, transcriptText);
+
+        // And Grok chat completions is stubbed on WireMock and will return a minimal valid payload
+        await SetupGrokChatCompletionsResponse();
+
+        // When AnalyzeVideo is invoked (inside Functions container)
+        var response = await InvokeAnalyzeVideoAsync(TestVideoId);
+
+        // Then the function should return success
+        response.IsSuccess.Should().BeTrue(response.Content);
+
+        // And the Grok request body should contain the transcript text
+        var grokRequests = await GetGrokRequests();
+        grokRequests.Should().BeGreaterThan(0, "LLM should be called");
+
+        var adminClient = WireMockConfig.WireMockContainer.CreateWireMockAdminClient();
+        var requests = await adminClient.GetRequestsAsync();
+        var grokBodies = requests
+            .Where(r => r.Request?.Path == "/v1/chat/completions" && r.Request?.Method == "POST")
+            .Select(r => r.Request?.Body ?? string.Empty)
+            .ToList();
+
+        grokBodies.Should().NotBeEmpty();
+
+        bool matched = false;
+        foreach (var body in grokBodies)
+        {
+            try
+            {
+                using var doc = JsonDocument.Parse(body);
+                var root = doc.RootElement;
+                if (root.TryGetProperty("messages", out var messages) && messages.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var msg in messages.EnumerateArray())
+                    {
+                        if (msg.TryGetProperty("content", out var contentEl))
+                        {
+                            // content can be a string or an array of content parts
+                            if (contentEl.ValueKind == JsonValueKind.String)
+                            {
+                                var content = contentEl.GetString();
+                                if (!string.IsNullOrEmpty(content) && content.Contains(transcriptText))
+                                {
+                                    matched = true;
+                                    break;
+                                }
+                            }
+                            else if (contentEl.ValueKind == JsonValueKind.Array)
+                            {
+                                foreach (var part in contentEl.EnumerateArray())
+                                {
+                                    if (part.ValueKind == JsonValueKind.Object && part.TryGetProperty("text", out var textEl))
+                                    {
+                                        var text = textEl.GetString();
+                                        if (!string.IsNullOrEmpty(text) && text.Contains(transcriptText))
+                                        {
+                                            matched = true;
+                                            break;
+                                        }
+                                    }
+                                    else if (part.ValueKind == JsonValueKind.String)
+                                    {
+                                        var text = part.GetString();
+                                        if (!string.IsNullOrEmpty(text) && text.Contains(transcriptText))
+                                        {
+                                            matched = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (matched) break;
+                            }
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // ignore parse errors and fall back to raw substring search
+                if (body.Contains(transcriptText))
+                {
+                    matched = true;
+                    break;
+                }
+            }
+        }
+
+        matched.Should().BeTrue("Transcript text must be included in the LLM prompt body sent to Grok");
+    }
+
     private async Task SetupTranscriptResponse(string videoId, string transcript)
     {
         // YouTube Transcript IO API response format (matches actual API structure)
@@ -193,6 +288,90 @@ public class AnalyzeVideoIntegrationTests : IntegrationTestBase
                      && r.Request?.Method == "POST"
                      && r.Request?.Body?.Contains(videoId) == true)
             .Count();
+    }
+
+    private async Task SetupGrokChatCompletionsResponse()
+    {
+        // Minimal Grok-compatible chat completions response with JSON content for our app to parse
+        var grokResponse = new
+        {
+            id = "chatcmpl_test_1",
+            @object = "chat.completion",
+            created = 1734990000,
+            model = "grok-4",
+            choices = new[]
+            {
+                new
+                {
+                    index = 0,
+                    message = new
+                    {
+                        role = "assistant",
+                        // Return a minimal valid LLM JSON our pipeline can parse
+                        content = JsonSerializer.Serialize(new
+                        {
+                            analysis = new
+                            {
+                                achievements = Array.Empty<object>(),
+                                timeframe = (object?)null,
+                                practices = Array.Empty<string>(),
+                                sentimentScore = 0.5,
+                                confidenceScore = 0.5
+                            },
+                            proposals = new
+                            {
+                                taxonomy = Array.Empty<object>()
+                            }
+                        })
+                    },
+                    finish_reason = "stop"
+                }
+            },
+            usage = new
+            {
+                prompt_tokens = 100,
+                completion_tokens = 10,
+                total_tokens = 110
+            }
+        };
+
+        var mappingModel = new MappingModel
+        {
+            Request = new RequestModel
+            {
+                Path = new PathModel
+                {
+                    Matchers = new[]
+                    {
+                        new MatcherModel
+                        {
+                            Name = "ExactMatcher",
+                            Pattern = "/v1/chat/completions"
+                        }
+                    }
+                },
+                Methods = new[] { "POST" }
+            },
+            Response = new ResponseModel
+            {
+                StatusCode = 200,
+                Headers = new Dictionary<string, object>
+                {
+                    { "Content-Type", "application/json" }
+                },
+                Body = JsonSerializer.Serialize(grokResponse)
+            }
+        };
+
+        var adminClient = WireMockConfig.WireMockContainer.CreateWireMockAdminClient();
+        await adminClient.PostMappingAsync(mappingModel);
+    }
+
+    private async Task<int> GetGrokRequests()
+    {
+        var adminClient = WireMockConfig.WireMockContainer.CreateWireMockAdminClient();
+        var requests = await adminClient.GetRequestsAsync();
+        return requests.Count(r => r.Request?.Path == "/v1/chat/completions" && r.Request?.Method == "POST");
     }
 
     private record AnalyzeVideoResponse(bool IsSuccess, int StatusCode, string Content);

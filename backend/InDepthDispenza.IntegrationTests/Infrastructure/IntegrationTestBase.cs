@@ -1,4 +1,5 @@
 using AutoFixture;
+using System.Text.Json;
 using Azure.Storage.Queues;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
@@ -69,6 +70,9 @@ public abstract class IntegrationTestBase
 
         // Reset WireMock before each test
         await WireMockConfig.Reset();
+
+        // Provide a default stub for Grok chat completions so tests not focusing on LLM do not fail
+        await SetupDefaultGrokStubAsync();
     }
 
     [TearDown]
@@ -79,6 +83,74 @@ public abstract class IntegrationTestBase
         {
             await OutputFunctionContainerLogsAsync();
         }
+    }
+
+    private async Task SetupDefaultGrokStubAsync()
+    {
+        // Minimal Grok-compatible chat completions response with JSON content our app can parse
+        var grokResponse = new
+        {
+            id = "chatcmpl_default",
+            @object = "chat.completion",
+            created = 1734990000,
+            model = "grok-4",
+            choices = new[]
+            {
+                new
+                {
+                    index = 0,
+                    message = new
+                    {
+                        role = "assistant",
+                        content = JsonSerializer.Serialize(new
+                        {
+                            analysis = new
+                            {
+                                achievements = Array.Empty<object>(),
+                                timeframe = (object?)null,
+                                practices = Array.Empty<string>(),
+                                sentimentScore = 0.0,
+                                confidenceScore = 0.0
+                            },
+                            proposals = new { taxonomy = Array.Empty<object>() }
+                        })
+                    },
+                    finish_reason = "stop"
+                }
+            },
+            usage = new { prompt_tokens = 1, completion_tokens = 1, total_tokens = 2 }
+        };
+
+        var mappingModel = new WireMock.Admin.Mappings.MappingModel
+        {
+            Request = new WireMock.Admin.Mappings.RequestModel
+            {
+                Path = new WireMock.Admin.Mappings.PathModel
+                {
+                    Matchers = new[]
+                    {
+                        new WireMock.Admin.Mappings.MatcherModel
+                        {
+                            Name = "ExactMatcher",
+                            Pattern = "/v1/chat/completions"
+                        }
+                    }
+                },
+                Methods = new[] { "POST" }
+            },
+            Response = new WireMock.Admin.Mappings.ResponseModel
+            {
+                StatusCode = 200,
+                Headers = new Dictionary<string, object>
+                {
+                    { "Content-Type", "application/json" }
+                },
+                Body = JsonSerializer.Serialize(grokResponse)
+            }
+        };
+
+        var adminClient = WireMockConfig.WireMockContainer.CreateWireMockAdminClient();
+        await adminClient.PostMappingAsync(mappingModel);
     }
 
     protected virtual IEnvironmentSetupStrategy CreateEnvironmentSetupStrategy()
@@ -140,6 +212,12 @@ public abstract class IntegrationTestBase
             .WithEnvironment("YouTube__ApiKey", EnvironmentSetup.YouTubeApiKey)
             .WithEnvironment("YouTube__ApiBaseUrl", EnvironmentSetup.YouTubeApiBaseUrl)
             .WithEnvironment("YouTubeTranscriptApi__BaseUrl", EnvironmentSetup.YouTubeTranscriptApiBaseUrl)
+            // Enable Grok (xAI) integration and route it to WireMock inside the Docker network
+            .WithEnvironment("Grok__Enabled", "true")
+            .WithEnvironment("Grok__ApiKey", "test-api-key")
+            // Grok client appends "/chat/completions" so include the "/v1" segment here
+            .WithEnvironment("Grok__BaseUrl", EnvironmentSetup.YouTubeApiBaseUrl + "/v1")
+            .WithEnvironment("Grok__Model", "grok-4")
             .WithEnvironment("CosmosDb__AccountEndpoint", EnvironmentSetup.CosmosDbEndpoint)
             .WithEnvironment("CosmosDb__AccountKey", EnvironmentSetup.CosmosDbKey)
             .WithEnvironment("CosmosDb__DatabaseName", EnvironmentSetup.CosmosDbDatabaseName)
