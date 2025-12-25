@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json;
+using AutoFixture;
 using FluentAssertions;
 using InDepthDispenza.Functions.VideoAnalysis.Interfaces;
 using InDepthDispenza.IntegrationTests.Infrastructure;
@@ -11,17 +12,23 @@ namespace InDepthDispenza.IntegrationTests;
 [TestFixture]
 public class AnalyzeVideoIntegrationTests : IntegrationTestBase
 {
-    private const string TestVideoId = "dQw4w9WgXcQ";
+    private string _testVideoId = "dQw4w9WgXcQ";
 
+    [SetUp]
+    public void SetUp()
+    {
+        _testVideoId = CreateVideoId();
+    }
+    
     [Test]
     public async Task TranscriptIsCached_WhenFetchedSuccessfully()
     {
         // Given a video with ID dQw4w9WgXcQ
         // And the YouTube Transcript API returns a transcript
-        await SetupTranscriptResponse(TestVideoId, "This is a test transcript from YouTube.");
+        await SetupTranscriptResponse(_testVideoId, "This is a test transcript from YouTube.");
 
         // When I analyze the video for the first time
-        var firstResponse = await InvokeAnalyzeVideoAsync(TestVideoId);
+        var firstResponse = await InvokeAnalyzeVideoAsync(_testVideoId);
 
         // Then the function should return success
         firstResponse.Should().NotBeNull();
@@ -30,7 +37,7 @@ public class AnalyzeVideoIntegrationTests : IntegrationTestBase
 
         // And the transcript should be cached in Cosmos DB
         // When I analyze the same video again
-        var secondResponse = await InvokeAnalyzeVideoAsync(TestVideoId);
+        var secondResponse = await InvokeAnalyzeVideoAsync(_testVideoId);
 
         // Then the function should return success
         secondResponse.Should().NotBeNull();
@@ -38,7 +45,7 @@ public class AnalyzeVideoIntegrationTests : IntegrationTestBase
         secondResponse.StatusCode.Should().Be(200);
 
         // And the transcript should be fetched from cache (verified by checking that only 1 call was made to WireMock)
-        var requests = await GetTranscriptApiRequests(TestVideoId);
+        var requests = await GetTranscriptApiRequests(_testVideoId);
         requests.Should().Be(1, "the transcript should be cached after the first fetch");
     }
 
@@ -47,12 +54,12 @@ public class AnalyzeVideoIntegrationTests : IntegrationTestBase
     {
         // Given a video with a cached transcript
         const string transcriptText = "This is a cached transcript";
-        await SetupTranscriptResponse(TestVideoId, transcriptText);
+        await SetupTranscriptResponse(_testVideoId, transcriptText);
 
         // When I analyze the video multiple times
-        var response1 = await InvokeAnalyzeVideoAsync(TestVideoId);
-        var response2 = await InvokeAnalyzeVideoAsync(TestVideoId);
-        var response3 = await InvokeAnalyzeVideoAsync(TestVideoId);
+        var response1 = await InvokeAnalyzeVideoAsync(_testVideoId);
+        var response2 = await InvokeAnalyzeVideoAsync(_testVideoId);
+        var response3 = await InvokeAnalyzeVideoAsync(_testVideoId);
 
         // Then all requests should succeed
         response1.IsSuccess.Should().BeTrue();
@@ -60,7 +67,7 @@ public class AnalyzeVideoIntegrationTests : IntegrationTestBase
         response3.IsSuccess.Should().BeTrue();
 
         // And the transcript API should only be called once
-        var requests = await GetTranscriptApiRequests(TestVideoId);
+        var requests = await GetTranscriptApiRequests(_testVideoId);
         requests.Should().Be(1, "subsequent requests should use the cache");
     }
 
@@ -68,10 +75,10 @@ public class AnalyzeVideoIntegrationTests : IntegrationTestBase
     public async Task EmptyTranscriptIsHandled_WhenVideoHasNoCaptions()
     {
         // Given a video without transcripts
-        await SetupTranscriptResponse(TestVideoId, string.Empty);
+        await SetupTranscriptResponse(_testVideoId, string.Empty);
 
         // When I analyze the video
-        var response = await InvokeAnalyzeVideoAsync(TestVideoId);
+        var response = await InvokeAnalyzeVideoAsync(_testVideoId);
 
         // Then the function should return success (but with empty transcript)
         response.Should().NotBeNull();
@@ -89,13 +96,14 @@ public class AnalyzeVideoIntegrationTests : IntegrationTestBase
     {
         // Given a transcript available from YouTubeTranscriptIO
         const string transcriptText = "TRANSCRIPT_TOKEN_12345";
-        await SetupTranscriptResponse(TestVideoId, transcriptText);
+        string _testVideoId = CreateVideoId();
+        await SetupTranscriptResponse(_testVideoId, transcriptText);
 
         // And Grok chat completions is stubbed on WireMock and will return a minimal valid payload
         await WireMockConfig.Grok.SetupAsync();
 
         // When AnalyzeVideo is invoked (inside Functions container)
-        var response = await InvokeAnalyzeVideoAsync(TestVideoId);
+        var response = await InvokeAnalyzeVideoAsync(_testVideoId);
 
         // Then the function should return success
         response.IsSuccess.Should().BeTrue(response.Content);
@@ -184,7 +192,7 @@ public class AnalyzeVideoIntegrationTests : IntegrationTestBase
     {
         // Given a transcript exists
         const string transcriptText = "patient reports complete remission after meditation";
-        await SetupTranscriptResponse(TestVideoId, transcriptText);
+        await SetupTranscriptResponse(_testVideoId, transcriptText);
 
         // And Grok returns an analysis with concrete achievements
         var expectedAchievements = new[]
@@ -203,11 +211,11 @@ public class AnalyzeVideoIntegrationTests : IntegrationTestBase
         await WireMockConfig.Grok.SetupAsync(expectedAchievements);
 
         // When
-        var response = await InvokeAnalyzeVideoAsync(TestVideoId);
+        var response = await InvokeAnalyzeVideoAsync(_testVideoId);
         response.IsSuccess.Should().BeTrue(response.Content);
 
         // Then the full LLM response document should be stored in Cosmos (video-analysis container)
-        var storedAchievements = await GetStoredLlmAchievementsFromCosmos(TestVideoId);
+        var storedAchievements = await GetStoredLlmAchievementsFromCosmos(_testVideoId);
 
         storedAchievements.Should().NotBeNull("LLM document should be stored");
         storedAchievements!.Length.Should().Be(expectedAchievements.Length);
@@ -223,6 +231,12 @@ public class AnalyzeVideoIntegrationTests : IntegrationTestBase
         }
     }
 
+    private static string CreateVideoId()
+    {
+        var fixture = new Fixture();
+        return fixture.Create<string>()[..12];
+    }
+    
     private async Task SetupTranscriptResponse(string videoId, string transcript)
     {
         // YouTube Transcript IO API response format (matches actual API structure)

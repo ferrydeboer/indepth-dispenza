@@ -1,5 +1,4 @@
 using InDepthDispenza.Functions.Interfaces;
-using VideoAnalysisModel = InDepthDispenza.Functions.VideoAnalysis.VideoAnalysis;
 
 namespace InDepthDispenza.Functions.VideoAnalysis.Interfaces;
 
@@ -9,9 +8,8 @@ namespace InDepthDispenza.Functions.VideoAnalysis.Interfaces;
 public interface ITaxonomyUpdateService
 {
     /// <summary>
-    /// If proposals are present in the analysis, merge them into the latest taxonomy
-    /// and save a new version. Returns the new taxonomy version ID when an update
-    /// occurred, or null if no proposals were present.
+    /// Merge proposals into the latest taxonomy and save a new version. Returns the new
+    /// taxonomy version ID when an update occurred, or null if no proposals were present.
     /// </summary>
-    Task<ServiceResult<string?>> ApplyProposalsAsync(VideoAnalysisModel analysis);
+    Task<ServiceResult<string?>> ApplyProposalsAsync(string videoId, TaxonomyProposal[] proposals);
 }

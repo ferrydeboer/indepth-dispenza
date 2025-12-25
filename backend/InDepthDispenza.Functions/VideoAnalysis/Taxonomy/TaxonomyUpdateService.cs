@@ -17,10 +17,10 @@ public sealed class TaxonomyUpdateService : ITaxonomyUpdateService
         _taxonomyRepository = taxonomyRepository;
     }
 
-    public async Task<ServiceResult<string?>> ApplyProposalsAsync(VideoAnalysis analysis)
+    public async Task<ServiceResult<string?>> ApplyProposalsAsync(string videoId, TaxonomyProposal[] proposals)
     {
         // Only proceed if proposals are present
-        if (analysis.Proposals is null || analysis.Proposals.Length == 0)
+        if (proposals is null || proposals.Length == 0)
         {
             return ServiceResult<string?>.Success(null);
         }
@@ -47,7 +47,7 @@ public sealed class TaxonomyUpdateService : ITaxonomyUpdateService
 
         var changeNotes = new List<string>();
 
-        foreach (var proposal in analysis.Proposals)
+        foreach (var proposal in proposals)
         {
             var domainName = proposal.AchievementCategory; // e.g., "healing"
             if (string.IsNullOrWhiteSpace(domainName))
@@ -104,7 +104,7 @@ public sealed class TaxonomyUpdateService : ITaxonomyUpdateService
             Version = nextVersionId,
             UpdatedAt = DateTimeOffset.UtcNow,
             Changes = changeNotes.ToArray(),
-            ProposedFromVideoId = analysis.Id
+            ProposedFromVideoId = videoId
         };
         foreach (var kv in spec.Taxonomy)
         {
@@ -117,7 +117,7 @@ public sealed class TaxonomyUpdateService : ITaxonomyUpdateService
             return ServiceResult<string?>.Failure(saveResult.ErrorMessage!, saveResult.Exception);
         }
 
-        _logger.LogInformation("Saved new taxonomy version {VersionId} from proposals in video {VideoId}", nextVersionId, analysis.Id);
+        _logger.LogInformation("Saved new taxonomy version {VersionId} from proposals in video {VideoId}", nextVersionId, videoId);
         return ServiceResult<string?>.Success(nextVersionId);
     }
 

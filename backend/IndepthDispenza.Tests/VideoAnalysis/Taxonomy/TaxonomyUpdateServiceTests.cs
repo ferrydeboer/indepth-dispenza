@@ -59,19 +59,8 @@ public class TaxonomyUpdateServiceTests
         return (service, repoMock, holder);
     }
 
-    private static InDepthDispenza.Functions.VideoAnalysis.VideoAnalysis MakeAnalysis(string videoId, params TaxonomyProposal[] proposals)
-    {
-        return new InDepthDispenza.Functions.VideoAnalysis.VideoAnalysis(
-            Id: videoId,
-            AnalyzedAt: DateTimeOffset.UtcNow,
-            ModelVersion: "test-model",
-            Achievements: [],
-            Timeframe: null,
-            Practices: [],
-            SentimentScore: 0.0,
-            ConfidenceScore: 0.0,
-            Proposals: proposals);
-    }
+    private static (string videoId, TaxonomyProposal[] proposals) MakeAnalysis(string videoId, params TaxonomyProposal[] proposals)
+        => (videoId, proposals);
 
     private static TaxonomyProposal Proposal(string domain,
         string category,
@@ -112,7 +101,7 @@ public class TaxonomyUpdateServiceTests
                 attributes: ["attr1"]));
 
         // Act
-        var result = await service.ApplyProposalsAsync(analysis);
+        var result = await service.ApplyProposalsAsync(analysis.videoId, analysis.proposals);
 
         // Assert
         Assert.That(result.IsSuccess, Is.True);
@@ -146,7 +135,7 @@ public class TaxonomyUpdateServiceTests
                 attributes: ["chronic"]));
 
         // Act
-        var result = await service.ApplyProposalsAsync(analysis);
+        var result = await service.ApplyProposalsAsync(analysis.videoId, analysis.proposals);
 
         // Assert
         Assert.That(result.IsSuccess, Is.True);
@@ -176,7 +165,7 @@ public class TaxonomyUpdateServiceTests
                 subcategories: ["diabetes"]));
 
         // Act
-        var result = await service.ApplyProposalsAsync(analysis);
+        var result = await service.ApplyProposalsAsync(analysis.videoId, analysis.proposals);
 
         // Assert
         Assert.That(result.IsSuccess, Is.True);
@@ -203,7 +192,7 @@ public class TaxonomyUpdateServiceTests
                 attributes: ["acute"]));
 
         // Act
-        var result = await service.ApplyProposalsAsync(analysis);
+        var result = await service.ApplyProposalsAsync(analysis.videoId, analysis.proposals);
 
         // Assert
         Assert.That(result.IsSuccess, Is.True);

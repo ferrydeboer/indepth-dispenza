@@ -13,6 +13,8 @@ Use the following taxonomy to extract structured tags from the transcript.
 **CRITICAL RULES:**
 1. **ALWAYS use existing tags from the taxonomy above when applicable**
 2. **ALWAYS Include parent categories**: When using `cervical_cancer`, also include `cancer` and `healing` in the achievement.
+3. **ALWAYS Include a subcategorie**: When there's cancer `cancer` there should be a subcategory!
+4. **OPTIONALLY Include attributes**: such as `metastatic` in case of `cancer`.
 
 ## Proposal Rules (for the "proposals" array)
 **Only propose new tags when:**

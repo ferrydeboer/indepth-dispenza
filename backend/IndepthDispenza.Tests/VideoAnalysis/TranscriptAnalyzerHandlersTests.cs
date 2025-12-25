@@ -38,7 +38,7 @@ public class TranscriptAnalyzerHandlersTests
         private readonly List<string> _calls;
         private readonly string _name;
         public RecordingHandler(List<string> calls, string name) { _calls = calls; _name = name; }
-        public Task HandleAsync(InDepthDispenza.Functions.VideoAnalysis.VideoAnalysis analysis, VideosAnalyzedContext context)
+        public Task HandleAsync(LlmResponse response, VideosAnalyzedContext context)
         {
             _calls.Add(_name);
             return Task.CompletedTask;
@@ -47,7 +47,7 @@ public class TranscriptAnalyzerHandlersTests
 
     private sealed class ThrowingHandler : IVideoAnalyzedHandler
     {
-        public Task HandleAsync(InDepthDispenza.Functions.VideoAnalysis.VideoAnalysis analysis, InDepthDispenza.Functions.VideoAnalysis.Interfaces.VideosAnalyzedContext context)
+        public Task HandleAsync(LlmResponse response, InDepthDispenza.Functions.VideoAnalysis.Interfaces.VideosAnalyzedContext context)
         {
             throw new InvalidOperationException("boom");
         }
@@ -70,7 +70,7 @@ public class TranscriptAnalyzerHandlersTests
             .ReturnsAsync(ServiceResult.Success());
 
         var taxonomyUpdate = new Mock<ITaxonomyUpdateService>();
-        taxonomyUpdate.Setup(t => t.ApplyProposalsAsync(It.IsAny<InDepthDispenza.Functions.VideoAnalysis.VideoAnalysis>()))
+        taxonomyUpdate.Setup(t => t.ApplyProposalsAsync(It.IsAny<string>(), It.IsAny<TaxonomyProposal[]>()))
             .ReturnsAsync(ServiceResult<string?>.Success(null));
 
         var calls = new List<string>();

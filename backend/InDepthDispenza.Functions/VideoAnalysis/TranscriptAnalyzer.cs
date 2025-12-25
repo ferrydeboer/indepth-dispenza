@@ -56,20 +56,9 @@ public class TranscriptAnalyzer : ITranscriptAnalyzer
                     $"LLM analysis failed: {llmResult.ErrorMessage}",
                     llmResult.Exception);
             }
-
-            // Log LLM token usage and timing
-            var call = llmResult.Data.Call;
-            _logger.LogInformation(
-                "LLM call provider={Provider}, model={Model}, durationMs={Duration}, tokens: prompt={Prompt}, completion={Completion}, total={Total}, requestId={RequestId}",
-                call.Provider,
-                call.Model,
-                call.DurationMs,
-                call.TokensPrompt,
-                call.TokensCompletion,
-                call.TokensTotal,
-                call.RequestId ?? "n/a");
-
+            
             // Build PromptExecutionInfoDto from LlmCallInfo ensuring parity
+            var call = llmResult.Data.Call;
             var promptInfo = new PromptExecutionInfoDto(
                 Provider: call.Provider,
                 Model: call.Model,
@@ -94,7 +83,7 @@ public class TranscriptAnalyzer : ITranscriptAnalyzer
                 videoId,
                 _logger);
 
-            await OnVideoAnalyzed(analysis, context);
+            await OnVideoAnalyzed(responseDto, context);
 
             // Persist full LLM response + metadata
             var persist = await PersistLastAnalysisAsync(null);
@@ -118,17 +107,17 @@ public class TranscriptAnalyzer : ITranscriptAnalyzer
         }
     }
 
-    private async Task OnVideoAnalyzed(VideoAnalysis analysis, VideosAnalyzedContext context)
+    private async Task OnVideoAnalyzed(LlmResponse response, VideosAnalyzedContext context)
     {
         foreach (var handler in _videosAnalyzedHandlers)
         {
             try
             {
-                await handler.HandleAsync(analysis, context);
+                await handler.HandleAsync(response, context);
             }
             catch (Exception handlerEx)
             {
-                _logger.LogError(handlerEx, "Post-processing handler {Handler} failed for video {VideoId}", handler.GetType().Name, analysis.VideoId);
+                _logger.LogError(handlerEx, "Post-processing handler {Handler} failed for video {VideoId}", handler.GetType().Name, context.VideoId);
             }
         }
     }

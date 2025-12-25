@@ -1,3 +1,4 @@
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -62,7 +63,7 @@ public class GrokLlmService : ILlmService
             {
                 Content = new StringContent(json, Encoding.UTF8, "application/json")
             };
-            req.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", opt.ApiKey);
+            req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", opt.ApiKey);
 
             var start = DateTimeOffset.UtcNow;
             var resp = await client.SendAsync(req);

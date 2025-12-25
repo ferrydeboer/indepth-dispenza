@@ -19,15 +19,16 @@ public sealed class TaxonomyProposalUpdateHandler : IVideoAnalyzedHandler
         _logger = logger;
     }
 
-    public async Task HandleAsync(VideoAnalysis analysis, VideosAnalyzedContext context)
+    public async Task HandleAsync(LlmResponse response, VideosAnalyzedContext context)
     {
         // Skip if no proposals
-        if (analysis.Proposals is null || analysis.Proposals.Length == 0)
+        var proposals = response.VideoAnalysisResponse.Proposals.Taxonomy;
+        if (proposals is null || proposals.Length == 0)
         {
             return;
         }
 
-        var update = await _taxonomyUpdateService.ApplyProposalsAsync(analysis);
+        var update = await _taxonomyUpdateService.ApplyProposalsAsync(context.VideoId, proposals);
         if (!update.IsSuccess)
         {
             _logger.LogWarning("Taxonomy update from proposals failed: {Error}", update.ErrorMessage);

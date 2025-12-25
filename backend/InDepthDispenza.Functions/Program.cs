@@ -71,6 +71,7 @@ builder.Services.AddScoped<ITranscriptAnalyzer, TranscriptAnalyzer>();
 builder.Services.AddScoped<ITaxonomyUpdateService, TaxonomyUpdateService>();
 // Video post-processing handlers (ordered)
 builder.Services.AddScoped<IVideoAnalyzedHandler, TaxonomyProposalUpdateHandler>();
+builder.Services.AddScoped<IVideoAnalyzedHandler, ProposalIntegratorHandler>();
 
 // 5. Prompt composers (registered in order they'll be used)
 builder.Services.AddScoped<IPromptComposer, TaxonomyPromptComposer>();
