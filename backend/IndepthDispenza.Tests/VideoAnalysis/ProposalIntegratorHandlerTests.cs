@@ -25,15 +25,18 @@ public class ProposalIntegratorHandlerTests
     public async Task MergeIntoExistingAchievement_AddsMissingTagsOnly()
     {
         var response = _fx.Create<LlmResponseForProposalTests>()
-            .WithAchievements(Ach("healing", "existing", "cancer"))
+            .WithAchievements(Ach("healing", "physical_health", "headache"))
+            .WithAchievements(Ach("healing", "cancer", "lung_cancer"))
             .WithProposals(Proposal("healing", ("cancer", ["cervical_cancer"])) )
             .Build();
 
         var sut = new ProposalIntegratorHandler(NullLogger<ProposalIntegratorHandler>.Instance);
         await sut.HandleAsync(response, _fx.Create<VideosAnalyzedContext>());
 
-        var ach = response.VideoAnalysisResponse.Analysis.Achievements!.Single(a => a.Type == "healing");
-        Assert.That(ach.Tags, Is.EquivalentTo(["existing", "cancer", "cervical_cancer"]));
+        var ach = response.VideoAnalysisResponse.Analysis.Achievements!.Single(a => 
+            a.Type == "healing"
+            && a.Tags.Contains("cancer") && !a.Tags.Contains("physical_health"));
+        Assert.That(ach.Tags, Is.EquivalentTo(["cancer", "lung_cancer", "cervical_cancer"]));
     }
 
     [Test]
@@ -49,7 +52,23 @@ public class ProposalIntegratorHandlerTests
 
         // Since array is fixed-size, handler cannot truly expand the in-memory array;
         // the TranscriptAnalyzer sync step ensures persisted DTO is updated. Here we assert no duplicates or crashes.
-        Assert.That(response.VideoAnalysisResponse.Analysis.Achievements!.Any(a => a.Type.Equals("healing", StringComparison.OrdinalIgnoreCase)), Is.False);
+        Assert.That(response.VideoAnalysisResponse.Analysis.Achievements!.Any(a => a.Type.Equals("healing", StringComparison.OrdinalIgnoreCase)), Is.True);
+    }
+    
+    [Test]
+    public async Task AddsNewAchievement_WhenMultipleAchievements()
+    {
+        var response = _fx.Create<LlmResponseForProposalTests>()
+            .WithAchievements(Ach("healing", "auto_immune"))
+            .WithAchievements(Ach("healing", "mental_health", "depression"))
+            .WithAchievements(Ach("transformation", "spiritual", "mystical_experience"))
+            .WithProposals(Proposal("manifestation", ("relationships", ["soulmate"])) )
+            .Build();
+
+        var sut = new ProposalIntegratorHandler(NullLogger<ProposalIntegratorHandler>.Instance);
+        await sut.HandleAsync(response, _fx.Create<VideosAnalyzedContext>());
+        
+        Assert.That(response.VideoAnalysisResponse.Analysis.Achievements!.Any(a => a.Type.Equals("manifestation", StringComparison.OrdinalIgnoreCase)), Is.True);
     }
 
     [Test]
@@ -65,6 +84,26 @@ public class ProposalIntegratorHandlerTests
         Assert.That(ach.Tags, Is.EquivalentTo(["cancer"]));
     }
 
+    [Test]
+    public async Task Merge_DoesNotCreateDuplicateTags()
+    {
+        // Existing achievement already contains the category and one subcategory
+        var response = _fx.Create<LlmResponseForProposalTests>()
+            .WithAchievements(Ach("healing", "cancer", "lung_cancer"))
+            .WithProposals(Proposal(
+                "healing",
+                ("cancer", ["lung_cancer", "cervical_cancer"])
+            ))
+            .Build();
+
+        var sut = new ProposalIntegratorHandler(NullLogger<ProposalIntegratorHandler>.Instance);
+        await sut.HandleAsync(response, _fx.Create<VideosAnalyzedContext>());
+
+        var ach = response.VideoAnalysisResponse.Analysis.Achievements!.Single(a => a.Type == "healing");
+        // Expect only unique tags: category plus unique subcategories
+        Assert.That(ach.Tags, Is.EquivalentTo(["cancer", "lung_cancer", "cervical_cancer"]));
+    }
+    
     [Test]
     public async Task TranscriptAnalyzer_PersistsMergedAchievements()
     {
