@@ -40,9 +40,15 @@ public sealed class TaxonomyUpdateService : ITaxonomyUpdateService
 
         // Work directly with strong-typed taxonomy (latest inherits TaxonomySpecification)
         var spec = new TaxonomySpecification { Version = latest.Version };
+        // Copy existing taxonomy map
         foreach (var kv in latest.Taxonomy)
         {
             spec.Taxonomy[kv.Key] = kv.Value;
+        }
+        // Copy existing rules to preserve them across updates
+        foreach (var rule in latest.Rules)
+        {
+            spec.Rules[rule.Key] = rule.Value;
         }
 
         var changeNotes = new List<string>();
@@ -109,6 +115,10 @@ public sealed class TaxonomyUpdateService : ITaxonomyUpdateService
         foreach (var kv in spec.Taxonomy)
         {
             newDoc.Taxonomy[kv.Key] = kv.Value;
+        }
+        foreach (var kv in spec.Rules)
+        {
+            newDoc.Rules[kv.Key] = kv.Value;
         }
 
         var saveResult = await _taxonomyRepository.SaveTaxonomyAsync(newDoc);

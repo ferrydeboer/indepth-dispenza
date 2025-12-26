@@ -4,8 +4,6 @@ using InDepthDispenza.Functions.VideoAnalysis;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
-using System;
-using System.Collections.Generic;
 
 namespace IndepthDispenza.Tests.VideoAnalysis
 {

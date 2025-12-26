@@ -1,26 +1,20 @@
 {
-  "version": "v4.0",
+  "id": "v5.0",
   "taxonomy": {
     "healing": {
       "physical_health": {
         "subcategories": [
           "obesity",
-          "high_blood_pressure",
-          "acid_reflux",
-          "insomnia",
+          "insulin_resistance",
           "mast_cell_activation_syndrome",
-          "heart_attack",
-          "postural_orthostatic_tachycardia_syndrome",
           "neuropathy",
           "glaucoma",
           "uveitis",
           "chronic_fatigue_syndrome",
-          "hearing_loss",
-          "tinnitus",
-          "vertigo",
           "chronic_pain",
           "migraines",
-          "sepsis"
+          "sepsis",
+          "mole"
         ],
         "attributes": [
           "weight_loss",
@@ -28,14 +22,21 @@
           "acute",
           "high_eye_pressure",
           "color_vision_loss",
-          "hereditary"
+          "hereditary",
+          "immune_dysregulation",
+          "tick_borne"
         ]
       },
       "mental_health": {
         "subcategories": [
           "depression",
           "anxiety",
-          "addiction"
+          "addiction",
+          "bipolar_disorder",
+          "ptsd",
+          "disordered_eating",
+          "panic_disorder",
+          "adhd"
         ],
         "attributes": [
           "alcohol_addiction",
@@ -47,7 +48,13 @@
         "subcategories": [
           "cervical_cancer",
           "lung_cancer",
-          "breast_cancer"
+          "breast_cancer",
+          "glioblastoma",
+          "pancreatic_cancer",
+          "bile_duct_cancer",
+          "prostate_cancer",
+          "hodgkins_lymphoma",
+          "bone_cancer"
         ],
         "attributes": [
           "stage_one",
@@ -55,7 +62,8 @@
           "stage_three",
           "stage_four",
           "recurrent",
-          "metastatic"
+          "metastatic",
+          "rare"
         ]
       },
       "auto_immune": {
@@ -63,19 +71,36 @@
           "hashimotos",
           "lupus",
           "rheumatoid_arthritis",
-          "crohns_disease"
+          "crohns_disease",
+          "psoriasis",
+          "psoriatic_arthritis",
+          "graves_disease",
+          "myasthenia_gravis",
+          "thyroid_eye_disease",
+          "fibromyalgia",
+          "syringomyelia"
         ],
         "attributes": [
           "flare_ups",
           "remission",
-          "multiple_autoimmune"
+          "multiple_autoimmune",
+          "skin_lesions",
+          "joint_stiffness",
+          "pain_flares",
+          "fatigue_dominant"
         ]
       },
       "neurological": {
         "subcategories": [
           "traumatic_brain_injury",
           "multiple_sclerosis",
-          "brain_fog"
+          "brain_fog",
+          "brain_tumor",
+          "cerebral_palsy",
+          "epilepsy",
+          "prosopagnosia",
+          "autism",
+          "parkinsons"
         ],
         "attributes": [
           "vision_impairment",
@@ -83,7 +108,12 @@
           "seizures",
           "hypothyroidism",
           "lesion_reduction",
-          "remission"
+          "remission",
+          "pre_cancerous",
+          "post_surgical",
+          "congenital",
+          "auditory_sensitivity",
+          "cognitive_fog"
         ]
       },
       "musculoskeletal": {
@@ -96,6 +126,62 @@
           "acute_trauma",
           "post_surgical"
         ]
+      },
+      "reproductive": {
+        "subcategories": [
+          "infertility",
+          "endometriosis",
+          "adenomyosis",
+          "premature_perimenopause"
+        ],
+        "attributes": [
+          "ivf_failure",
+          "egg_donor_failure"
+        ]
+      },
+      "sensory": {
+        "subcategories": [
+          "hearing_loss",
+          "tinnitus",
+          "vertigo",
+          "anosmia"
+        ],
+        "attributes": []
+      },
+      "dermatological": {
+        "subcategories": [
+          "eczema"
+        ],
+        "attributes": []
+      },
+      "respiratory": {
+        "subcategories": [
+          "asthma",
+          "allergies"
+        ],
+        "attributes": []
+      },
+      "lymphatic": {
+        "subcategories": [
+          "lymphedema",
+          "cellulitis"
+        ],
+        "attributes": []
+      },
+      "cardiovascular": {
+        "subcategories": [
+          "heart_attack",
+          "high_blood_pressure",
+          "postural_orthostatic_tachycardia_syndrome"
+        ],
+        "attributes": []
+      },
+      "digestive": {
+        "subcategories": [
+          "acid_reflux",
+          "gut_issues"
+        ],
+        "attributes": []
       }
     },
     "manifestation": {
@@ -118,6 +204,15 @@
           "remote_work",
           "salary_increase"
         ]
+      },
+      "personal_items": {
+        "subcategories": [
+          "musical_instrument"
+        ],
+        "attributes": [
+          "custom",
+          "vintage"
+        ]
       }
     },
     "transformation": {
@@ -125,15 +220,21 @@
         "subcategories": [
           "mystical_experience",
           "grief_resolution",
-          "oneness_realization"
+          "oneness_realization",
+          "energy_explosion",
+          "angelic_intervention"
         ],
         "attributes": [
           "emotional_release",
-          "insight"
+          "insight",
+          "out_of_body",
+          "light_beings"
         ]
       }
     },
     "other": {
+      "subcategories": [],
+      "attributes": []
     }
   },
   "rules": {
@@ -142,12 +243,10 @@
     "proposals": "Only propose if no exact match exists. Justify with transcript evidence. Suggest placement (e.g., 'under healing.physical_health.subcategories').",
     "multilingual": "English is canonical; future additions can include a 'translations' object per tag (e.g., {'es': 'cancer_cervical'})."
   },
+  "updatedAt": "2025-12-26T00:00:00.000Z",
   "changes": [
-    "Standardized key casing for subcategories and attributes",
-    "Expanded healing.physical_health.subcategories with chronic_pain, migraines, sepsis",
-    "Expanded healing.neurological.subcategories with brain_fog",
-    "Added new healing.musculoskeletal category",
-    "Expanded healing.auto_immune.attributes with multiple_autoimmune",
-    "Structured other with empty subcategories and attributes arrays"
-  ]
+    "Added cardiovascular category under healing, moving heart_attack, high_blood_pressure, postural_orthostatic_tachycardia_syndrome",
+    "Added digestive category under healing, moving acid_reflux, gut_issues"
+  ],
+  "proposal_status": "manual_update"
 }

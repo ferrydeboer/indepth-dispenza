@@ -1,4 +1,3 @@
-using System.Linq;
 using InDepthDispenza.Functions.Interfaces;
 using InDepthDispenza.Functions.VideoAnalysis.Interfaces;
 

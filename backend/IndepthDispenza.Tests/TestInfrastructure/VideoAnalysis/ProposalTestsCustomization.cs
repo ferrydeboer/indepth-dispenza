@@ -1,4 +1,3 @@
-using System;
 using AutoFixture;
 using InDepthDispenza.Functions.Interfaces;
 using InDepthDispenza.Functions.VideoAnalysis.Interfaces;

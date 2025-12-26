@@ -1,6 +1,5 @@
 using InDepthDispenza.Functions.Interfaces;
 using InDepthDispenza.Functions.VideoAnalysis.Interfaces;
-using InDepthDispenza.Functions.VideoAnalysis.Prompting;
 using InDepthDispenza.Functions.VideoAnalysis.Taxonomy;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -77,6 +76,37 @@ public class TaxonomyUpdateServiceTests
             [category] = node
         };
         return new TaxonomyProposal(domain, group, "because");
+    }
+
+    [Test]
+    public async Task ApplyProposals_CopiesRules_FromPreviousVersion()
+    {
+        // Arrange: initial taxonomy with some rules present
+        var initial = BuildInitialTaxonomy(includeHealing: false);
+        initial.Rules["max_categories_per_domain"] = "10";
+        initial.Rules["naming_convention"] = "snake_case";
+
+        var (service, _, holder) = CreateService(initial);
+
+        var analysis = MakeAnalysis(
+            "vid-5",
+            Proposal(
+                domain: "growth",
+                category: "personal_development",
+                subcategories: ["habits"],
+                attributes: ["daily"]))
+            ;
+
+        // Act
+        var result = await service.ApplyProposalsAsync(analysis.videoId, analysis.proposals);
+
+        // Assert
+        Assert.That(result.IsSuccess, Is.True);
+        Assert.That(holder.Saved, Is.Not.Null);
+        var saved = holder.Saved!;
+        Assert.That(saved.Rules.Count, Is.EqualTo(2));
+        Assert.That(saved.Rules["max_categories_per_domain"], Is.EqualTo("10"));
+        Assert.That(saved.Rules["naming_convention"], Is.EqualTo("snake_case"));
     }
 
     private static AchievementTypeGroup GetDomain(TaxonomyDocument doc, string domain)
