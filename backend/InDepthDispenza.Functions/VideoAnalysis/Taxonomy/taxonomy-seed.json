@@ -1,32 +1,7 @@
 {
-  "id": "v5.0",
+  "id": "v6.0",
   "taxonomy": {
     "healing": {
-      "physical_health": {
-        "subcategories": [
-          "obesity",
-          "insulin_resistance",
-          "mast_cell_activation_syndrome",
-          "neuropathy",
-          "glaucoma",
-          "uveitis",
-          "chronic_fatigue_syndrome",
-          "chronic_pain",
-          "migraines",
-          "sepsis",
-          "mole"
-        ],
-        "attributes": [
-          "weight_loss",
-          "chronic",
-          "acute",
-          "high_eye_pressure",
-          "color_vision_loss",
-          "hereditary",
-          "immune_dysregulation",
-          "tick_borne"
-        ]
-      },
       "mental_health": {
         "subcategories": [
           "depression",
@@ -41,7 +16,8 @@
         "attributes": [
           "alcohol_addiction",
           "nicotine_addiction",
-          "cannabis_addiction"
+          "cannabis_addiction",
+          "opioid_addiction"
         ]
       },
       "cancer": {
@@ -54,7 +30,15 @@
           "bile_duct_cancer",
           "prostate_cancer",
           "hodgkins_lymphoma",
-          "bone_cancer"
+          "bone_cancer",
+          "thyroid_cancer",
+          "ovarian_cancer",
+          "colorectal_cancer",
+          "skin_cancer",
+          "colon_cancer",
+          "kidney_cancer",
+          "liver_cancer",
+          "bone_marrow_cancer"
         ],
         "attributes": [
           "stage_one",
@@ -63,7 +47,8 @@
           "stage_four",
           "recurrent",
           "metastatic",
-          "rare"
+          "rare",
+          "advanced"
         ]
       },
       "auto_immune": {
@@ -78,7 +63,9 @@
           "myasthenia_gravis",
           "thyroid_eye_disease",
           "fibromyalgia",
-          "syringomyelia"
+          "syringomyelia",
+          "mast_cell_activation_syndrome",
+          "multiple_chemical_sensitivity"
         ],
         "attributes": [
           "flare_ups",
@@ -87,7 +74,12 @@
           "skin_lesions",
           "joint_stiffness",
           "pain_flares",
-          "fatigue_dominant"
+          "fatigue_dominant",
+          "chronic",
+          "acute",
+          "hereditary",
+          "immune_dysregulation",
+          "iatrogenic"
         ]
       },
       "neurological": {
@@ -100,31 +92,56 @@
           "epilepsy",
           "prosopagnosia",
           "autism",
-          "parkinsons"
+          "parkinsons",
+          "aneurysm",
+          "cervical_dystonia",
+          "strabismus",
+          "stutter",
+          "neuropathy",
+          "chronic_pain",
+          "migraines",
+          "chronic_fatigue_syndrome"
         ],
         "attributes": [
           "vision_impairment",
           "mobility_impairment",
           "seizures",
-          "hypothyroidism",
           "lesion_reduction",
           "remission",
           "pre_cancerous",
-          "post_surgical",
           "congenital",
           "auditory_sensitivity",
-          "cognitive_fog"
+          "cognitive_fog",
+          "inoperable",
+          "chronic",
+          "acute",
+          "hereditary",
+          "immune_dysregulation",
+          "post_surgical",
+          "regenerated",
+          "iatrogenic",
+          "misdiagnosis"
         ]
       },
       "musculoskeletal": {
         "subcategories": [
           "spinal_injury",
           "broken_bones",
-          "back_pain"
+          "back_pain",
+          "muscular_dystrophy",
+          "rotator_cuff_injury",
+          "osteopenia",
+          "osteoporosis"
         ],
         "attributes": [
           "acute_trauma",
-          "post_surgical"
+          "post_surgical",
+          "joint_stiffness",
+          "chronic",
+          "acute",
+          "hereditary",
+          "post_surgical",
+          "regenerated"
         ]
       },
       "reproductive": {
@@ -132,11 +149,16 @@
           "infertility",
           "endometriosis",
           "adenomyosis",
-          "premature_perimenopause"
+          "premature_perimenopause",
+          "uterine_masses"
         ],
         "attributes": [
           "ivf_failure",
-          "egg_donor_failure"
+          "egg_donor_failure",
+          "chest_extension",
+          "life_threatening",
+          "chronic",
+          "hereditary"
         ]
       },
       "sensory": {
@@ -144,44 +166,144 @@
           "hearing_loss",
           "tinnitus",
           "vertigo",
-          "anosmia"
+          "anosmia",
+          "glaucoma",
+          "uveitis"
         ],
-        "attributes": []
+        "attributes": [
+          "high_eye_pressure",
+          "color_vision_loss",
+          "chronic",
+          "acute",
+          "hereditary",
+          "post_surgical",
+          "iatrogenic"
+        ]
       },
       "dermatological": {
         "subcategories": [
-          "eczema"
+          "eczema",
+          "acne",
+          "mole",
+          "skin_lesions"
         ],
-        "attributes": []
+        "attributes": [
+          "chronic",
+          "acute",
+          "hereditary"
+        ]
       },
       "respiratory": {
         "subcategories": [
           "asthma",
-          "allergies"
+          "allergies",
+          "sinusitis",
+          "copd",
+          "pneumonia",
+          "cystic_fibrosis"
         ],
-        "attributes": []
+        "attributes": [
+          "chronic",
+          "pleural_effusion",
+          "bilateral",
+          "acute",
+          "hereditary"
+        ]
       },
       "lymphatic": {
         "subcategories": [
           "lymphedema",
           "cellulitis"
         ],
-        "attributes": []
+        "attributes": [
+          "chronic",
+          "acute",
+          "post_surgical"
+        ]
       },
       "cardiovascular": {
         "subcategories": [
           "heart_attack",
           "high_blood_pressure",
-          "postural_orthostatic_tachycardia_syndrome"
+          "postural_orthostatic_tachycardia_syndrome",
+          "arrhythmia",
+          "congenital_heart_defect"
         ],
-        "attributes": []
+        "attributes": [
+          "congenital",
+          "post_surgical",
+          "chronic",
+          "acute"
+        ]
       },
       "digestive": {
         "subcategories": [
           "acid_reflux",
           "gut_issues"
         ],
-        "attributes": []
+        "attributes": [
+          "chronic",
+          "acute"
+        ]
+      },
+      "endocrine": {
+        "subcategories": [
+          "goiter",
+          "hypothyroidism",
+          "hyperthyroidism"
+        ],
+        "attributes": [
+          "hormone_imbalance",
+          "thyroid_dominant",
+          "chronic",
+          "acute",
+          "hereditary",
+          "immune_dysregulation"
+        ]
+      },
+      "metabolic": {
+        "subcategories": [
+          "obesity",
+          "insulin_resistance",
+          "chronic_stress"
+        ],
+        "attributes": [
+          "weight_loss",
+          "energy_restoration",
+          "chronic",
+          "acute",
+          "hereditary"
+        ]
+      },
+      "infectious": {
+        "subcategories": [
+          "lyme_disease",
+          "mold_toxicity",
+          "sepsis",
+          "botulism"
+        ],
+        "attributes": [
+          "tick_borne",
+          "environmental_toxin",
+          "chronic",
+          "acute",
+          "iatrogenic"
+        ]
+      },
+      "hematological": {
+        "subcategories": [
+          "neutropenia",
+          "immune_thrombocytopenia",
+          "liver_failure"
+        ],
+        "attributes": [
+          "blood_count_recovery",
+          "organ_regeneration",
+          "chronic",
+          "acute",
+          "hereditary",
+          "post_surgical"
+        ]
       }
     },
     "manifestation": {
@@ -213,6 +335,18 @@
           "custom",
           "vintage"
         ]
+      },
+      "relationships": {
+        "subcategories": [
+          "soulmate",
+          "conscious_relationship",
+          "marriage",
+          "manifested_partner"
+        ],
+        "attributes": [
+          "heart_guided",
+          "surrender_led"
+        ]
       }
     },
     "transformation": {
@@ -232,19 +366,15 @@
         ]
       }
     },
-    "other": {
-    }
+    "other": {}
   },
-  "rules": {
-    "naming": "Use snake_case, lowercase only. No abbreviations unless standard (e.g., 'high_blood_pressure' not 'bp_high'). Avoid duplicates—check existing subcategories/attributes first.",
-    "hierarchy": "Propose new subcategories under the most relevant parent (e.g., new cancers under 'cancer'). Include the parent tag in extractions. Do not create new top-level parents unless the type (healing/manifestation/etc.) doesn't fit. Attributes are modifiers (e.g., 'chronic', 'stage_four'); subcategories are specific conditions.",
-    "proposals": "Only propose if no exact match exists. Justify with transcript evidence. Suggest placement (e.g., 'under healing.physical_health.subcategories').",
-    "multilingual": "English is canonical; future additions can include a 'translations' object per tag (e.g., {'es': 'cancer_cervical'})."
-  },
-  "updatedAt": "2025-12-26T00:00:00.000Z",
+  "updatedAt": "2025-12-29T20:00:00.0000000+00:00",
   "changes": [
-    "Added cardiovascular category under healing, moving heart_attack, high_blood_pressure, postural_orthostatic_tachycardia_syndrome",
-    "Added digestive category under healing, moving acid_reflux, gut_issues"
+    "Dissolved 'healing.physical_health' and redistributed subcategories to new/existing categories to prevent bloat.",
+    "Added new categories: 'endocrine', 'metabolic', 'infectious', 'hematological'.",
+    "Moved neuropathy/chronic_pain/migraines/chronic_fatigue to 'neurological'; osteopenia/osteoporosis to 'musculoskeletal'; glaucoma/uveitis to 'sensory'; mole to 'dermatological'; cystic_fibrosis to 'respiratory'.",
+    "Distributed shared attributes like 'chronic' to relevant categories without a top-level array.",
+    "Incorporated stutter subcategory under neurological as per prior proposals."
   ],
-  "proposal_status": "manual_update"
+  "proposedFromVideoId": "J-Cx8o4bizs"
 }

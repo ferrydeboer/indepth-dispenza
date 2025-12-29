@@ -172,13 +172,21 @@ public class CosmosTaxonomyRepository : CosmosRepositoryBase, ITaxonomyRepositor
                 {
                     Version = seedVersion,
                     UpdatedAt = DateTimeOffset.UtcNow,
-                    Changes = new[] { latestDoc is null ? "Initial taxonomy version" : $"Upgraded taxonomy to seed version {seedVersion}" },
+                    // Prefer change notes provided by the seed; if none, fall back to a minimal default
+                    Changes = (spec.Changes is { Length: > 0 }
+                        ? spec.Changes
+                        : new[] { latestDoc is null ? "Initial taxonomy version" : $"Upgraded taxonomy to seed version {seedVersion}" }),
                     ProposedFromVideoId = null
                 };
                 // copy map entries
                 foreach (var kv in spec.Taxonomy)
                 {
                     newDoc.Taxonomy[kv.Key] = kv.Value;
+                }
+                // copy rules exactly as provided by the seed (no merge/diff)
+                foreach (var rule in spec.Rules)
+                {
+                    newDoc.Rules[rule.Key] = rule.Value;
                 }
 
                 var saveResult = await SaveTaxonomyAsync(newDoc);
@@ -286,7 +294,28 @@ public class CosmosTaxonomyRepository : CosmosRepositoryBase, ITaxonomyRepositor
 
             var explicitModel = JsonConvert.DeserializeObject<TaxonomySpecification>(json, settings);
             if (explicitModel is not null && explicitModel.Taxonomy.Count > 0)
+            {
+                // Also try to capture optional "changes" array from the seed file
+                try
+                {
+                    var rootForChanges = JToken.Parse(json);
+                    var changesToken = rootForChanges["changes"];
+                    if (changesToken is JArray arr)
+                    {
+                        explicitModel.Changes = arr
+                            .Where(t => t.Type == JTokenType.String)
+                            .Select(t => t!.Value<string>()!)
+                            .Where(s => !string.IsNullOrWhiteSpace(s))
+                            .ToArray();
+                    }
+                }
+                catch
+                {
+                    // ignore best-effort changes extraction
+                }
+
                 return explicitModel;
+            }
 
             // Fallback: handle wrapped or flat structures using LINQ-to-JSON
             // This should be deleted, is obsolete by now.
@@ -324,9 +353,20 @@ public class CosmosTaxonomyRepository : CosmosRepositoryBase, ITaxonomyRepositor
                     if (string.Equals(prop.Name, "version", StringComparison.OrdinalIgnoreCase)) continue;
                     if (string.Equals(prop.Name, "id", StringComparison.OrdinalIgnoreCase)) continue;
                     if (string.Equals(prop.Name, "rules", StringComparison.OrdinalIgnoreCase)) continue;
+                    if (string.Equals(prop.Name, "changes", StringComparison.OrdinalIgnoreCase)) continue;
 
                     var group = prop.Value.ToObject<AchievementTypeGroup>() ?? new AchievementTypeGroup();
                     spec.Taxonomy[prop.Name] = group;
+                }
+                // Also capture optional changes
+                var changesToken = root["changes"];
+                if (changesToken is JArray arr)
+                {
+                    spec.Changes = arr
+                        .Where(t => t.Type == JTokenType.String)
+                        .Select(t => t!.Value<string>()!)
+                        .Where(s => !string.IsNullOrWhiteSpace(s))
+                        .ToArray();
                 }
                 return spec;
             }
