@@ -1,4 +1,3 @@
-using System.Data;
 using Newtonsoft.Json;
 
 namespace InDepthDispenza.Functions.Interfaces;
@@ -9,7 +8,7 @@ namespace InDepthDispenza.Functions.Interfaces;
 /// </summary>
 public class TaxonomySpecification
 {
-    [JsonProperty("version")]
+    [JsonProperty("id")]
     [JsonConverter(typeof(NewtonsoftTaxonomyVersionConverter))]
     [global::System.Text.Json.Serialization.JsonConverter(typeof(SystemTextJsonTaxonomyVersionConverter))]
     public TaxonomyVersion Version { get; set; } = new(1, 0);

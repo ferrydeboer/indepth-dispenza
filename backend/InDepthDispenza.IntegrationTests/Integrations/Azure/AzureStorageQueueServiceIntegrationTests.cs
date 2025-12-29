@@ -5,10 +5,9 @@ using InDepthDispenza.Functions.Integrations.Azure.Storage;
 using InDepthDispenza.Functions.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
-using MimeKit.Encodings;
 using Testcontainers.Azurite;
 
-namespace InDepthDispenza.IntegrationTests;
+namespace InDepthDispenza.IntegrationTests.Integrations.Azure;
 
 [TestFixture]
 public class AzureStorageQueueServiceIntegrationTests
@@ -33,17 +32,8 @@ public class AzureStorageQueueServiceIntegrationTests
 
         var connectionString = _azuriteContainer.GetConnectionString();
 
-        // Create configuration for the service
-        var configuration = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?>
-            {
-                { "AzureWebJobsStorage", connectionString },
-                { "VideoQueueName", TestQueueName }
-            })
-            .Build();
-
         // Create the service under test
-        var storageOptions = Microsoft.Extensions.Options.Options.Create(new InDepthDispenza.Functions.Integrations.Azure.Storage.StorageOptions
+        var storageOptions = Microsoft.Extensions.Options.Options.Create(new StorageOptions
         {
             AzureWebJobsStorage = connectionString,
             VideoQueueName = TestQueueName

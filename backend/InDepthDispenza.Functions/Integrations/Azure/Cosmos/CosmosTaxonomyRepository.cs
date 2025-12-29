@@ -1,4 +1,6 @@
 using System.Text.Json;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using InDepthDispenza.Functions.Interfaces;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
@@ -38,25 +40,13 @@ public class CosmosTaxonomyRepository : CosmosRepositoryBase, ITaxonomyRepositor
 
             Logger.LogInformation("Retrieving latest taxonomy version from database");
 
-            var container = await GetOrCreateContainerAsync();
-
-            // Query for all documents, ordered by updatedAt descending, take 1
-            var queryDefinition = new QueryDefinition(
-                "SELECT TOP 1 * FROM c ORDER BY c.updatedAt DESC");
-
-            var iterator = container.GetItemQueryIterator<CosmosTaxonomyDocument>(queryDefinition);
-
-            if (iterator.HasMoreResults)
+            // Use the shared, non-seeding helper to avoid any recursion/duplication
+            var latestDoc = await QueryLatestTaxonomyDocAsync(includeBody: true);
+            if (latestDoc is not null)
             {
-                var response = await iterator.ReadNextAsync();
-                var cosmosDoc = response.FirstOrDefault();
-
-                if (cosmosDoc != null)
-                {
-                    var document = cosmosDoc.ToTaxonomyDocument();
-                    Logger.LogInformation("Successfully retrieved latest taxonomy version: {VersionId}", document.Version);
-                    return ServiceResult<TaxonomyDocument?>.Success(document);
-                }
+                var document = latestDoc.ToTaxonomyDocument();
+                Logger.LogInformation("Successfully retrieved latest taxonomy version: {VersionId}", document.Version);
+                return ServiceResult<TaxonomyDocument?>.Success(document);
             }
 
             return ServiceResult<TaxonomyDocument?>.Failure("Expected a taxonomy by now.");
@@ -151,16 +141,9 @@ public class CosmosTaxonomyRepository : CosmosRepositoryBase, ITaxonomyRepositor
             var spec = TryDeserializeSeed(jsonString) ?? new TaxonomySpecification { Version = new TaxonomyVersion(1, 0) };
             var seedVersion = spec.Version;
 
-            // Determine latest stored version in Cosmos
-            var container = await GetOrCreateContainerAsync();
-            var queryDefinition = new QueryDefinition("SELECT TOP 1 c.id, c.updatedAt FROM c ORDER BY c.updatedAt DESC");
-            var iterator = container.GetItemQueryIterator<CosmosTaxonomyDocument>(queryDefinition);
-            CosmosTaxonomyDocument? latestDoc = null;
-            if (iterator.HasMoreResults)
-            {
-                var response = await iterator.ReadNextAsync();
-                latestDoc = response.FirstOrDefault();
-            }
+            // Determine latest stored version in Cosmos without calling public methods to avoid recursion.
+            // We use a minimal internal helper that never triggers seeding.
+            var latestDoc = await QueryLatestTaxonomyDocAsync(includeBody: false);
 
             bool shouldSeed;
             if (latestDoc is null)
@@ -222,6 +205,33 @@ public class CosmosTaxonomyRepository : CosmosRepositoryBase, ITaxonomyRepositor
         }
     }
 
+    /// <summary>
+    /// Internal helper to fetch the latest taxonomy document directly from Cosmos without invoking seeding.
+    /// Why: Avoids infinite recursion and duplication. Both seeding and read paths share this low-level query,
+    /// but only the public read method (<see cref="GetLatestTaxonomyAsync"/>) orchestrates seeding beforehand.
+    /// The helper can optionally include the full document body (taxonomy map) or just lightweight metadata.
+    /// </summary>
+    /// <param name="includeBody">When true, selects the full document; when false, selects only id/updatedAt.</param>
+    /// <returns>The latest CosmosTaxonomyDocument or null if none exist.</returns>
+    private async Task<CosmosTaxonomyDocument?> QueryLatestTaxonomyDocAsync(bool includeBody)
+    {
+        var container = await GetOrCreateContainerAsync();
+
+        // Note: selecting explicit fields reduces RU/s when only metadata is needed during seeding.
+        var queryText = includeBody
+            ? "SELECT TOP 1 * FROM c ORDER BY c.updatedAt DESC"
+            : "SELECT TOP 1 c.id, c.updatedAt FROM c ORDER BY c.updatedAt DESC";
+
+        var queryDefinition = new QueryDefinition(queryText);
+        var iterator = container.GetItemQueryIterator<CosmosTaxonomyDocument>(queryDefinition);
+
+        if (!iterator.HasMoreResults)
+            return null;
+
+        var response = await iterator.ReadNextAsync();
+        return response.FirstOrDefault();
+    }
+
 
     // Internal Cosmos document representation with lowercase 'id' for Cosmos DB
     private sealed class CosmosTaxonomyDocument
@@ -262,56 +272,70 @@ public class CosmosTaxonomyRepository : CosmosRepositoryBase, ITaxonomyRepositor
         }
     }
 
-    private static TaxonomySpecification? TryDeserializeSeed(string json)
+    private TaxonomySpecification? TryDeserializeSeed(string json)
     {
         try
         {
-            // Preferred: explicit model with { "version": ..., "taxonomy": { ... } }
-            var explicitModel = JsonSerializer.Deserialize<TaxonomySpecification>(json, new JsonSerializerOptions
+            // Use Newtonsoft.Json to deserialize so converters/attributes match Cosmos configuration
+            // First attempt: strongly typed model with expected shape { "id": ..., "taxonomy": { ... } }
+            var settings = new JsonSerializerSettings
             {
-                PropertyNameCaseInsensitive = true
-            });
+                MissingMemberHandling = MissingMemberHandling.Ignore,
+                NullValueHandling = NullValueHandling.Ignore
+            };
+
+            var explicitModel = JsonConvert.DeserializeObject<TaxonomySpecification>(json, settings);
             if (explicitModel is not null && explicitModel.Taxonomy.Count > 0)
                 return explicitModel;
 
-            // Fallback: try to parse either wrapped or flat into the explicit model
-            using var doc = JsonDocument.Parse(json);
-            var root = doc.RootElement;
+            // Fallback: handle wrapped or flat structures using LINQ-to-JSON
+            // This should be deleted, is obsolete by now.
+            var root = JToken.Parse(json);
             var spec = new TaxonomySpecification();
-            if (root.TryGetProperty("version", out var ver) && ver.ValueKind == JsonValueKind.String)
+
+            // version can be under "id" (string like "v2.0")
+            var idToken = root["id"];
+            if (idToken != null && idToken.Type == JTokenType.String)
             {
-                var v = ver.GetString();
+                var v = idToken.Value<string>();
                 if (!string.IsNullOrWhiteSpace(v))
                 {
                     spec.Version = TaxonomyVersion.Parse(v!);
                 }
             }
-            if (root.TryGetProperty("taxonomy", out var tx) && tx.ValueKind == JsonValueKind.Object)
+
+            // taxonomy may be wrapped under a property
+            var taxonomyToken = root["taxonomy"];
+            if (taxonomyToken != null && taxonomyToken.Type == JTokenType.Object)
             {
-                foreach (var domain in tx.EnumerateObject())
+                foreach (var prop in ((JObject)taxonomyToken).Properties())
                 {
-                    var group = JsonSerializer.Deserialize<AchievementTypeGroup>(domain.Value.GetRawText()) ?? new AchievementTypeGroup();
-                    spec.Taxonomy[domain.Name] = group;
+                    var group = prop.Value.ToObject<AchievementTypeGroup>() ?? new AchievementTypeGroup();
+                    spec.Taxonomy[prop.Name] = group;
                 }
                 return spec;
             }
 
-            // Flat: domains at root
-            if (root.ValueKind == JsonValueKind.Object)
+            // Or the taxonomy can be flat at the root: { "domain": { ... }, ... }
+            if (root.Type == JTokenType.Object)
             {
-                foreach (var domain in root.EnumerateObject())
+                foreach (var prop in ((JObject)root).Properties())
                 {
-                    if (string.Equals(domain.Name, "version", StringComparison.OrdinalIgnoreCase)) continue;
-                    var group = JsonSerializer.Deserialize<AchievementTypeGroup>(domain.Value.GetRawText()) ?? new AchievementTypeGroup();
-                    spec.Taxonomy[domain.Name] = group;
+                    if (string.Equals(prop.Name, "version", StringComparison.OrdinalIgnoreCase)) continue;
+                    if (string.Equals(prop.Name, "id", StringComparison.OrdinalIgnoreCase)) continue;
+                    if (string.Equals(prop.Name, "rules", StringComparison.OrdinalIgnoreCase)) continue;
+
+                    var group = prop.Value.ToObject<AchievementTypeGroup>() ?? new AchievementTypeGroup();
+                    spec.Taxonomy[prop.Name] = group;
                 }
                 return spec;
             }
 
             return null;
         }
-        catch
+        catch(Exception ex)
         {
+            Logger.LogError(ex, "Error reading taxonomy seed file");
             return null;
         }
     }
