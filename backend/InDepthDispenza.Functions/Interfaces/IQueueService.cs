@@ -2,5 +2,5 @@ namespace InDepthDispenza.Functions.Interfaces;
 
 public interface IQueueService
 {
-    Task<ServiceResult> EnqueueVideoAsync(VideoInfo video);
+    Task EnqueueVideoAsync(VideoInfo video);
 }

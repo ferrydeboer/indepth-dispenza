@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Azure;
 using Azure.Storage.Queues;
 using InDepthDispenza.Functions.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -27,7 +28,7 @@ public class AzureStorageQueueService : IQueueService
         _queueClient = new QueueClient(connectionString, queueName, opt);
     }
 
-    public async Task<ServiceResult> EnqueueVideoAsync(VideoInfo video)
+    public async Task EnqueueVideoAsync(VideoInfo video)
     {
         try
         {
@@ -40,12 +41,18 @@ public class AzureStorageQueueService : IQueueService
             await _queueClient.SendMessageAsync(messageContent);
 
             _logger.LogInformation("Successfully enqueued video: {VideoId}", video.VideoId);
-            return ServiceResult.Success();
+        }
+        catch (RequestFailedException ex) when (ex.Status == 403 || ex.Status == 401)
+        {
+            throw new QueueConfigurationException("Authentication failed for Azure Storage Queue", ex);
+        }
+        catch (RequestFailedException ex) when (ex.Status >= 500 || ex.Status == 429 || ex.Status == 408)
+        {
+            throw new QueueTransientException($"Transient error enqueuing video {video.VideoId}: {ex.Message}", ex);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error enqueuing video: {VideoId}", video.VideoId);
-            return ServiceResult.Failure($"Failed to enqueue video: {ex.Message}", ex);
+            throw new QueueMessageException(video.VideoId, $"Failed to enqueue video: {ex.Message}", ex);
         }
     }
 }

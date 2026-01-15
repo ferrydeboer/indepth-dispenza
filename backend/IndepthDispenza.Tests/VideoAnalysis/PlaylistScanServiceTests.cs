@@ -37,7 +37,7 @@ namespace IndepthDispenza.Tests.VideoAnalysis
                 .Returns(ToAsyncEnumerable(videos));
 
             _queueServiceMock.Setup(x => x.EnqueueVideoAsync(It.IsAny<VideoInfo>()))
-                .ReturnsAsync(ServiceResult.Success());
+                .Returns(Task.CompletedTask);
 
             // Act
             var result = await InvokeScanPlaylistAsync(request);
@@ -51,6 +51,48 @@ namespace IndepthDispenza.Tests.VideoAnalysis
 
             _playlistServiceMock.Verify(x => x.GetPlaylistVideosAsync(request.PlaylistId, request.Limit, It.IsAny<Func<VideoInfo, bool>>()), Times.Once);
             _queueServiceMock.Verify(x => x.EnqueueVideoAsync(It.IsAny<VideoInfo>()), Times.Exactly(videos.Count));
+        }
+
+        [Test]
+        public async Task ScanPlaylistAsync_PartialQueueFailure_ContinuesAndReturnsPartialCount()
+        {
+            // Arrange
+            var request = _fixture.Create<PlaylistScanRequest>();
+            var videos = _fixture.CreateMany<VideoInfo>(3).ToList();
+
+            _playlistServiceMock.Setup(x => x.GetPlaylistVideosAsync(request.PlaylistId, request.Limit, It.IsAny<Func<VideoInfo, bool>>()))
+                .Returns(ToAsyncEnumerable(videos));
+
+            // Fail the second video with a transient exception
+            _queueServiceMock.SetupSequence(x => x.EnqueueVideoAsync(It.IsAny<VideoInfo>()))
+                .Returns(Task.CompletedTask)
+                .Throws(new QueueTransientException("Transient error"))
+                .Returns(Task.CompletedTask);
+
+            // Act
+            var result = await InvokeScanPlaylistAsync(request);
+
+            // Assert
+            Assert.That(result.IsSuccess, Is.True);
+            Assert.That(result.Data, Is.EqualTo(2)); // 1st and 3rd succeeded
+            _queueServiceMock.Verify(x => x.EnqueueVideoAsync(It.IsAny<VideoInfo>()), Times.Exactly(3));
+        }
+
+        [Test]
+        public void ScanPlaylistAsync_FatalQueueFailure_ThrowsException()
+        {
+            // Arrange
+            var request = _fixture.Create<PlaylistScanRequest>();
+            var videos = _fixture.CreateMany<VideoInfo>(1).ToList();
+
+            _playlistServiceMock.Setup(x => x.GetPlaylistVideosAsync(request.PlaylistId, request.Limit, It.IsAny<Func<VideoInfo, bool>>()))
+                .Returns(ToAsyncEnumerable(videos));
+
+            _queueServiceMock.Setup(x => x.EnqueueVideoAsync(It.IsAny<VideoInfo>()))
+                .ThrowsAsync(new QueueConfigurationException("Fatal error"));
+
+            // Act & Assert
+            Assert.ThrowsAsync<QueueConfigurationException>(async () => await InvokeScanPlaylistAsync(request));
         }
 
         private async Task<ServiceResult<int>> InvokeScanPlaylistAsync(PlaylistScanRequest request)

@@ -70,11 +70,10 @@ public class AzureStorageQueueServiceIntegrationTests
             .Create();
 
         // Act
-        var result = await _queueService!.EnqueueVideoAsync(video);
+        var act = async () => await _queueService!.EnqueueVideoAsync(video);
 
         // Assert
-        result.Should().NotBeNull();
-        result.IsSuccess.Should().BeTrue();
+        await act.Should().NotThrowAsync();
 
         var properties = await _queueClient!.GetPropertiesAsync();
         properties.Value.ApproximateMessagesCount.Should().Be(1);
@@ -97,8 +96,7 @@ public class AzureStorageQueueServiceIntegrationTests
         // Act
         foreach (var video in videos)
         {
-            var result = await _queueService!.EnqueueVideoAsync(video);
-            result.IsSuccess.Should().BeTrue();
+            await _queueService!.EnqueueVideoAsync(video);
         }
 
         // Assert
@@ -117,11 +115,9 @@ public class AzureStorageQueueServiceIntegrationTests
             .Create();
 
         // Act
-        var result = await _queueService!.EnqueueVideoAsync(video);
+        await _queueService!.EnqueueVideoAsync(video);
 
         // Assert
-        result.IsSuccess.Should().BeTrue();
-        
         var queueExists = await _queueClient.ExistsAsync();
         queueExists.Value.Should().BeTrue();
     }

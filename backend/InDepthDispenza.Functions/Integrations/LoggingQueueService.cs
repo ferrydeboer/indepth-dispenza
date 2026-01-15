@@ -9,10 +9,10 @@ namespace InDepthDispenza.Functions.Integrations;
 /// </summary>
 public class LoggingQueueService(ILogger<LoggingQueueService> logger) : IQueueService
 {
-    public Task<ServiceResult> EnqueueVideoAsync(VideoInfo video)
+    public Task EnqueueVideoAsync(VideoInfo video)
     {
         string message = JsonConvert.SerializeObject(video);
         logger.LogInformation(message);
-        return Task.FromResult (ServiceResult.Success());
+        return Task.CompletedTask;
     }
 }

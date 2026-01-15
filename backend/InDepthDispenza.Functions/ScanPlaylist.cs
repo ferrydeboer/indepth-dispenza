@@ -23,39 +23,24 @@ public class ScanPlaylist
         [FromQuery] string? playlistId,
         [FromQuery] int? limit)
     {
-        try
+        _logger.LogInformation("ScanPlaylist function triggered with playlistId: {PlaylistId}, limit: {Limit}", 
+            playlistId, limit);
+
+        // Validate input
+        if (string.IsNullOrWhiteSpace(playlistId))
         {
-            _logger.LogInformation("ScanPlaylist function triggered with playlistId: {PlaylistId}, limit: {Limit}", 
-                playlistId, limit);
-
-            // Validate input
-            if (string.IsNullOrWhiteSpace(playlistId))
-            {
-                _logger.LogWarning("Missing or empty playlistId parameter");
-                return new BadRequestObjectResult(new { error = "PlaylistId parameter is required" });
-            }
-
-            // Create request
-            var request = new PlaylistScanRequest(playlistId, limit);
-
-            // Execute scan
-            var result = await _playlistScanService.ScanPlaylistAsync(request);
-
-            if (result.IsSuccess)
-            {
-                _logger.LogInformation("Playlist scan completed successfully. Videos processed: {Count}", result.Data);
-                return new OkObjectResult(new ScanPlaylistResult(result.Data!));
-            }
-
-            _logger.LogError("Playlist scan failed: {Error}", result.ErrorMessage);
-            // I don't like this unconventional anonymous response types due to testing difficulties.
-            return new BadRequestObjectResult(new { error = result.ErrorMessage });
+            _logger.LogWarning("Missing or empty playlistId parameter");
+            return new BadRequestObjectResult(new { error = "PlaylistId parameter is required" });
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Unexpected error in ScanPlaylist function");
-            return new StatusCodeResult(500);
-        }
+
+        // Create request
+        var request = new PlaylistScanRequest(playlistId, limit);
+
+        // Execute scan
+        var result = await _playlistScanService.ScanPlaylistAsync(request);
+
+        _logger.LogInformation("Playlist scan completed successfully. Videos processed: {Count}", result.Data);
+        return new OkObjectResult(new ScanPlaylistResult(result.Data));
     }
 }
 

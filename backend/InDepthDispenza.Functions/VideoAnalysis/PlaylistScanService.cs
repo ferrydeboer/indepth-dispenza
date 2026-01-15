@@ -24,39 +24,34 @@ public class PlaylistScanService : IPlaylistScanService
 
     public async Task<ServiceResult<int>> ScanPlaylistAsync(PlaylistScanRequest request)
     {
-        try
+        _logger.LogInformation("Starting playlist scan for playlist: {PlaylistId} with limit: {Limit}",
+            request.PlaylistId, request.Limit);
+
+        // Retrieve and enqueue videos from provider
+        var successCount = 0;
+        var totalCount = 0;
+
+        await foreach (var video in _playlistService.GetPlaylistVideosAsync(request.PlaylistId, request.Limit))
         {
-            _logger.LogInformation("Starting playlist scan for playlist: {PlaylistId} with limit: {Limit}",
-                request.PlaylistId, request.Limit);
-
-            // Retrieve and enqueue videos from provider
-            var successCount = 0;
-            var totalCount = 0;
-
-            await foreach (var video in _playlistService.GetPlaylistVideosAsync(request.PlaylistId, request.Limit))
+            totalCount++;
+            try
             {
-                totalCount++;
-                var result = await _queueService.EnqueueVideoAsync(video);
-                if (result.IsSuccess)
-                {
-                    successCount++;
-                }
-                else
-                {
-                    _logger.LogWarning("Failed to enqueue video {VideoId}: {Error}",
-                        video.VideoId, result.ErrorMessage);
-                }
+                await _queueService.EnqueueVideoAsync(video);
+                successCount++;
             }
-
-            _logger.LogInformation("Playlist scan completed. Successfully enqueued {SuccessCount} out of {TotalCount} videos",
-                successCount, totalCount);
-
-            return ServiceResult<int>.Success(successCount);
+            catch (QueueTransientException ex)
+            {
+                _logger.LogWarning(ex, "Transient error enqueuing video {VideoId}. Skipping item.", video.VideoId);
+            }
+            catch (QueueMessageException ex)
+            {
+                _logger.LogError(ex, "Permanent message error for video {VideoId}. Skipping item.", video.VideoId);
+            }
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error during playlist scan for playlist: {PlaylistId}", request.PlaylistId);
-            return ServiceResult<int>.Failure($"Playlist scan failed: {ex.Message}", ex);
-        }
+
+        _logger.LogInformation("Playlist scan completed. Successfully enqueued {SuccessCount} out of {TotalCount} videos",
+            successCount, totalCount);
+
+        return ServiceResult<int>.Success(successCount);
     }
 }
