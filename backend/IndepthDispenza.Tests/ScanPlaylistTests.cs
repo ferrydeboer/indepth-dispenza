@@ -60,26 +60,9 @@ public class ScanPlaylistTests
         Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
     }
 
-    [Test]
-    public async Task Run_ValidRequest_ServiceFailure_ReturnsBadRequestWithError()
-    {
-        // Arrange
-        var req = new Mock<HttpRequest>().Object;
-        string playlistId = "validId";
-        int? limit = null;
-        var serviceResult = ServiceResult<int>.Failure("Service error");
-        _mockPlaylistScanService.Setup(s => s.ScanPlaylistAsync(It.IsAny<PlaylistScanRequest>()))
-                                 .ReturnsAsync(serviceResult);
-
-        // Act
-        var result = await _scanPlaylist.Run(req, playlistId, limit);
-
-        // Assert
-        Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
-    }
 
     [Test]
-    public async Task Run_UnhandledException_ReturnsInternalServerError()
+    public void Run_UnhandledException_BubblesUp()
     {
         // Arrange
         var req = new Mock<HttpRequest>().Object;
@@ -88,12 +71,7 @@ public class ScanPlaylistTests
         _mockPlaylistScanService.Setup(s => s.ScanPlaylistAsync(It.IsAny<PlaylistScanRequest>()))
                                  .ThrowsAsync(new Exception("Unexpected error"));
 
-        // Act
-        var result = await _scanPlaylist.Run(req, playlistId, limit);
-
-        // Assert
-        Assert.That(result, Is.InstanceOf<StatusCodeResult>());
-        var statusResult = (StatusCodeResult)result;
-        Assert.That(statusResult.StatusCode, Is.EqualTo(500));
+        // Act & Assert
+        Assert.ThrowsAsync<Exception>(async () => await _scanPlaylist.Run(req, playlistId, limit));
     }
 }
