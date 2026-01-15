@@ -15,7 +15,7 @@ public class AnalyzeVideoIntegrationTests : IntegrationTestBase
     private string _testVideoId = "dQw4w9WgXcQ";
 
     [SetUp]
-    public void SetUp()
+    public new void SetUp()
     {
         _testVideoId = CreateVideoId();
     }

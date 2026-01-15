@@ -76,27 +76,19 @@ public class AnalyzeVideo
     {
         _logger.LogInformation("AnalyzeVideoFromQueue triggered with raw message: {Message}", message);
 
-        try
+        var video = JsonSerializer.Deserialize<VideoInfo>(message);
+        if (video is null || string.IsNullOrWhiteSpace(video.VideoId))
         {
-            var video = JsonSerializer.Deserialize<VideoInfo>(message);
-            if (video is null || string.IsNullOrWhiteSpace(video.VideoId))
-            {
-                _logger.LogWarning("Queue message could not be deserialized into VideoInfo or missing VideoId");
-                return;
-            }
-
-            var result = await _transcriptAnalyzer.AnalyzeTranscriptAsync(video.VideoId);
-            if (!result.IsSuccess)
-            {
-                _logger.LogError("Queue-based analysis failed for {VideoId}: {Error}", video.VideoId, result.ErrorMessage);
-                return;
-            }
-
-            _logger.LogInformation("Queue-based analysis succeeded for VideoId {VideoId}", video.VideoId);
+            throw new InvalidOperationException("Queue message could not be deserialized into VideoInfo or missing VideoId");
         }
-        catch (Exception ex)
+
+        var result = await _transcriptAnalyzer.AnalyzeTranscriptAsync(video.VideoId);
+        if (!result.IsSuccess)
         {
-            _logger.LogError(ex, "Unhandled exception while processing queue message for AnalyzeVideoFromQueue");
+            _logger.LogError("Queue-based analysis failed for {VideoId}: {Error}", video.VideoId, result.ErrorMessage);
+            throw new InvalidOperationException($"Analysis failed for {video.VideoId}: {result.ErrorMessage}", result.Exception);
         }
+
+        _logger.LogInformation("Queue-based analysis succeeded for VideoId {VideoId}", video.VideoId);
     }
 }

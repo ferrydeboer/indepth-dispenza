@@ -57,7 +57,7 @@ public class OutputPromptComposer : IPromptComposer
 
             return "# Expected Output Schema\n```json\n{format}\n```\n";
         }
-        catch (Exception ex)
+        catch
         {
             // Last resort minimal template
             return "# Expected Output Schema\n```json\n{format}\n```\n";

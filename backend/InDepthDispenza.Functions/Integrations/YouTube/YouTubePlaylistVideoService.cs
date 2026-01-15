@@ -46,7 +46,9 @@ public class YouTubePlaylistVideoService : IPlaylistService
         string? nextPageToken = null;
         int retrievedCount = 0;
         bool DefaultFilter(VideoInfo vid) => vid.Description != "This video is private.";
-        var predicate = (filter != null) ? video => DefaultFilter(video) && filter(video): (Func<VideoInfo, bool>?)DefaultFilter;
+        var predicate = (filter != null)
+            ? (Func<VideoInfo, bool>)(video => DefaultFilter(video) && filter(video))
+            : DefaultFilter;
 
         do
         {
@@ -100,7 +102,7 @@ public class YouTubePlaylistVideoService : IPlaylistService
     {
         var snippet = item.Snippet;
         return new VideoInfo(
-            VideoId: snippet.ResourceId.VideoId,
+            VideoId: snippet.ResourceId?.VideoId ?? string.Empty,
             Title: snippet.Title,
             Description: snippet.Description,
             ChannelTitle: snippet.ChannelTitle,

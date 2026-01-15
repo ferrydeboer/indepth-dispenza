@@ -36,75 +36,65 @@ public class TranscriptAnalyzer : ITranscriptAnalyzer
     /// </summary>
     public async Task<ServiceResult<VideoAnalysis>> AnalyzeTranscriptAsync(string videoId)
     {
-        try
+        _logger.LogInformation("Starting transcript analysis for video {VideoId}", videoId);
+
+        // Step 1: Compose prompt using the pipeline
+        var promptText = await ComposePrompt(videoId);
+
+        _logger.LogInformation(
+            "Composed prompt for video {VideoId}. Prompt length: {PromptLength} characters",
+            videoId, promptText.Length);
+
+        // Step 2: Call LLM service with composed prompt
+        var llmResult = await _llmService.CallAsync(promptText);
+
+        if (!llmResult.IsSuccess || llmResult.Data == null)
         {
-            _logger.LogInformation("Starting transcript analysis for video {VideoId}", videoId);
-
-            // Step 1: Compose prompt using the pipeline
-            var promptText = await ComposePrompt(videoId);
-
-            _logger.LogInformation(
-                "Composed prompt for video {VideoId}. Prompt length: {PromptLength} characters",
-                videoId, promptText.Length);
-
-            // Step 2: Call LLM service with composed prompt
-            var llmResult = await _llmService.CallAsync(promptText);
-
-            if (!llmResult.IsSuccess || llmResult.Data == null)
-            {
-                return ServiceResult<VideoAnalysis>.Failure(
-                    $"LLM analysis failed: {llmResult.ErrorMessage}",
-                    llmResult.Exception);
-            }
-            
-            // Build PromptExecutionInfoDto from LlmCallInfo ensuring parity
-            var call = llmResult.Data.Call;
-            var promptInfo = new PromptExecutionInfoDto(
-                Provider: call.Provider,
-                Model: call.Model,
-                DurationMs: call.DurationMs,
-                TokensPrompt: call.TokensPrompt,
-                TokensCompletion: call.TokensCompletion,
-                TokensTotal: call.TokensTotal,
-                RequestId: call.RequestId,
-                CreatedAt: call.CreatedAt,
-                FinishReason: call.FinishReason
-            );
-
-            // Step 3: Parse LLM response into VideoAnalysis object and attach prompt info into DTO for storage later
-            var (analysis, responseDto) = ParseLlmResponse(videoId, llmResult.Data, promptInfo);
-            _lastLlmResponse = responseDto; // cache for storage
-            _lastVideoId = videoId;
-            _lastAnalyzedAt = analysis.AnalyzedAt;
-
-            // Post-processing handlers (ordered); isolate exceptions per handler
-            _lastTaxonomyVersion = null;
-            var context = new VideosAnalyzedContext(
-                videoId,
-                _logger);
-
-            await OnVideoAnalyzed(responseDto, context);
-
-            // Persist full LLM response + metadata
-            var persist = await PersistLastAnalysisAsync(null);
-            if (!persist.IsSuccess)
-            {
-                _logger.LogError("Failed to persist video analysis for {VideoId}: {Error}", videoId, persist.ErrorMessage);
-            }
-
-            _logger.LogInformation(
-                "Completed transcript analysis for video {VideoId}. Found {AchievementCount} achievements",
-                videoId, analysis.Achievements.Length);
-
-            return ServiceResult<VideoAnalysis>.Success(analysis);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error analyzing transcript for video {VideoId}", videoId);
             return ServiceResult<VideoAnalysis>.Failure(
-                $"Failed to analyze transcript: {ex.Message}",
-                ex);
+                $"LLM analysis failed: {llmResult.ErrorMessage}",
+                llmResult.Exception);
         }
+        
+        // Build PromptExecutionInfoDto from LlmCallInfo ensuring parity
+        var call = llmResult.Data.Call;
+        var promptInfo = new PromptExecutionInfoDto(
+            Provider: call.Provider,
+            Model: call.Model,
+            DurationMs: call.DurationMs,
+            TokensPrompt: call.TokensPrompt,
+            TokensCompletion: call.TokensCompletion,
+            TokensTotal: call.TokensTotal,
+            RequestId: call.RequestId,
+            CreatedAt: call.CreatedAt,
+            FinishReason: call.FinishReason
+        );
+
+        // Step 3: Parse LLM response into VideoAnalysis object and attach prompt info into DTO for storage later
+        var (analysis, responseDto) = ParseLlmResponse(videoId, llmResult.Data, promptInfo);
+        _lastLlmResponse = responseDto; // cache for storage
+        _lastVideoId = videoId;
+        _lastAnalyzedAt = analysis.AnalyzedAt;
+
+        // Post-processing handlers (ordered); isolate exceptions per handler
+        _lastTaxonomyVersion = null;
+        var context = new VideosAnalyzedContext(
+            videoId,
+            _logger);
+
+        await OnVideoAnalyzed(responseDto, context);
+
+        // Persist full LLM response + metadata
+        var persist = await PersistLastAnalysisAsync(null);
+        if (!persist.IsSuccess)
+        {
+            _logger.LogError("Failed to persist video analysis for {VideoId}: {Error}", videoId, persist.ErrorMessage);
+        }
+
+        _logger.LogInformation(
+            "Completed transcript analysis for video {VideoId}. Found {AchievementCount} achievements",
+            videoId, analysis.Achievements.Length);
+
+        return ServiceResult<VideoAnalysis>.Success(analysis);
     }
 
     private async Task OnVideoAnalyzed(LlmResponse response, VideosAnalyzedContext context)
