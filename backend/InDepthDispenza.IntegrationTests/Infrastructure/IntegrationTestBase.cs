@@ -173,6 +173,9 @@ public abstract class IntegrationTestBase
                 var response = await HttpClient.GetAsync("/api/ScanPlaylist?playlistId=test");
                 // We expect BadRequest due to invalid playlist, but at least the function is responding
                 if (response.StatusCode == System.Net.HttpStatusCode.BadRequest ||
+                    // FIXIT: Server responds but no mockserver mapping available.
+                    // Need cleaner way: (call health endpoint + individual module stub mappings)
+                    response.StatusCode == System.Net.HttpStatusCode.InternalServerError || 
                     response.StatusCode == System.Net.HttpStatusCode.OK)
                 {
                     Console.WriteLine("Function host is ready");
