@@ -30,12 +30,13 @@ public class ScanPlaylistTests
         var req = new Mock<HttpRequest>().Object;
         string playlistId = "validId";
         int? limit = 5;
+        string? filters = "skip-existing";
         var serviceResult = ServiceResult<int>.Success(10);
-        _mockPlaylistScanService.Setup(s => s.ScanPlaylistAsync(It.Is<PlaylistScanRequest>(r => r.PlaylistId == playlistId && r.Limit == limit)))
+        _mockPlaylistScanService.Setup(s => s.ScanPlaylistAsync(It.Is<PlaylistScanRequest>(r => r.PlaylistId == playlistId && r.Limit == limit && r.Filters != null && r.Filters.RawFilters == filters)))
                                  .ReturnsAsync(serviceResult);
 
         // Act
-        var result = await _scanPlaylist.Run(req, playlistId, limit);
+        var result = await _scanPlaylist.Run(req, playlistId, limit, filters);
 
         // Assert
         Assert.That(result, Is.InstanceOf<OkObjectResult>());
@@ -52,9 +53,10 @@ public class ScanPlaylistTests
         var req = new Mock<HttpRequest>().Object;
         string? playlistId = null;
         int? limit = null;
+        string? filters = null;
 
         // Act
-        var result = await _scanPlaylist.Run(req, playlistId, limit);
+        var result = await _scanPlaylist.Run(req, playlistId, limit, filters);
 
         // Assert
         Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
@@ -68,10 +70,11 @@ public class ScanPlaylistTests
         var req = new Mock<HttpRequest>().Object;
         string playlistId = "validId";
         int? limit = null;
+        string? filters = null;
         _mockPlaylistScanService.Setup(s => s.ScanPlaylistAsync(It.IsAny<PlaylistScanRequest>()))
                                  .ThrowsAsync(new Exception("Unexpected error"));
 
         // Act & Assert
-        Assert.ThrowsAsync<Exception>(async () => await _scanPlaylist.Run(req, playlistId, limit));
+        Assert.ThrowsAsync<Exception>(async () => await _scanPlaylist.Run(req, playlistId, limit, filters));
     }
 }

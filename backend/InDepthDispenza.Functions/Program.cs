@@ -5,6 +5,7 @@ using InDepthDispenza.Functions.Integrations.XAi.Grok;
 using InDepthDispenza.Functions.Integrations.YouTubeTranscriptIo;
 using InDepthDispenza.Functions.Interfaces;
 using InDepthDispenza.Functions.VideoAnalysis;
+using InDepthDispenza.Functions.VideoAnalysis.Filters;
 using InDepthDispenza.Functions.VideoAnalysis.Interfaces;
 using InDepthDispenza.Functions.VideoAnalysis.Prompting;
 using InDepthDispenza.Functions.VideoAnalysis.Taxonomy;
@@ -48,6 +49,7 @@ if (grokEnabled && !string.IsNullOrWhiteSpace(grokApiKey))
 }
 
 // Register other services
+builder.Services.AddScoped<IVideoFilter, AnalysisExistsFilter>();
 builder.Services.AddScoped<IPlaylistScanService, PlaylistScanService>();
 
 // Register transcript services with proper layering:

@@ -21,10 +21,11 @@ public class ScanPlaylist
     public async Task<IActionResult> Run(
         [HttpTrigger(AuthorizationLevel.Function, "get", "post")] HttpRequest req,
         [FromQuery] string? playlistId,
-        [FromQuery] int? limit)
+        [FromQuery] int? limit,
+        [FromQuery] string? filters)
     {
-        _logger.LogInformation("ScanPlaylist function triggered with playlistId: {PlaylistId}, limit: {Limit}", 
-            playlistId, limit);
+        _logger.LogInformation("ScanPlaylist function triggered with playlistId: {PlaylistId}, limit: {Limit}, filters: {Filters}", 
+            playlistId, limit, filters);
 
         // Validate input
         if (string.IsNullOrWhiteSpace(playlistId))
@@ -34,7 +35,7 @@ public class ScanPlaylist
         }
 
         // Create request
-        var request = new PlaylistScanRequest(playlistId, limit);
+        var request = new PlaylistScanRequest(playlistId, limit, VideoFilters.Parse(filters));
 
         // Execute scan
         var result = await _playlistScanService.ScanPlaylistAsync(request);
