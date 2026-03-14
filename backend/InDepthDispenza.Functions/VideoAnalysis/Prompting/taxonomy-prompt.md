@@ -23,9 +23,12 @@ Use the following taxonomy to extract structured tags from the transcript.
 3. **ONLY propose new tags if:**
    - The content describes a specific condition/practice NOT in the taxonomy
    - The new tag would be used by multiple testimonials (not one-off mentions)
-4. **NEVER propose tags that already exist in the taxonomy**
-5. **Check the entire taxonomy tree before proposing - if "cervical_cancer" exists anywhere, don't propose it**
-6. You are allowed to make proposals on the complete hierarchy. So you can propose a whole new or partial hierarchy.
+4. **ALWAYS** Keep subcategories reserved for named medical diagnoses or distinct disease entities. Use attributes 
+  for symptoms, functional impairments, or descriptive features (e.g. brain_fog, cognitive_fog, fatigue). If the 
+  testimonial names a specific diagnosis not yet in subcategories (e.g. Alzheimer's), propose adding it.
+5. **NEVER propose tags that already exist in the taxonomy**
+6. **Check the entire taxonomy tree before proposing - if "cervical_cancer" exists anywhere, don't propose it**
+7. You are allowed to make proposals on the complete hierarchy. So you can propose a whole new or partial hierarchy.
 
 **CRITICAL RULES:**
 1. **ALWAYS add your proposals in the related achievement.**

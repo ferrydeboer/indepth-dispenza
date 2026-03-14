@@ -1,5 +1,5 @@
 {
-  "id": "v7.1",
+  "id": "v7.2",
   "taxonomy": {
     "healing": {
       "mental_health": {
@@ -15,8 +15,6 @@
           "ocd",
           "psychosis",
           "schizophrenia",
-          "insomnia",
-          "rage",
           "childhood_trauma"
         ],
         "attributes": [
@@ -24,7 +22,9 @@
           "nicotine_addiction",
           "cannabis_addiction",
           "opioid_addiction",
-          "methamphetamine_addiction"
+          "methamphetamine_addiction",
+          "insomnia",
+          "rage"
         ]
       },
       "cancer": {
@@ -115,18 +115,17 @@
         "subcategories": [
           "traumatic_brain_injury",
           "multiple_sclerosis",
-          "brain_fog",
           "brain_tumor",
           "cerebral_palsy",
           "epilepsy",
           "prosopagnosia",
           "autism",
           "parkinsons",
+          "aneurysm",
           "cervical_dystonia",
           "strabismus",
           "stutter",
           "neuropathy",
-          "chronic_pain",
           "migraines",
           "chronic_fatigue_syndrome",
           "bells_palsy",
@@ -138,7 +137,8 @@
           "spinocerebellar_ataxia",
           "orthostatic_tremor",
           "primary_lateral_sclerosis",
-          "amyotrophic_lateral_sclerosis"
+          "amyotrophic_lateral_sclerosis",
+          "alzheimers"
         ],
         "attributes": [
           "vision_impairment",
@@ -150,6 +150,7 @@
           "congenital",
           "auditory_sensitivity",
           "cognitive_fog",
+          "brain_fog",
           "inoperable",
           "chronic",
           "acute",
@@ -162,7 +163,10 @@
           "facial_paralysis",
           "recurrent",
           "high_frequency",
-          "standing_triggered"
+          "standing_triggered",
+          "chronic_pain",
+          "memory_loss",
+          "word_finding_difficulty"
         ]
       },
       "musculoskeletal": {
@@ -565,12 +569,11 @@
     },
     "other": {}
   },
-  "updatedAt": "2026-03-14T18:30:00.0000000+00:00",
+  "updatedAt": "2026-03-14T18:45:00.0000000+00:00",
   "changes": [
-    "Encephalon workshop testimonials commonly feature manifestation of personal symbolic objects like dragonflies during dedicated object meditations; adding 'dragonfly' as subcategory under personal_items for specificity and reusability.",
-    "Merge category 'manifestation.personal_items'",
-    "Further refinement to address bloat and cause-vs-effect clarity: added new 'vascular' category under healing (v7.0); moved raynauds_syndrome (to vascular), stroke (to cardiovascular), paralysis (to musculoskeletal), hernia (to digestive), perineal_tear & anal_sphincter_injury & breast_cyst (to reproductive), bone_infection (to infectious).",
-    "Moved 'aneurysm' from neurological to vascular for etiological accuracy (primary vascular wall weakness, even when cerebral/carotid and neurologically symptomatic); added relevant vascular-specific attributes."
-  ],
-  "proposedFromVideoId": "de7qmG8CKKQ"
+    "Added 'alzheimers' to neurological.subcategories to capture named diagnosis cases (e.g. beta-amyloid reversal testimonials).",
+    "Moved symptom/impairment items to attributes: brain_fog & cognitive_fog → neurological.attributes; insomnia & rage → mental_health.attributes; chronic_pain → neurological.attributes.",
+    "Added supporting symptom attributes in neurological: memory_loss, word_finding_difficulty.",
+    "This supports distinguishing named diagnoses (subcategories) from symptoms/functional features (attributes) per user guidance."
+  ]
 }
