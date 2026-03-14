@@ -1,5 +1,5 @@
 {
-  "id": "v6.0",
+  "id": "v7.1",
   "taxonomy": {
     "healing": {
       "mental_health": {
@@ -11,13 +11,20 @@
           "ptsd",
           "disordered_eating",
           "panic_disorder",
-          "adhd"
+          "adhd",
+          "ocd",
+          "psychosis",
+          "schizophrenia",
+          "insomnia",
+          "rage",
+          "childhood_trauma"
         ],
         "attributes": [
           "alcohol_addiction",
           "nicotine_addiction",
           "cannabis_addiction",
-          "opioid_addiction"
+          "opioid_addiction",
+          "methamphetamine_addiction"
         ]
       },
       "cancer": {
@@ -38,7 +45,16 @@
           "colon_cancer",
           "kidney_cancer",
           "liver_cancer",
-          "bone_marrow_cancer"
+          "bone_marrow_cancer",
+          "sarcoma",
+          "gastric_cancer",
+          "non_hodgkins_lymphoma",
+          "bladder_cancer",
+          "leukemia",
+          "paraganglioma",
+          "anal_cancer",
+          "neuroendocrine_cancer",
+          "vocal_cord_cancer"
         ],
         "attributes": [
           "stage_one",
@@ -48,7 +64,8 @@
           "recurrent",
           "metastatic",
           "rare",
-          "advanced"
+          "advanced",
+          "neurological"
         ]
       },
       "auto_immune": {
@@ -65,7 +82,16 @@
           "fibromyalgia",
           "syringomyelia",
           "mast_cell_activation_syndrome",
-          "multiple_chemical_sensitivity"
+          "multiple_chemical_sensitivity",
+          "colitis",
+          "polymyalgia",
+          "autoimmune_hepatitis",
+          "celiac_disease",
+          "primary_biliary_cholangitis",
+          "addisons_disease",
+          "giant_cell_arteritis",
+          "food_allergies",
+          "familial_mediterranean_fever"
         ],
         "attributes": [
           "flare_ups",
@@ -79,7 +105,10 @@
           "acute",
           "hereditary",
           "immune_dysregulation",
-          "iatrogenic"
+          "iatrogenic",
+          "vision_threatening",
+          "jaw_claudication",
+          "genetic"
         ]
       },
       "neurological": {
@@ -93,14 +122,23 @@
           "prosopagnosia",
           "autism",
           "parkinsons",
-          "aneurysm",
           "cervical_dystonia",
           "strabismus",
           "stutter",
           "neuropathy",
           "chronic_pain",
           "migraines",
-          "chronic_fatigue_syndrome"
+          "chronic_fatigue_syndrome",
+          "bells_palsy",
+          "chronic_regional_pain_syndrome",
+          "thoracic_outlet_syndrome",
+          "emf_hypersensitivity",
+          "spasmodic_dysphonia",
+          "coma",
+          "spinocerebellar_ataxia",
+          "orthostatic_tremor",
+          "primary_lateral_sclerosis",
+          "amyotrophic_lateral_sclerosis"
         ],
         "attributes": [
           "vision_impairment",
@@ -120,7 +158,11 @@
           "post_surgical",
           "regenerated",
           "iatrogenic",
-          "misdiagnosis"
+          "misdiagnosis",
+          "facial_paralysis",
+          "recurrent",
+          "high_frequency",
+          "standing_triggered"
         ]
       },
       "musculoskeletal": {
@@ -131,7 +173,24 @@
           "muscular_dystrophy",
           "rotator_cuff_injury",
           "osteopenia",
-          "osteoporosis"
+          "osteoporosis",
+          "acl_tear",
+          "ligament_injury",
+          "knee_injury",
+          "trigger_finger",
+          "carpal_tunnel",
+          "osteoarthritis",
+          "ehlers_danlos_syndrome",
+          "tennis_elbow",
+          "jawbone_deterioration",
+          "plantar_fasciitis",
+          "hip_dysplasia",
+          "labrum_tear",
+          "cam_impingement",
+          "avascular_necrosis",
+          "hammer_toe",
+          "hip_pain",
+          "paralysis"
         ],
         "attributes": [
           "acute_trauma",
@@ -140,8 +199,15 @@
           "chronic",
           "acute",
           "hereditary",
-          "post_surgical",
-          "regenerated"
+          "regenerated",
+          "sports_injury",
+          "connective_tissue_disorder",
+          "bilateral",
+          "hip_joints",
+          "steroid_induced",
+          "postpartum",
+          "night_pain",
+          "yoga_induced"
         ]
       },
       "reproductive": {
@@ -150,7 +216,11 @@
           "endometriosis",
           "adenomyosis",
           "premature_perimenopause",
-          "uterine_masses"
+          "uterine_masses",
+          "hyperemesis_gravidarum",
+          "perineal_tear",
+          "anal_sphincter_injury",
+          "breast_cyst"
         ],
         "attributes": [
           "ivf_failure",
@@ -158,7 +228,9 @@
           "chest_extension",
           "life_threatening",
           "chronic",
-          "hereditary"
+          "hereditary",
+          "severe",
+          "fecal_incontinence"
         ]
       },
       "sensory": {
@@ -168,7 +240,12 @@
           "vertigo",
           "anosmia",
           "glaucoma",
-          "uveitis"
+          "uveitis",
+          "retinal_detachment",
+          "degenerative_myopia",
+          "macular_hemorrhage",
+          "astigmatism",
+          "genetic_vision_impairment"
         ],
         "attributes": [
           "high_eye_pressure",
@@ -177,7 +254,11 @@
           "acute",
           "hereditary",
           "post_surgical",
-          "iatrogenic"
+          "iatrogenic",
+          "thrombus_induced",
+          "congenital",
+          "juvenile_onset",
+          "severe"
         ]
       },
       "dermatological": {
@@ -185,12 +266,16 @@
           "eczema",
           "acne",
           "mole",
-          "skin_lesions"
+          "skin_lesions",
+          "alopecia",
+          "premature_graying"
         ],
         "attributes": [
           "chronic",
           "acute",
-          "hereditary"
+          "hereditary",
+          "reversal",
+          "meditation_induced"
         ]
       },
       "respiratory": {
@@ -200,14 +285,17 @@
           "sinusitis",
           "copd",
           "pneumonia",
-          "cystic_fibrosis"
+          "cystic_fibrosis",
+          "sarcoidosis",
+          "bronchitis"
         ],
         "attributes": [
           "chronic",
           "pleural_effusion",
           "bilateral",
           "acute",
-          "hereditary"
+          "hereditary",
+          "granulomas"
         ]
       },
       "lymphatic": {
@@ -227,30 +315,43 @@
           "high_blood_pressure",
           "postural_orthostatic_tachycardia_syndrome",
           "arrhythmia",
-          "congenital_heart_defect"
+          "congenital_heart_defect",
+          "hypertrophic_cardiomyopathy",
+          "heart_failure",
+          "heart_valve_replacement",
+          "stroke"
         ],
         "attributes": [
           "congenital",
           "post_surgical",
           "chronic",
-          "acute"
+          "acute",
+          "congestive",
+          "left_ventricular"
         ]
       },
       "digestive": {
         "subcategories": [
           "acid_reflux",
-          "gut_issues"
+          "gut_issues",
+          "fatty_liver_disease",
+          "barretts_esophagus",
+          "hernia"
         ],
         "attributes": [
           "chronic",
-          "acute"
+          "acute",
+          "precancerous",
+          "esophageal"
         ]
       },
       "endocrine": {
         "subcategories": [
           "goiter",
           "hypothyroidism",
-          "hyperthyroidism"
+          "hyperthyroidism",
+          "thyroid_nodule",
+          "adrenal_fatigue"
         ],
         "attributes": [
           "hormone_imbalance",
@@ -265,7 +366,8 @@
         "subcategories": [
           "obesity",
           "insulin_resistance",
-          "chronic_stress"
+          "chronic_stress",
+          "hypoglycemia"
         ],
         "attributes": [
           "weight_loss",
@@ -280,21 +382,34 @@
           "lyme_disease",
           "mold_toxicity",
           "sepsis",
-          "botulism"
+          "botulism",
+          "long_covid",
+          "epstein_barr_virus",
+          "parasites",
+          "mercury_toxicity",
+          "hiv",
+          "hepatitis_c",
+          "bone_infection"
         ],
         "attributes": [
           "tick_borne",
           "environmental_toxin",
           "chronic",
           "acute",
-          "iatrogenic"
+          "iatrogenic",
+          "post_viral",
+          "travel_acquired",
+          "blood_transfusion"
         ]
       },
       "hematological": {
         "subcategories": [
           "neutropenia",
           "immune_thrombocytopenia",
-          "liver_failure"
+          "liver_failure",
+          "blood_clotting_disorder",
+          "common_variable_immunodeficiency",
+          "igg_deficiency"
         ],
         "attributes": [
           "blood_count_recovery",
@@ -302,7 +417,50 @@
           "chronic",
           "acute",
           "hereditary",
-          "post_surgical"
+          "post_surgical",
+          "iatrogenic",
+          "life_threatening",
+          "genetic",
+          "recurrent_infections"
+        ]
+      },
+      "genitourinary": {
+        "subcategories": [
+          "urinary_retention",
+          "vesicoureteral_reflux",
+          "erectile_dysfunction",
+          "enlarged_testicle",
+          "interstitial_cystitis",
+          "urinary_tract_infection",
+          "chronic_kidney_disease"
+        ],
+        "attributes": [
+          "congenital",
+          "recurrent_infections",
+          "chronic",
+          "acute",
+          "post_surgical",
+          "nerve_damage",
+          "pelvic_surgery",
+          "urinary_frequency",
+          "painful"
+        ]
+      },
+      "vascular": {
+        "subcategories": [
+          "raynauds_syndrome",
+          "aneurysm"
+        ],
+        "attributes": [
+          "cold_triggered",
+          "extremities",
+          "chronic",
+          "acute",
+          "hereditary",
+          "cerebral",
+          "carotid",
+          "unruptured",
+          "inoperable"
         ]
       }
     },
@@ -320,7 +478,9 @@
       "career": {
         "subcategories": [
           "job_promotion",
-          "new_job"
+          "new_job",
+          "athletic_achievement",
+          "career_transformation"
         ],
         "attributes": [
           "remote_work",
@@ -329,7 +489,8 @@
       },
       "personal_items": {
         "subcategories": [
-          "musical_instrument"
+          "musical_instrument",
+          "dragonfly"
         ],
         "attributes": [
           "custom",
@@ -341,11 +502,47 @@
           "soulmate",
           "conscious_relationship",
           "marriage",
-          "manifested_partner"
+          "manifested_partner",
+          "family_reconciliation"
         ],
         "attributes": [
           "heart_guided",
           "surrender_led"
+        ]
+      },
+      "housing": {
+        "subcategories": [
+          "rental_house",
+          "income_property",
+          "dream_home",
+          "relocation"
+        ],
+        "attributes": [
+          "immediate",
+          "surrender_led",
+          "magical_signs",
+          "better_than_imagined"
+        ]
+      },
+      "legal": {
+        "subcategories": [
+          "arrest_release"
+        ],
+        "attributes": [
+          "immediate",
+          "miraculous",
+          "matched_visualization",
+          "for_others"
+        ]
+      },
+      "travel": {
+        "subcategories": [
+          "international_travel"
+        ],
+        "attributes": [
+          "multiple_destinations",
+          "spontaneous",
+          "affirmation_based"
         ]
       }
     },
@@ -368,13 +565,12 @@
     },
     "other": {}
   },
-  "updatedAt": "2025-12-29T20:00:00.0000000+00:00",
+  "updatedAt": "2026-03-14T18:30:00.0000000+00:00",
   "changes": [
-    "Dissolved 'healing.physical_health' and redistributed subcategories to new/existing categories to prevent bloat.",
-    "Added new categories: 'endocrine', 'metabolic', 'infectious', 'hematological'.",
-    "Moved neuropathy/chronic_pain/migraines/chronic_fatigue to 'neurological'; osteopenia/osteoporosis to 'musculoskeletal'; glaucoma/uveitis to 'sensory'; mole to 'dermatological'; cystic_fibrosis to 'respiratory'.",
-    "Distributed shared attributes like 'chronic' to relevant categories without a top-level array.",
-    "Incorporated stutter subcategory under neurological as per prior proposals."
+    "Encephalon workshop testimonials commonly feature manifestation of personal symbolic objects like dragonflies during dedicated object meditations; adding 'dragonfly' as subcategory under personal_items for specificity and reusability.",
+    "Merge category 'manifestation.personal_items'",
+    "Further refinement to address bloat and cause-vs-effect clarity: added new 'vascular' category under healing (v7.0); moved raynauds_syndrome (to vascular), stroke (to cardiovascular), paralysis (to musculoskeletal), hernia (to digestive), perineal_tear & anal_sphincter_injury & breast_cyst (to reproductive), bone_infection (to infectious).",
+    "Moved 'aneurysm' from neurological to vascular for etiological accuracy (primary vascular wall weakness, even when cerebral/carotid and neurologically symptomatic); added relevant vascular-specific attributes."
   ],
-  "proposedFromVideoId": "J-Cx8o4bizs"
+  "proposedFromVideoId": "de7qmG8CKKQ"
 }
