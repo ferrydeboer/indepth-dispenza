@@ -81,6 +81,27 @@ public class ScanPlaylistTests
     }
 
     [Test]
+    public async Task Run_WithVersionParameter_PassesVersionToRequest()
+    {
+        // Arrange
+        var req = new Mock<HttpRequest>().Object;
+        string playlistId = "validId";
+        var serviceResult = ServiceResult<int>.Success(5);
+        _mockPlaylistScanService.Setup(s => s.ScanPlaylistAsync(It.Is<PlaylistScanRequest>(r =>
+            r.PlaylistId == playlistId &&
+            r.VersionLabel == "v2.0")))
+            .ReturnsAsync(serviceResult);
+
+        // Act
+        var result = await _scanPlaylist.Run(req, playlistId, limit: null, filters: null, version: "v2.0");
+
+        // Assert
+        Assert.That(result, Is.InstanceOf<OkObjectResult>());
+        _mockPlaylistScanService.Verify(s => s.ScanPlaylistAsync(It.Is<PlaylistScanRequest>(r =>
+            r.VersionLabel == "v2.0")), Times.Once);
+    }
+
+    [Test]
     public async Task ScheduledRun_TriggersScanWithCorrectParameters()
     {
         // Arrange
