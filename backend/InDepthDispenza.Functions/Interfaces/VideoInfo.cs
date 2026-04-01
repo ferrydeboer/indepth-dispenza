@@ -8,4 +8,5 @@ public record VideoInfo(
     DateTimeOffset PublishedAt,
     string ThumbnailUrl,
     TimeSpan? Duration = null,
-    long? ViewCount = null);
+    long? ViewCount = null,
+    string? VersionLabel = null);
