@@ -34,9 +34,9 @@ public class TranscriptAnalyzer : ITranscriptAnalyzer
     /// <summary>
     /// Analyzes a transcript to extract structured healing journey data.
     /// </summary>
-    public async Task<ServiceResult<VideoAnalysis>> AnalyzeTranscriptAsync(string videoId)
+    public async Task<ServiceResult<VideoAnalysis>> AnalyzeTranscriptAsync(string videoId, string? versionLabel = null)
     {
-        _logger.LogInformation("Starting transcript analysis for video {VideoId}", videoId);
+        _logger.LogInformation("Starting transcript analysis for video {VideoId} (versionLabel: {VersionLabel})", videoId, versionLabel ?? "none");
 
         // Step 1: Compose prompt using the pipeline
         var promptText = await ComposePrompt(videoId);
@@ -72,8 +72,11 @@ public class TranscriptAnalyzer : ITranscriptAnalyzer
         // Step 3: Parse LLM response into VideoAnalysis object and attach prompt info into DTO for storage later
         var (analysis, responseDto) = ParseLlmResponse(videoId, llmResult.Data, promptInfo);
         _lastLlmResponse = responseDto; // cache for storage
-        _lastVideoId = videoId;
         _lastAnalyzedAt = analysis.AnalyzedAt;
+        _lastVersionLabel = versionLabel;
+
+        // Always generate versioned document ID with timestamp for uniqueness
+        _lastDocumentId = VersionedDocumentId.Create(videoId, analysis.AnalyzedAt).Value;
 
         // Post-processing handlers (ordered); isolate exceptions per handler
         _lastTaxonomyVersion = null;
@@ -168,31 +171,32 @@ public class TranscriptAnalyzer : ITranscriptAnalyzer
 
     // State of the last analysis for persistence
     private LlmResponse? _lastLlmResponse;
-    private string? _lastVideoId;
+    private string? _lastDocumentId;
     private DateTimeOffset _lastAnalyzedAt;
     private string? _lastTaxonomyVersion;
+    private string? _lastVersionLabel;
 
     public async Task<ServiceResult> PersistLastAnalysisAsync(string? taxonomyVersion)
     {
         try
         {
-            if (_lastLlmResponse == null || string.IsNullOrEmpty(_lastVideoId))
+            if (_lastLlmResponse == null || string.IsNullOrEmpty(_lastDocumentId))
             {
                 return ServiceResult.Failure("No analysis available to persist");
             }
 
             var store = await _videoAnalysisRepository.SaveFullLlmResponseAsync(
-                id: _lastVideoId!,
+                id: _lastDocumentId!,
                 analyzedAt: _lastAnalyzedAt,
                 taxonomyVersion: taxonomyVersion ?? _lastTaxonomyVersion,
-                versionLabel: null,
+                versionLabel: _lastVersionLabel,
                 llm: _lastLlmResponse);
 
             return store;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to persist last analysis for {VideoId}", _lastVideoId);
+            _logger.LogError(ex, "Failed to persist last analysis for {DocumentId}", _lastDocumentId);
             return ServiceResult.Failure($"Failed to persist last analysis: {ex.Message}", ex);
         }
     }

@@ -82,13 +82,13 @@ public class AnalyzeVideo
             throw new InvalidOperationException("Queue message could not be deserialized into VideoInfo or missing VideoId");
         }
         
-        var result = await _transcriptAnalyzer.AnalyzeTranscriptAsync(video.VideoId);
+        var result = await _transcriptAnalyzer.AnalyzeTranscriptAsync(video.VideoId, video.VersionLabel);
         if (!result.IsSuccess)
         {
             _logger.LogError("Queue-based analysis failed for {VideoId}: {Error}", video.VideoId, result.ErrorMessage);
             throw new InvalidOperationException($"Analysis failed for {video.VideoId}: {result.ErrorMessage}", result.Exception);
         }
 
-        _logger.LogInformation("Queue-based analysis succeeded for VideoId {VideoId}", video.VideoId);
+        _logger.LogInformation("Queue-based analysis succeeded for VideoId {VideoId} (versionLabel: {VersionLabel})", video.VideoId, video.VersionLabel ?? "none");
     }
 }

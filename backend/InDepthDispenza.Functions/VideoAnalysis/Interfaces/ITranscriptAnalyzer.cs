@@ -12,6 +12,7 @@ public interface ITranscriptAnalyzer
     /// Composers in the pipeline load transcript and taxonomy data as needed.
     /// </summary>
     /// <param name="videoId">The video ID being analyzed</param>
+    /// <param name="versionLabel">Optional version label for creating versioned analysis documents</param>
     /// <returns>Analysis result containing structured data</returns>
-    Task<ServiceResult<VideoAnalysis>> AnalyzeTranscriptAsync(string videoId);
+    Task<ServiceResult<VideoAnalysis>> AnalyzeTranscriptAsync(string videoId, string? versionLabel = null);
 }

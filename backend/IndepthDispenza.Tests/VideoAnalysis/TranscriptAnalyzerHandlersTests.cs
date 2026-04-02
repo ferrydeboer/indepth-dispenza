@@ -97,7 +97,7 @@ public class TranscriptAnalyzerHandlersTests
         Assert.That(calls, Is.EqualTo(new[] { "h1", "h2" }), "Handlers should be called in order and continue after exception");
 
         repo.Verify(r => r.SaveFullLlmResponseAsync(
-            It.Is<string>(id => id == "vid-123"),
+            It.Is<string>(id => id.StartsWith("vid-123_")),
             It.IsAny<DateTimeOffset>(),
             It.IsAny<string?>(),
             It.IsAny<string?>(),
