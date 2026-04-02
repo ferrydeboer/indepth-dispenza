@@ -26,7 +26,7 @@ public class AnalysisExistsFilterTests
         _loggerMock = new Mock<ILogger<AnalysisExistsFilter>>();
         _testSubject = new AnalysisExistsFilter(_repositoryMock.Object, _loggerMock.Object);
         _video = _fixture.Create<VideoInfo>();
-        _request = _fixture.Create<PlaylistScanRequest>() with { Filters = VideoFilters.Parse("skip-existing") };
+        _request = _fixture.Create<PlaylistScanRequest>() with { Filters = VideoFilters.Parse("skip-existing"), VersionLabel = null };
     }
 
     [Test]
@@ -93,6 +93,42 @@ public class AnalysisExistsFilterTests
                 It.IsAny<Exception>(),
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.Once);
+    }
+
+    [Test]
+    public async Task ShouldProcessAsync_VersionLabelPresent_ReturnsTrue_BypassesExistingCheck()
+    {
+        // Arrange
+        var request = _request with { VersionLabel = "v2.0" };
+        var existingAnalysis = _fixture.Create<VideoAnalysisDocument>();
+
+        _repositoryMock.Setup(x => x.GetAnalysisAsync(_video.VideoId))
+            .ReturnsAsync(ServiceResult<VideoAnalysisDocument?>.Success(existingAnalysis));
+
+        // Act
+        var result = await Act(_video, request);
+
+        // Assert
+        Assert.That(result, Is.True);
+        _repositoryMock.Verify(x => x.GetAnalysisAsync(It.IsAny<string>()), Times.Never);
+    }
+
+    [Test]
+    public async Task ShouldProcessAsync_VersionLabelNull_ChecksExisting()
+    {
+        // Arrange
+        var request = _request with { VersionLabel = null };
+        var existingAnalysis = _fixture.Create<VideoAnalysisDocument>();
+
+        _repositoryMock.Setup(x => x.GetAnalysisAsync(_video.VideoId))
+            .ReturnsAsync(ServiceResult<VideoAnalysisDocument?>.Success(existingAnalysis));
+
+        // Act
+        var result = await Act(_video, request);
+
+        // Assert
+        Assert.That(result, Is.False);
+        _repositoryMock.Verify(x => x.GetAnalysisAsync(_video.VideoId), Times.Once);
     }
 
     private async Task<bool> Act(VideoInfo video, PlaylistScanRequest request)

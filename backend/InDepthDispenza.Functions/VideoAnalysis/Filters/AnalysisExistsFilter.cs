@@ -22,6 +22,12 @@ public class AnalysisExistsFilter : IVideoFilter
             return true;
         }
 
+        // When a version label is specified, always process to create a new versioned analysis
+        if (request.VersionLabel != null)
+        {
+            return true;
+        }
+
         try
         {
             var result = await _repository.GetAnalysisAsync(video.VideoId);
