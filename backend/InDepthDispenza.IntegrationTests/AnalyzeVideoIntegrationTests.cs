@@ -4,6 +4,7 @@ using AutoFixture;
 using FluentAssertions;
 using InDepthDispenza.Functions.VideoAnalysis.Interfaces;
 using InDepthDispenza.IntegrationTests.Infrastructure;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Azure.Cosmos;
 using WireMock.Admin.Mappings;
 
@@ -12,7 +13,7 @@ namespace InDepthDispenza.IntegrationTests;
 [TestFixture]
 public class AnalyzeVideoIntegrationTests : IntegrationTestBase
 {
-    private string _testVideoId = "dQw4w9WgXcQ";
+    private string _testVideoId = "";
 
     [SetUp]
     public new void SetUp()
@@ -188,6 +189,33 @@ public class AnalyzeVideoIntegrationTests : IntegrationTestBase
     }
 
     [Test]
+    public async Task VersionedAnalysis_CreatesNewDocument_WhenVersionLabelProvided()
+    {
+        // Given a video that has already been analyzed
+        const string transcriptText = "meditation practice leads to healing";
+        await SetupTranscriptResponse(_testVideoId, transcriptText);
+        await WireMockConfig.Grok.SetupAsync();
+
+        var firstResponse = await InvokeAnalyzeVideoAsync(_testVideoId);
+        firstResponse.IsSuccess.Should().BeTrue(firstResponse.Content);
+
+        // When analyzing the same video again via queue with a version label
+        var secondResponse = await InvokeAnalyzeVideoFromQueueAsync(_testVideoId, versionLabel: "taxonomy-v2");
+        secondResponse.IsSuccess.Should().BeTrue(secondResponse.Content);
+
+        // Then two distinct versioned documents should exist in Cosmos
+        var documents = await GetAllStoredLlmDocumentsFromCosmos(_testVideoId);
+
+        documents.Should().HaveCount(2, "both analyses should create separate versioned documents");
+        documents.Should().OnlyContain(d => d.id.StartsWith($"{_testVideoId}_"), "all documents should use versioned ID format");
+        documents.Select(d => d.id).Distinct().Should().HaveCount(2, "document IDs should be unique");
+
+        // And one document should have the version label
+        documents.Should().ContainSingle(d => d.versionLabel == "taxonomy-v2");
+        documents.Should().ContainSingle(d => d.versionLabel == null);
+    }
+
+    [Test]
     public async Task AchievementsFromLlm_AreStoredInCosmos()
     {
         // Given a transcript exists
@@ -333,10 +361,59 @@ public class AnalyzeVideoIntegrationTests : IntegrationTestBase
     {
         var httpResponse = await HttpClient.GetAsync($"/api/AnalyzeVideo?videoId={videoId}");
 
+        // Wait for processing to complete by polling Cosmos for the expected document
+        // Queue being empty only means message was dequeued, not that processing finished
+        var maxWaitSeconds = 30;
+        for (var i = 0; i < maxWaitSeconds; i++)
+        {
+            await Task.Delay(1000);
+
+            var docs = await GetAllStoredLlmDocumentsFromCosmos(videoId);
+            // This could still cause flakiness when used multiple times with the same video id.
+            if (docs.Any())
+            {
+                return new AnalyzeVideoResponse(
+                    IsSuccess: httpResponse.IsSuccessStatusCode,
+                    StatusCode: (int)httpResponse.StatusCode,
+                    Content: await httpResponse.Content.ReadAsStringAsync());
+            }
+        }
         return new AnalyzeVideoResponse(
-            IsSuccess: httpResponse.IsSuccessStatusCode,
+            IsSuccess: false,
             StatusCode: (int)httpResponse.StatusCode,
             Content: await httpResponse.Content.ReadAsStringAsync());
+    }
+
+    private async Task<AnalyzeVideoResponse> InvokeAnalyzeVideoFromQueueAsync(string videoId, string? versionLabel = null)
+    {
+        // Create a VideoInfo message and enqueue it
+        var videoInfo = new Functions.Interfaces.VideoInfo(
+            VideoId: videoId,
+            Title: "Test Video",
+            Description: "Test Description",
+            ChannelTitle: "Test Channel",
+            PublishedAt: DateTimeOffset.UtcNow,
+            ThumbnailUrl: "https://example.com/thumb.jpg",
+            VersionLabel: versionLabel);
+
+        var messageJson = JsonSerializer.Serialize(videoInfo);
+        await QueueClient.SendMessageAsync(messageJson);
+
+        // Wait for processing to complete by polling Cosmos for the expected document
+        // Queue being empty only means message was dequeued, not that processing finished
+        var maxWaitSeconds = 30;
+        for (var i = 0; i < maxWaitSeconds; i++)
+        {
+            await Task.Delay(1000);
+
+            var docs = await GetAllStoredLlmDocumentsFromCosmos(videoId);
+            if (docs.Any(d => d.versionLabel == versionLabel))
+            {
+                return new AnalyzeVideoResponse(IsSuccess: true, StatusCode: 200, Content: "Document created");
+            }
+        }
+
+        return new AnalyzeVideoResponse(IsSuccess: false, StatusCode: 500, Content: "Timeout waiting for document with expected versionLabel");
     }
 
     private async Task<int> GetTranscriptApiRequests(string videoId)
@@ -360,12 +437,71 @@ public class AnalyzeVideoIntegrationTests : IntegrationTestBase
         public string id { get; set; } = string.Empty;
         public DateTimeOffset analyzedAt { get; set; }
         public string? taxonomyVersion { get; set; }
+        public string? versionLabel { get; set; }
         public LlmResponse response { get; set; } = null!;
+    }
+
+    private async Task<StoredLlmDocument?> GetStoredLlmDocumentFromCosmos(string videoId)
+    {
+        using var cosmos = CreateCosmosClient();
+        var container = cosmos.GetDatabase(EnvironmentSetup.CosmosDbDatabaseName).GetContainer("video-analysis");
+
+        // Query for documents where id starts with videoId_ (versioned format)
+        var query = new QueryDefinition(
+            "SELECT * FROM c WHERE STARTSWITH(c.id, @videoIdPrefix) ORDER BY c.analyzedAt DESC")
+            .WithParameter("@videoIdPrefix", $"{videoId}_");
+
+        var iterator = container.GetItemQueryIterator<StoredLlmDocument>(query);
+
+        while (iterator.HasMoreResults)
+        {
+            var response = await iterator.ReadNextAsync();
+            var doc = response.FirstOrDefault();
+            if (doc != null)
+                return doc;
+        }
+
+        return null;
+    }
+
+    private async Task<List<StoredLlmDocument>> GetAllStoredLlmDocumentsFromCosmos(string videoId)
+    {
+        using var cosmos = CreateCosmosClient();
+        var container = cosmos.GetDatabase(EnvironmentSetup.CosmosDbDatabaseName).GetContainer("video-analysis");
+
+        var query = new QueryDefinition(
+            "SELECT * FROM c WHERE STARTSWITH(c.id, @videoIdPrefix) ORDER BY c.analyzedAt DESC")
+            .WithParameter("@videoIdPrefix", $"{videoId}_");
+
+        var results = new List<StoredLlmDocument>();
+        var iterator = container.GetItemQueryIterator<StoredLlmDocument>(query);
+
+        while (iterator.HasMoreResults)
+        {
+            var response = await iterator.ReadNextAsync();
+            results.AddRange(response);
+        }
+
+        return results;
     }
 
     private async Task<StoredAchievement[]?> GetStoredLlmAchievementsFromCosmos(string videoId)
     {
-        // Connect to Cosmos emulator using environment setup values
+        var doc = await GetStoredLlmDocumentFromCosmos(videoId);
+        if (doc == null)
+            return null;
+
+        var achievements = doc.response.VideoAnalysisResponse.Analysis.Achievements;
+        if (achievements == null || achievements.Length == 0)
+            return [];
+
+        return achievements
+            .Select(a => new StoredAchievement(a.Type, a.Tags, a.Details))
+            .ToArray();
+    }
+
+    private CosmosClient CreateCosmosClient()
+    {
         var connectionString = EnvironmentSetup.CosmosDbContainer
             .GetConnectionString()
             .Replace("https", "http");
@@ -380,27 +516,7 @@ public class AnalyzeVideoIntegrationTests : IntegrationTestBase
             }
         };
 
-        using var cosmos = new CosmosClient(connectionString, clientOptions);
-        var db = cosmos.GetDatabase(EnvironmentSetup.CosmosDbDatabaseName);
-        var container = db.GetContainer("video-analysis");
-
-        try
-        {
-            var resp = await container.ReadItemAsync<StoredLlmDocument>(videoId, new PartitionKey(videoId));
-            var dto = resp.Resource;
-
-            var achievements = dto.response.VideoAnalysisResponse.Analysis.Achievements;
-            if (achievements == null || achievements.Length == 0)
-                return [];
-
-            return achievements
-                .Select(a => new StoredAchievement(a.Type, a.Tags, a.Details))
-                .ToArray();
-        }
-        catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
-        {
-            return null;
-        }
+        return new CosmosClient(connectionString, clientOptions);
     }
 
     private async Task<int> GetGrokRequests()
