@@ -4,9 +4,13 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - 'agents/**'
   pull_request:
     branches:
       - main
+    paths-ignore:
+      - 'agents/**'
   workflow_dispatch:  # Allow manual trigger
 
 permissions:
