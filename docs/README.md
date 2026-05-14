@@ -7,12 +7,17 @@ It serves as the primary input for the PO agent and is useful for any new contri
 
 ## Purpose
 
-InDepth Dispenza is an analysis platform for Joe Dispenza testimonial videos. The system scans YouTube playlists,
-extracts transcripts, and uses LLM-based analysis to identify structured data about healing journeys—conditions healed,
-meditation practices used, timeline to results, and sentiment.
+InDepth Dispenza is a generic video testimonial analysis platform. Initially focused on Joe Dispenza content, the
+architecture supports multiple corpora (`dispenza`, `wim-hof`, `heartmath`) and multiple independent analysis types
+per video (achievements, timeline, language). The system scans YouTube playlists, extracts transcripts, and uses
+LLM-based segment analyzers to extract structured data.
 
 **Target outcome:** A browsable, searchable database of testimonial insights that helps researchers and practitioners
 understand patterns across hundreds of healing stories.
+
+**Architecture direction:** The v2 analysis pipeline replaces the monolithic `TranscriptAnalyzer` with self-contained
+segment modules. See [V2 Architecture](architecture/v2-analysis-pipeline.md) and
+[ADR 002](architecture/decisions/002-self-contained-segment-analyzers.md).
 
 ---
 
@@ -158,9 +163,11 @@ Taxonomy definitions evolve. The system supports versioning to track which taxon
 
 ### Planned
 
-- REST API for querying analysis results
+- V2 analysis pipeline with self-contained segment analyzers (see ADR 002)
+- Corpus support — onboard `wim-hof` and `heartmath` alongside `dispenza`
+- REST API for querying segment analysis results
 - Frontend for browsing and visualization
-- Taxonomy refinement based on analysis feedback
+- Additional segment types: timeline, language analysis
 
 ---
 
