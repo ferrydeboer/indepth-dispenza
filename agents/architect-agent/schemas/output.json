@@ -1,0 +1,196 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ArchitectAgentOutput",
+  "description": "Output schema for the Architect Agent. One of four states: design_doc, needs_clarification, needs_refactoring_first, or returned_to_po.",
+  "oneOf": [
+    {
+      "type": "object",
+      "title": "DesignDoc",
+      "description": "Complete implementation plan ready for Gate 1 human review. Three output states only: design_doc, needs_refactoring_first, returned_to_po.",
+      "properties": {
+        "status": { "const": "design_doc" },
+        "issue": {
+          "type": "integer",
+          "description": "Issue number this DesignDoc was derived from"
+        },
+        "workItemTitle": {
+          "type": "string",
+          "description": "Title from the WorkItem for traceability"
+        },
+        "approach": {
+          "type": "string",
+          "description": "One paragraph describing the implementation strategy and why it fits existing patterns"
+        },
+        "filesRead": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Every file examined during analysis including probe-surfaced files. Makes analysis scope auditable at Gate 1.",
+          "minItems": 1
+        },
+        "commitPlan": {
+          "type": "array",
+          "description": "Ordered list of commits. Each commit must compile and pass existing tests in isolation.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "order": {
+                "type": "integer",
+                "description": "Execution order — must be applied sequentially"
+              },
+              "type": {
+                "type": "string",
+                "enum": ["preparatory_refactor", "implementation"],
+                "description": "preparatory_refactor: behavior-preserving change enabling later commits. implementation: implementation plus its tests in one atomic commit."
+              },
+              "description": {
+                "type": "string",
+                "description": "What this commit achieves, e.g., 'add VideoId field to CosmosStoredLlmDocument'. Developer derives the commit message from this."
+              },
+              "filesChanged": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "path": { "type": "string" },
+                    "change": {
+                      "type": "string",
+                      "description": "What specifically changes in this file"
+                    }
+                  },
+                  "required": ["path", "change"]
+                },
+                "minItems": 1
+              },
+              "testRequired": {
+                "type": "object",
+                "description": "Required when the commit introduces or changes behavior. Omit for purely structural changes.",
+                "properties": {
+                  "class": {
+                    "type": "string",
+                    "description": "Test class name, e.g., 'TranscriptAnalyzerTests'"
+                  },
+                  "method": {
+                    "type": "string",
+                    "description": "Test method name, e.g., 'AnalyzeAsync_MissingVideoId_ThrowsArgumentException'"
+                  },
+                  "assertionIntent": {
+                    "type": "string",
+                    "description": "What this test proves about behavior"
+                  }
+                },
+                "required": ["class", "method", "assertionIntent"]
+              }
+            },
+            "required": ["order", "type", "description", "filesChanged"]
+          },
+          "minItems": 1
+        },
+        "refactoringsInScope": {
+          "type": "array",
+          "description": "Essential refactorings included in the commit plan. Each must be behavior-preserving.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "description": { "type": "string" },
+              "justification": {
+                "type": "string",
+                "description": "Why this is essential — what cannot be implemented correctly without it"
+              },
+              "behaviorChange": {
+                "type": "boolean",
+                "const": false,
+                "description": "Must always be false — refactoring must not change observable behavior"
+              }
+            },
+            "required": ["description", "justification", "behaviorChange"]
+          }
+        },
+        "cosmeticRefactoringNotes": {
+          "type": "array",
+          "description": "Observed quality issues in affected files. Not acted on — visible at Gate 1 for human decision.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "file": { "type": "string" },
+              "observation": { "type": "string" },
+              "suggestion": { "type": "string" }
+            },
+            "required": ["file", "observation", "suggestion"]
+          }
+        },
+        "estimatedScope": {
+          "type": "string",
+          "enum": ["xs", "s", "m"],
+          "description": "xs = 1-2 commits, s = 3-5 commits, m = 6-10 commits. Exceeding m means WorkItem scope is too large."
+        },
+        "decisionLog": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "decision": { "type": "string" },
+              "rationale": { "type": "string" }
+            },
+            "required": ["decision", "rationale"]
+          },
+          "description": "Key architectural decisions made during analysis with rationale"
+        },
+        "gateQuestion": {
+          "type": "string",
+          "description": "Single sentence directing the human's attention to the highest-risk decision in this plan"
+        }
+      },
+      "required": ["status", "issue", "workItemTitle", "approach", "filesRead", "commitPlan", "estimatedScope", "decisionLog", "gateQuestion"]
+    },
+    {
+      "type": "object",
+      "title": "NeedsRefactoringFirst",
+      "description": "Essential refactoring required before this WorkItem can proceed, outside current scope",
+      "properties": {
+        "status": { "const": "needs_refactoring_first" },
+        "issue": { "type": "integer" },
+        "blockingRefactoring": {
+          "type": "object",
+          "properties": {
+            "description": {
+              "type": "string",
+              "description": "What needs to change"
+            },
+            "justification": {
+              "type": "string",
+              "description": "Why the WorkItem cannot proceed without it"
+            },
+            "prerequisiteIssue": {
+              "type": "integer",
+              "description": "GitHub issue number created for the prerequisite refactoring"
+            }
+          },
+          "required": ["description", "justification", "prerequisiteIssue"]
+        },
+        "prerequisiteIssueCreated": {
+          "type": "boolean",
+          "const": true
+        }
+      },
+      "required": ["status", "issue", "blockingRefactoring", "prerequisiteIssueCreated"]
+    },
+    {
+      "type": "object",
+      "title": "ReturnedToPO",
+      "description": "Catch-all for anything that is not design_doc or needs_refactoring_first: requirements gaps, untestable criteria, unresolvable behavior change ambiguity, or mixed concerns.",
+      "properties": {
+        "status": { "const": "returned_to_po" },
+        "issue": { "type": "integer" },
+        "reason": {
+          "type": "string",
+          "description": "What is wrong with the WorkItem"
+        },
+        "suggestion": {
+          "type": "string",
+          "description": "How the PO agent should reformulate or split it"
+        }
+      },
+      "required": ["status", "issue", "reason", "suggestion"]
+    }
+  ]
+}

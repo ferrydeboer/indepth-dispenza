@@ -110,11 +110,16 @@ run log. The orchestrator is extracted from observed patterns — not designed t
 
 ### Architect Agent
 
-**Purpose:** Reads the WorkItem and relevant code, produces a DesignDoc specifying exactly which files change and how.  
-**Model:** Sonnet (requires reasoning over code).  
+**Purpose:** Analyses the WorkItem against the codebase, reasons about architectural fit, discovers dependencies via
+compiler probing, and produces a commit-level DesignDoc that a Developer agent can execute mechanically.  
+**Model:** Sonnet (deep code reasoning, pattern matching, multi-file dependency analysis).  
 **Gate:** Gate 1 — human reviews and approves the DesignDoc before implementation begins.  
-**Key constraint:** DesignDoc must be reviewable in under 60 seconds. If it cannot be, the scope is too large — return
-to PO agent.
+**Key constraints:**
+- Uses `dotnet build` probing to surface compiler-visible dependencies exhaustively — not LLM text tracing
+- Reverts all scratch changes before producing output; verified with `git diff`
+- Distinguishes essential refactoring (blocks implementation, included in plan or escalated) from cosmetic (noted only)
+- No commit access — analyses and plans only
+- DesignDoc scope exceeding `m` (10 commits) means WorkItem is too large — return to PO agent
 
 ### Developer Agent
 
@@ -275,29 +280,52 @@ Acceptance criteria use slug IDs for traceability — the Developer agent refere
 
 ```json
 {
+  "status": "design_doc",
+  "issue": 13,
   "workItemTitle": "string",
   "approach": "string",
-  "filesToChange": [
+  "filesRead": ["string"],
+  "commitPlan": [
     {
-      "path": "string",
-      "changeDescription": "string"
+      "order": 1,
+      "type": "preparatory_refactor | feature",
+      "description": "string",
+      "filesChanged": [
+        { "path": "string", "change": "string" }
+      ],
+      "testRequired": {
+        "class": "string",
+        "method": "string",
+        "assertionIntent": "string"
+      }
     }
   ],
-  "filesToCreate": [
+  "refactoringsInScope": [
     {
-      "path": "string",
-      "purpose": "string"
+      "description": "string",
+      "justification": "string",
+      "behaviorChange": false
     }
   ],
-  "testsRequired": ["string"],
-  "selfReviewChecklist": ["string"],
+  "cosmeticRefactoringNotes": [
+    { "file": "string", "observation": "string", "suggestion": "string" }
+  ],
   "estimatedScope": "xs | s | m",
+  "decisionLog": [
+    { "decision": "string", "rationale": "string" }
+  ],
   "gateQuestion": "string"
 }
 ```
 
-`gateQuestion` is a single sentence the Architect generates to focus the human's attention at Gate 1. Example: "Does
-limiting this change to CosmosQueryBuilder.cs make sense, or should TagValidator.cs also be in scope?"
+`commitPlan` is an ordered sequence — the Developer applies commits sequentially. Each commit must compile and pass
+existing tests when applied in isolation (trunk-based safety). `testRequired` is omitted for structural commits with no
+behavior change.
+
+`filesRead` lists every file the Architect examined (including compiler-probe-surfaced files), making the analysis scope
+auditable at Gate 1.
+
+`gateQuestion` is a single sentence focusing the human's attention on the highest-risk decision in the plan.
 
 ### PullRequest (Developer → Orchestrator)
 

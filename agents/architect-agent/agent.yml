@@ -1,0 +1,55 @@
+version: "1.0.0"
+# Bump on any prompt or config change. Recorded in run logs for audit.
+
+model:
+  primary: "claude-sonnet-4-6"
+  fallback: "claude-sonnet-4-6"
+  # Reasoning: Architect role requires deep code reasoning, dependency analysis,
+  # architectural pattern matching, and multi-file sequencing. Haiku is insufficient.
+  # Revisit upgrading to Opus if commit plans are frequently incomplete.
+
+sampling:
+  temperature: 0.2
+  # Low temperature for deterministic structured output.
+  # Architectural decisions must be consistent and auditable.
+
+tokenBudget:
+  maxInputTokens: 40000
+  maxOutputTokens: 4000
+  hardStopOnExceed: true
+  warnAt: 0.8
+  # Large input budget: Architect reads multiple source files, direct imports,
+  # compiler error output, project context, and CLAUDE.md.
+  # Output budget covers full commit plan with per-commit file detail.
+
+retry:
+  maxAttempts: 3
+  backoffSeconds: [2, 5, 15]
+  retryOn: ["rate_limit", "timeout"]
+  failFast: false
+
+timeout:
+  seconds: 300
+  onTimeout: "fail_and_alert"
+  # Longer timeout: compiler probing adds wall-clock time per probe.
+
+humanGate:
+  position: "after"
+  # Gate 1: human reviews and approves DesignDoc before implementation begins.
+  # Architect output is never fed directly to Developer without human approval.
+
+capabilities:
+  readGitHub: false
+  writeGitHub: true    # only for creating prerequisite refactoring issues
+  readCosmos: false
+  writeCosmos: false
+  callOpenHands: false
+  webSearch: false
+  runBuild: true       # dotnet build for compiler probing
+  gitRead: true        # git diff to verify no scratch changes remain
+  gitRestore: true     # git restore to revert scratch changes
+  gitCommit: false     # never — Architect does not commit
+
+contract:
+  input: "schemas/input.json"
+  output: "schemas/output.json"

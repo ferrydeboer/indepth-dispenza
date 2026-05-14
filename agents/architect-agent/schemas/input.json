@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ArchitectAgentInput",
+  "description": "Full input recorded by the Architect Agent for traceability. Written to the run folder after loading the WorkItem.",
+  "type": "object",
+  "properties": {
+    "issue": {
+      "type": "integer",
+      "description": "Issue number being processed"
+    },
+    "runFolder": {
+      "type": "string",
+      "description": "Path to the run folder (e.g., 'runs/13' or 'runs/13.2')"
+    },
+    "workItem": {
+      "type": "object",
+      "description": "Full WorkItem as produced by the PO Agent",
+      "properties": {
+        "status": { "const": "work_item" },
+        "issue": { "type": "integer" },
+        "title": { "type": "string" },
+        "changeRequest": { "type": "string" },
+        "acceptanceCriteria": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "criterion": { "type": "string" },
+              "status": { "type": "string" }
+            },
+            "required": ["id", "criterion", "status"]
+          }
+        },
+        "scopeBoundary": { "type": "string" },
+        "affectedAreas": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "outOfScope": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "decisionLog": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "decision": { "type": "string" },
+              "rationale": { "type": "string" }
+            }
+          }
+        }
+      },
+      "required": ["status", "issue", "title", "changeRequest", "acceptanceCriteria", "scopeBoundary"]
+    }
+  },
+  "required": ["issue", "runFolder", "workItem"]
+}
