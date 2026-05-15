@@ -1,11 +1,11 @@
-using InDepthDispenza.Functions.Interfaces;
+using AtlasOfAlchemy.Functions.Interfaces;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
-namespace InDepthDispenza.Functions.Integrations.Azure.Cosmos;
+namespace AtlasOfAlchemy.Functions.Integrations.Azure.Cosmos;
 
 public static class CosmosModule
 {

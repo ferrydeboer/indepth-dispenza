@@ -1,7 +1,7 @@
 using AutoFixture;
-using InDepthDispenza.Functions.VideoAnalysis.Interfaces;
+using AtlasOfAlchemy.Functions.VideoAnalysis.Interfaces;
 
-namespace IndepthDispenza.Tests.TestInfrastructure.VideoAnalysis;
+namespace AtlasOfAlchemy.Tests.TestInfrastructure.VideoAnalysis;
 
 public sealed class LlmResponseForProposalTests
 {

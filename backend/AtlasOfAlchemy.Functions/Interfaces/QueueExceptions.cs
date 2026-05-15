@@ -1,4 +1,4 @@
-namespace InDepthDispenza.Functions.Interfaces;
+namespace AtlasOfAlchemy.Functions.Interfaces;
 
 public abstract class QueueException(string message, Exception? inner = null) : Exception(message, inner);
 

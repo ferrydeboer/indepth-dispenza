@@ -1,10 +1,10 @@
-using InDepthDispenza.Functions.Interfaces;
-using InDepthDispenza.Functions.VideoAnalysis.Interfaces;
+using AtlasOfAlchemy.Functions.Interfaces;
+using AtlasOfAlchemy.Functions.VideoAnalysis.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace InDepthDispenza.Functions.Integrations.Azure.OpenAI;
+namespace AtlasOfAlchemy.Functions.Integrations.Azure.OpenAI;
 
 // ReSharper disable once UnusedType.Global
 // Azure OpenAI model deployment was given troubles. Abandoned for now in facvour of Grok with API Key.

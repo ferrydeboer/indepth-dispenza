@@ -1,14 +1,14 @@
 using System.Text.Json;
 using AutoFixture;
 using FluentAssertions;
-using InDepthDispenza.Functions.Integrations.Azure.Cosmos;
-using InDepthDispenza.Functions.Interfaces;
-using InDepthDispenza.IntegrationTests.Infrastructure;
+using AtlasOfAlchemy.Functions.Integrations.Azure.Cosmos;
+using AtlasOfAlchemy.Functions.Interfaces;
+using AtlasOfAlchemy.IntegrationTests.Infrastructure;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
-namespace InDepthDispenza.IntegrationTests.Integrations.Azure;
+namespace AtlasOfAlchemy.IntegrationTests.Integrations.Azure;
 
 [TestFixture]
 public class TaxonomyRepositoryIntegrationTests : IntegrationTestBase

@@ -1,12 +1,12 @@
 using AutoFixture;
-using InDepthDispenza.Functions.Interfaces;
-using InDepthDispenza.Functions.VideoAnalysis.Filters;
-using InDepthDispenza.Functions.VideoAnalysis.Interfaces;
+using AtlasOfAlchemy.Functions.Interfaces;
+using AtlasOfAlchemy.Functions.VideoAnalysis.Filters;
+using AtlasOfAlchemy.Functions.VideoAnalysis.Interfaces;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 
-namespace IndepthDispenza.Tests.VideoAnalysis.Filters;
+namespace AtlasOfAlchemy.Tests.VideoAnalysis.Filters;
 
 [TestFixture]
 public class AnalysisExistsFilterTests

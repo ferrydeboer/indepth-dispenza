@@ -1,7 +1,7 @@
-using InDepthDispenza.Functions.VideoAnalysis.Interfaces;
+using AtlasOfAlchemy.Functions.VideoAnalysis.Interfaces;
 using Microsoft.Extensions.Logging;
 
-namespace InDepthDispenza.Functions.VideoAnalysis.Taxonomy;
+namespace AtlasOfAlchemy.Functions.VideoAnalysis.Taxonomy;
 
 /// <summary>
 /// Applies taxonomy proposals from analysis and updates taxonomy version in context.

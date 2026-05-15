@@ -1,4 +1,4 @@
-namespace InDepthDispenza.Functions.VideoAnalysis;
+namespace AtlasOfAlchemy.Functions.VideoAnalysis;
 
 /// <summary>
 /// Exception thrown when LLM response cannot be parsed into a valid analysis.

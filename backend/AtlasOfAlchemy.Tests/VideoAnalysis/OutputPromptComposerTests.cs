@@ -1,10 +1,10 @@
 using System.Text.Json;
-using InDepthDispenza.Functions.VideoAnalysis.Interfaces;
-using InDepthDispenza.Functions.VideoAnalysis.Prompting;
+using AtlasOfAlchemy.Functions.VideoAnalysis.Interfaces;
+using AtlasOfAlchemy.Functions.VideoAnalysis.Prompting;
 using Microsoft.Extensions.Logging.Abstractions;
 using NUnit.Framework;
 
-namespace IndepthDispenza.Tests.VideoAnalysis;
+namespace AtlasOfAlchemy.Tests.VideoAnalysis;
 
 public class OutputPromptComposerTests
 {

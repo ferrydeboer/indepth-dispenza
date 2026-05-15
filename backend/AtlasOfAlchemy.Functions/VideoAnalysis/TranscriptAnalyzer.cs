@@ -1,9 +1,9 @@
-using InDepthDispenza.Functions.Interfaces;
+using AtlasOfAlchemy.Functions.Interfaces;
 using System.Text.Json;
-using InDepthDispenza.Functions.VideoAnalysis.Interfaces;
+using AtlasOfAlchemy.Functions.VideoAnalysis.Interfaces;
 using Microsoft.Extensions.Logging;
 
-namespace InDepthDispenza.Functions.VideoAnalysis;
+namespace AtlasOfAlchemy.Functions.VideoAnalysis;
 
 /// <summary>
 /// Analyzes video transcripts using LLM with taxonomy-constrained extraction.

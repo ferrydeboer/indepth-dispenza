@@ -1,8 +1,8 @@
-using InDepthDispenza.Functions.Interfaces;
-using InDepthDispenza.Functions.VideoAnalysis.Interfaces;
+using AtlasOfAlchemy.Functions.Interfaces;
+using AtlasOfAlchemy.Functions.VideoAnalysis.Interfaces;
 using Microsoft.Extensions.Logging;
 
-namespace InDepthDispenza.Functions.VideoAnalysis.Prompting;
+namespace AtlasOfAlchemy.Functions.VideoAnalysis.Prompting;
 
 /// <summary>
 /// Stub implementation of ILlmService for Step 2.

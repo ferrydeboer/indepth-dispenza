@@ -1,4 +1,4 @@
-namespace InDepthDispenza.IntegrationTests.Infrastructure;
+namespace AtlasOfAlchemy.IntegrationTests.Infrastructure;
 
 public interface IEnvironmentSetupStrategy
 {

@@ -1,6 +1,6 @@
-using InDepthDispenza.Functions.Interfaces;
+using AtlasOfAlchemy.Functions.Interfaces;
 
-namespace InDepthDispenza.Functions.VideoAnalysis.Interfaces;
+namespace AtlasOfAlchemy.Functions.VideoAnalysis.Interfaces;
 
 /// <summary>
 /// Handles updating the taxonomy based on proposals found in a video analysis.

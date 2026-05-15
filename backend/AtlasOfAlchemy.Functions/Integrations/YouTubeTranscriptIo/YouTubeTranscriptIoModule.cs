@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace InDepthDispenza.Functions.Integrations.YouTubeTranscriptIo;
+namespace AtlasOfAlchemy.Functions.Integrations.YouTubeTranscriptIo;
 
 public static class YouTubeTranscriptIoModule
 {

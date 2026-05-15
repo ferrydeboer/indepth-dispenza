@@ -1,4 +1,4 @@
-namespace InDepthDispenza.Functions.Interfaces;
+namespace AtlasOfAlchemy.Functions.Interfaces;
 
 /// <summary>
 /// Provides access to video transcripts from various sources with caching.

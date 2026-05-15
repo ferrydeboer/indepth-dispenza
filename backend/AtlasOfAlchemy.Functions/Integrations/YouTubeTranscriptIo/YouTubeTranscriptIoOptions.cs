@@ -1,4 +1,4 @@
-namespace InDepthDispenza.Functions.Integrations.YouTubeTranscriptIo;
+namespace AtlasOfAlchemy.Functions.Integrations.YouTubeTranscriptIo;
 
 public sealed class YouTubeTranscriptIoOptions
 {

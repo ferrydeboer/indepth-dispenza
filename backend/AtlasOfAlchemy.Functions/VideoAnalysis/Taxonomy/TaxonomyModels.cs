@@ -1,1 +1,1 @@
-// Moved to Interfaces namespace: InDepthDispenza.Functions/Interfaces/TaxonomyModels.cs
+// Moved to Interfaces namespace: AtlasOfAlchemy.Functions/Interfaces/TaxonomyModels.cs

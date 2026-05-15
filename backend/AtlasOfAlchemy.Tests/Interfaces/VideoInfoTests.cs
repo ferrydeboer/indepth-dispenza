@@ -1,8 +1,8 @@
 using System.Text.Json;
-using InDepthDispenza.Functions.Interfaces;
+using AtlasOfAlchemy.Functions.Interfaces;
 using NUnit.Framework;
 
-namespace IndepthDispenza.Tests.Interfaces;
+namespace AtlasOfAlchemy.Tests.Interfaces;
 
 public class VideoInfoTests
 {

@@ -1,14 +1,14 @@
 using AutoFixture;
-using InDepthDispenza.Functions.Interfaces;
-using InDepthDispenza.Functions.VideoAnalysis;
-using InDepthDispenza.Functions.VideoAnalysis.Interfaces;
+using AtlasOfAlchemy.Functions.Interfaces;
+using AtlasOfAlchemy.Functions.VideoAnalysis;
+using AtlasOfAlchemy.Functions.VideoAnalysis.Interfaces;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using NUnit.Framework;
-using IndepthDispenza.Tests.TestInfrastructure.VideoAnalysis;
-using static IndepthDispenza.Tests.TestInfrastructure.VideoAnalysis.ProposalData;
+using AtlasOfAlchemy.Tests.TestInfrastructure.VideoAnalysis;
+using static AtlasOfAlchemy.Tests.TestInfrastructure.VideoAnalysis.ProposalData;
 
-namespace IndepthDispenza.Tests.VideoAnalysis;
+namespace AtlasOfAlchemy.Tests.VideoAnalysis;
 
 public class ProposalIntegratorHandlerTests
 {

@@ -1,4 +1,4 @@
-using InDepthDispenza.Functions.Interfaces;
+using AtlasOfAlchemy.Functions.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Globalization;
@@ -6,7 +6,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace InDepthDispenza.Functions.Integrations.YouTubeTranscriptIo;
+namespace AtlasOfAlchemy.Functions.Integrations.YouTubeTranscriptIo;
 
 /// <summary>
 /// Provides transcripts from YouTube Transcript API (youtube-transcript.io).

@@ -1,12 +1,12 @@
 using Google.Apis.Services;
 using Google.Apis.YouTube.v3;
 using Google.Apis.YouTube.v3.Data;
-using InDepthDispenza.Functions.Interfaces;
+using AtlasOfAlchemy.Functions.Interfaces;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
 using System.Xml;
 
-namespace InDepthDispenza.Functions.Integrations.YouTube;
+namespace AtlasOfAlchemy.Functions.Integrations.YouTube;
 
 public class YouTubePlaylistVideoService : IPlaylistService
 {

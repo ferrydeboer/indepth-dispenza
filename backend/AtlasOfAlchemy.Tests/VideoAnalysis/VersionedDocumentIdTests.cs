@@ -1,7 +1,7 @@
-using InDepthDispenza.Functions.VideoAnalysis;
+using AtlasOfAlchemy.Functions.VideoAnalysis;
 using NUnit.Framework;
 
-namespace IndepthDispenza.Tests.VideoAnalysis;
+namespace AtlasOfAlchemy.Tests.VideoAnalysis;
 
 [TestFixture]
 public class VersionedDocumentIdTests

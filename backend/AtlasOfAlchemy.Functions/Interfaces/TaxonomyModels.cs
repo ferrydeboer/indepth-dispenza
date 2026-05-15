@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 
-namespace InDepthDispenza.Functions.Interfaces;
+namespace AtlasOfAlchemy.Functions.Interfaces;
 
 /// <summary>
 /// Root taxonomy specification with explicit taxonomy property.

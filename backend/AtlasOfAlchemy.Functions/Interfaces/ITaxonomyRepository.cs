@@ -1,4 +1,4 @@
-namespace InDepthDispenza.Functions.Interfaces;
+namespace AtlasOfAlchemy.Functions.Interfaces;
 
 /// <summary>
 /// Repository for managing taxonomy versions in Cosmos DB.

@@ -1,4 +1,4 @@
-namespace InDepthDispenza.Functions.Interfaces;
+namespace AtlasOfAlchemy.Functions.Interfaces;
 
 public class VideoFilters
 {

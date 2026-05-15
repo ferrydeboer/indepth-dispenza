@@ -1,9 +1,9 @@
 using FluentAssertions;
-using InDepthDispenza.Functions.Interfaces;
-using InDepthDispenza.IntegrationTests.Infrastructure;
+using AtlasOfAlchemy.Functions.Interfaces;
+using AtlasOfAlchemy.IntegrationTests.Infrastructure;
 using System.Text.Json;
 
-namespace InDepthDispenza.IntegrationTests;
+namespace AtlasOfAlchemy.IntegrationTests;
 
 [TestFixture]
 public class ScanPlaylistIntegrationTests : IntegrationTestBase

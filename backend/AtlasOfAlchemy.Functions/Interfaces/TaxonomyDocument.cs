@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace InDepthDispenza.Functions.Interfaces;
+namespace AtlasOfAlchemy.Functions.Interfaces;
 
 /// <summary>
 /// Strong-typed taxonomy document used by the repository and services.

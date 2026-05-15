@@ -1,11 +1,11 @@
 using System.Text.Json;
 using AutoFixture;
-using InDepthDispenza.Functions.Interfaces;
+using AtlasOfAlchemy.Functions.Interfaces;
 using WireMock.Admin.Mappings;
 using WireMock.Client;
 using WireMock.Net.Testcontainers;
 
-namespace InDepthDispenza.IntegrationTests.Infrastructure;
+namespace AtlasOfAlchemy.IntegrationTests.Infrastructure;
 
 public class WireMockConfiguration
 {

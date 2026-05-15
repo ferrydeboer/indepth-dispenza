@@ -1,10 +1,10 @@
-using InDepthDispenza.Functions.Interfaces;
-using InDepthDispenza.Functions.VideoAnalysis.Interfaces;
+using AtlasOfAlchemy.Functions.Interfaces;
+using AtlasOfAlchemy.Functions.VideoAnalysis.Interfaces;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 
-namespace IndepthDispenza.Tests.VideoAnalysis;
+namespace AtlasOfAlchemy.Tests.VideoAnalysis;
 
 public class TaxonomyProposalNewtonsoftConverterTests
 {

@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace InDepthDispenza.Functions.VideoAnalysis;
+namespace AtlasOfAlchemy.Functions.VideoAnalysis;
 
 /// <summary>
 /// Represents a versioned document ID combining a video ID with a timestamp.

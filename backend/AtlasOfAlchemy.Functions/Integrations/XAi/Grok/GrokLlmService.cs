@@ -2,11 +2,11 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using InDepthDispenza.Functions.Interfaces;
+using AtlasOfAlchemy.Functions.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace InDepthDispenza.Functions.Integrations.XAi.Grok;
+namespace AtlasOfAlchemy.Functions.Integrations.XAi.Grok;
 
 /// <summary>
 /// xAI Grok implementation of ILlmService using OpenAI-compatible chat completions API.

@@ -1,11 +1,11 @@
-using InDepthDispenza.Functions.Interfaces;
-using InDepthDispenza.Functions.VideoAnalysis.Interfaces;
-// using InDepthDispenza.Functions.VideoAnalysis.Interfaces;
+using AtlasOfAlchemy.Functions.Interfaces;
+using AtlasOfAlchemy.Functions.VideoAnalysis.Interfaces;
+// using AtlasOfAlchemy.Functions.VideoAnalysis.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace InDepthDispenza.Functions.Integrations.XAi.Grok;
+namespace AtlasOfAlchemy.Functions.Integrations.XAi.Grok;
 
 public static class GrokModule
 {

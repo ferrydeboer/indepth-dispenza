@@ -1,10 +1,10 @@
 using AutoFixture;
-using InDepthDispenza.Functions.Interfaces;
-using InDepthDispenza.Functions.VideoAnalysis.Interfaces;
+using AtlasOfAlchemy.Functions.Interfaces;
+using AtlasOfAlchemy.Functions.VideoAnalysis.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace IndepthDispenza.Tests.TestInfrastructure.VideoAnalysis;
+namespace AtlasOfAlchemy.Tests.TestInfrastructure.VideoAnalysis;
 
 public sealed class ProposalTestsCustomization : ICustomization
 {

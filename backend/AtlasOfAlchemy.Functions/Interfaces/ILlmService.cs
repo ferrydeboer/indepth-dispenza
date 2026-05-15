@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace InDepthDispenza.Functions.Interfaces;
+namespace AtlasOfAlchemy.Functions.Interfaces;
 
 /// <summary>
 /// Service for making LLM API calls.

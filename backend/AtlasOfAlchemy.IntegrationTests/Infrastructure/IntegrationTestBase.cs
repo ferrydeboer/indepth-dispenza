@@ -4,7 +4,7 @@ using Azure.Storage.Queues;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
 
-namespace InDepthDispenza.IntegrationTests.Infrastructure;
+namespace AtlasOfAlchemy.IntegrationTests.Infrastructure;
 
 [FixtureLifeCycle(LifeCycle.SingleInstance)]
 public abstract class IntegrationTestBase

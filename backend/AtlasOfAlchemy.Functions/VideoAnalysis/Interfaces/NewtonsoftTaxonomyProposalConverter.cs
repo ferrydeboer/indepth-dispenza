@@ -1,8 +1,8 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using InDepthDispenza.Functions.Interfaces;
+using AtlasOfAlchemy.Functions.Interfaces;
 
-namespace InDepthDispenza.Functions.VideoAnalysis.Interfaces;
+namespace AtlasOfAlchemy.Functions.VideoAnalysis.Interfaces;
 
 internal sealed class NewtonsoftTaxonomyProposalConverter : JsonConverter<TaxonomyProposal>
 {

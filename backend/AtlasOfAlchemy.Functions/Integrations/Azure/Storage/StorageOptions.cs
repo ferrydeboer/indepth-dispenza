@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace InDepthDispenza.Functions.Integrations.Azure.Storage;
+namespace AtlasOfAlchemy.Functions.Integrations.Azure.Storage;
 
 public class StorageOptions
 {

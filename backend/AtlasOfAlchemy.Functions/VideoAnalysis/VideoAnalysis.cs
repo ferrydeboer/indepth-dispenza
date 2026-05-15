@@ -1,6 +1,6 @@
-using InDepthDispenza.Functions.VideoAnalysis.Interfaces;
+using AtlasOfAlchemy.Functions.VideoAnalysis.Interfaces;
 
-namespace InDepthDispenza.Functions.VideoAnalysis;
+namespace AtlasOfAlchemy.Functions.VideoAnalysis;
 
 /// <summary>
 /// Represents the structured analysis of a video transcript.

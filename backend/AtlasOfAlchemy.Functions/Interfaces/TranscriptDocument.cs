@@ -1,4 +1,4 @@
-namespace InDepthDispenza.Functions.Interfaces;
+namespace AtlasOfAlchemy.Functions.Interfaces;
 
 /// <summary>
 /// Document storing all transcript information for caching and analysis operations.

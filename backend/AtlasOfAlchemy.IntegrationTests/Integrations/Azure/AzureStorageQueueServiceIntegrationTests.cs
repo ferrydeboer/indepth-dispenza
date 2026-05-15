@@ -1,13 +1,13 @@
 using AutoFixture;
 using Azure.Storage.Queues;
 using FluentAssertions;
-using InDepthDispenza.Functions.Integrations.Azure.Storage;
-using InDepthDispenza.Functions.Interfaces;
+using AtlasOfAlchemy.Functions.Integrations.Azure.Storage;
+using AtlasOfAlchemy.Functions.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using Testcontainers.Azurite;
 
-namespace InDepthDispenza.IntegrationTests.Integrations.Azure;
+namespace AtlasOfAlchemy.IntegrationTests.Integrations.Azure;
 
 [TestFixture]
 public class AzureStorageQueueServiceIntegrationTests

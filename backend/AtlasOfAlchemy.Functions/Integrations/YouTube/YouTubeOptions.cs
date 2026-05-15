@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace InDepthDispenza.Functions.Integrations.YouTube;
+namespace AtlasOfAlchemy.Functions.Integrations.YouTube;
 
 public class YouTubeOptions
 {

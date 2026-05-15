@@ -1,11 +1,11 @@
 using System.Text.Json;
 using Azure;
 using Azure.Storage.Queues;
-using InDepthDispenza.Functions.Interfaces;
+using AtlasOfAlchemy.Functions.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace InDepthDispenza.Functions.Integrations.Azure.Storage;
+namespace AtlasOfAlchemy.Functions.Integrations.Azure.Storage;
 
 public class AzureStorageQueueService : IQueueService
 {

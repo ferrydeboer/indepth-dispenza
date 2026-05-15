@@ -3,10 +3,10 @@ using NUnit.Framework;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using InDepthDispenza.Functions;
-using InDepthDispenza.Functions.Interfaces;
+using AtlasOfAlchemy.Functions;
+using AtlasOfAlchemy.Functions.Interfaces;
 
-namespace IndepthDispenza.Tests;
+namespace AtlasOfAlchemy.Tests;
 
 [TestFixture]
 public class ScanPlaylistTests

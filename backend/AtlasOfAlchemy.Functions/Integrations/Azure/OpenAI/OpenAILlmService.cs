@@ -1,11 +1,11 @@
 using System.Text;
 using System.Text.Json;
-using InDepthDispenza.Functions.Interfaces;
-// using InDepthDispenza.Functions.VideoAnalysis.Interfaces; // Avoid dependency from Integrations to VideoAnalysis
+using AtlasOfAlchemy.Functions.Interfaces;
+// using AtlasOfAlchemy.Functions.VideoAnalysis.Interfaces; // Avoid dependency from Integrations to VideoAnalysis
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace InDepthDispenza.Functions.Integrations.Azure.OpenAI;
+namespace AtlasOfAlchemy.Functions.Integrations.Azure.OpenAI;
 
 /// <summary>
 /// Azure OpenAI implementation of ILlmService.

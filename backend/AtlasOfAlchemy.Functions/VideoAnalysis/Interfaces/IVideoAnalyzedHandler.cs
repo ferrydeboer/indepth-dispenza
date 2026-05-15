@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-namespace InDepthDispenza.Functions.VideoAnalysis.Interfaces;
+namespace AtlasOfAlchemy.Functions.VideoAnalysis.Interfaces;
 
 /// <summary>
 /// Handler that runs after a video has been analyzed to perform post-processing

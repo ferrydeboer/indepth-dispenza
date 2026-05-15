@@ -1,8 +1,8 @@
-using InDepthDispenza.Functions.Interfaces;
-using InDepthDispenza.Functions.VideoAnalysis.Interfaces;
+using AtlasOfAlchemy.Functions.Interfaces;
+using AtlasOfAlchemy.Functions.VideoAnalysis.Interfaces;
 using Microsoft.Extensions.Logging;
 
-namespace InDepthDispenza.Functions.VideoAnalysis;
+namespace AtlasOfAlchemy.Functions.VideoAnalysis;
 
 /// <summary>
 /// Consider this the domain layer that does the orchestration to third party platforms implementations.

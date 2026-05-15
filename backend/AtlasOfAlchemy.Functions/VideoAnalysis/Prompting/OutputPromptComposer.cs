@@ -1,10 +1,10 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using InDepthDispenza.Functions.VideoAnalysis.Interfaces;
-using InDepthDispenza.Functions.Interfaces;
+using AtlasOfAlchemy.Functions.VideoAnalysis.Interfaces;
+using AtlasOfAlchemy.Functions.Interfaces;
 using Microsoft.Extensions.Logging;
 
-namespace InDepthDispenza.Functions.VideoAnalysis.Prompting;
+namespace AtlasOfAlchemy.Functions.VideoAnalysis.Prompting;
 
 /// <summary>
 /// Composes the output format section of the LLM prompt.

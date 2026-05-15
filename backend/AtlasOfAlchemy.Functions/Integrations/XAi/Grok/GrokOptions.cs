@@ -1,4 +1,4 @@
-namespace InDepthDispenza.Functions.Integrations.XAi.Grok;
+namespace AtlasOfAlchemy.Functions.Integrations.XAi.Grok;
 
 public sealed class GrokOptions
 {

@@ -1,8 +1,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using InDepthDispenza.Functions.Interfaces;
+using AtlasOfAlchemy.Functions.Interfaces;
 
-namespace InDepthDispenza.Functions.VideoAnalysis.Interfaces;
+namespace AtlasOfAlchemy.Functions.VideoAnalysis.Interfaces;
 
 internal sealed class TaxonomyProposalJsonConverter : JsonConverter<TaxonomyProposal>
 {

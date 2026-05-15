@@ -1,4 +1,4 @@
-namespace InDepthDispenza.Functions.Integrations.Azure.Cosmos;
+namespace AtlasOfAlchemy.Functions.Integrations.Azure.Cosmos;
 
 public class CosmosDbOptions
 {

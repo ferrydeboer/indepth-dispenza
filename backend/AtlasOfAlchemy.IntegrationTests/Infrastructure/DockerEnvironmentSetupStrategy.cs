@@ -5,7 +5,7 @@ using Testcontainers.Azurite;
 using Testcontainers.CosmosDb;
 using WireMock.Net.Testcontainers;
 
-namespace InDepthDispenza.IntegrationTests.Infrastructure;
+namespace AtlasOfAlchemy.IntegrationTests.Infrastructure;
 
 public class DockerEnvironmentSetupStrategy : IEnvironmentSetupStrategy
 {

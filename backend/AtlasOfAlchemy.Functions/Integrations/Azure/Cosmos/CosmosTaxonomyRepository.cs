@@ -1,12 +1,12 @@
 using System.Text.Json;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using InDepthDispenza.Functions.Interfaces;
+using AtlasOfAlchemy.Functions.Interfaces;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace InDepthDispenza.Functions.Integrations.Azure.Cosmos;
+namespace AtlasOfAlchemy.Functions.Integrations.Azure.Cosmos;
 
 public class CosmosTaxonomyRepository : CosmosRepositoryBase, ITaxonomyRepository
 {

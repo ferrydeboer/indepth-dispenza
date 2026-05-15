@@ -1,7 +1,7 @@
 using System.Text.Json;
 using WireMock.Admin.Mappings;
 
-namespace InDepthDispenza.IntegrationTests.Infrastructure;
+namespace AtlasOfAlchemy.IntegrationTests.Infrastructure;
 
 /// <summary>
 /// Centralized WireMock stubs for Grok Chat Completions API used by integration tests.

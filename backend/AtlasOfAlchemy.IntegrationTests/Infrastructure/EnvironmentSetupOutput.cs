@@ -2,7 +2,7 @@ using DotNet.Testcontainers.Networks;
 using Testcontainers.CosmosDb;
 using WireMock.Net.Testcontainers;
 
-namespace InDepthDispenza.IntegrationTests.Infrastructure;
+namespace AtlasOfAlchemy.IntegrationTests.Infrastructure;
 
 public record EnvironmentSetupOutput(
     string AzureWebJobsStorage, // Internal connection string for Functions container

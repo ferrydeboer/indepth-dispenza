@@ -1,4 +1,4 @@
-namespace InDepthDispenza.Functions.Integrations.Azure.OpenAI;
+namespace AtlasOfAlchemy.Functions.Integrations.Azure.OpenAI;
 
 public sealed class OpenAIOptions
 {

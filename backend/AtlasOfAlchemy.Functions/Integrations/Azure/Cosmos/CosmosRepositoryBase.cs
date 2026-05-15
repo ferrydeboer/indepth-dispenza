@@ -1,7 +1,7 @@
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 
-namespace InDepthDispenza.Functions.Integrations.Azure.Cosmos;
+namespace AtlasOfAlchemy.Functions.Integrations.Azure.Cosmos;
 
 /// <summary>
 /// Base class for Cosmos DB repositories with shared container initialization logic.

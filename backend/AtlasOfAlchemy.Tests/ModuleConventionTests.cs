@@ -5,7 +5,7 @@ using NetArchTest.Rules;
 using NUnit.Framework;
 using System.Reflection;
 
-namespace IndepthDispenza.Tests;
+namespace AtlasOfAlchemy.Tests;
 
 /// <summary>
 /// Architecture tests that enforce the self-contained module convention.
@@ -31,14 +31,14 @@ namespace IndepthDispenza.Tests;
 [TestFixture]
 public class ModuleConventionTests
 {
-    private const string IntegrationsNamespace = "InDepthDispenza.Functions.Integrations";
+    private const string IntegrationsNamespace = "AtlasOfAlchemy.Functions.Integrations";
 
     /// <summary>
     /// Gets all module namespaces (deepest namespaces) in the Integrations folder.
     /// </summary>
     private static IEnumerable<string> GetModuleNamespaces()
     {
-        var assembly = typeof(InDepthDispenza.Functions.Interfaces.IPlaylistService).Assembly;
+        var assembly = typeof(AtlasOfAlchemy.Functions.Interfaces.IPlaylistService).Assembly;
         var allNamespaces = assembly.GetTypes()
             .Where(t => t.Namespace?.StartsWith(IntegrationsNamespace) == true)
             .Select(t => t.Namespace!)
@@ -55,8 +55,8 @@ public class ModuleConventionTests
     }
 
     /// <summary>
-    /// Extracts module name from namespace (e.g., "InDepthDispenza.Functions.Integrations.YouTube" -> "YouTube")
-    /// For nested modules like "InDepthDispenza.Functions.Integrations.Azure.Cosmos" -> "Cosmos"
+    /// Extracts module name from namespace (e.g., "AtlasOfAlchemy.Functions.Integrations.YouTube" -> "YouTube")
+    /// For nested modules like "AtlasOfAlchemy.Functions.Integrations.Azure.Cosmos" -> "Cosmos"
     /// </summary>
     private static string GetModuleName(string moduleNamespace)
     {
@@ -67,7 +67,7 @@ public class ModuleConventionTests
     [TestCaseSource(nameof(GetModuleNamespaces))]
     public void Module_ShouldHaveModuleClass(string moduleNamespace)
     {
-        var assembly = typeof(InDepthDispenza.Functions.Interfaces.IPlaylistService).Assembly;
+        var assembly = typeof(AtlasOfAlchemy.Functions.Interfaces.IPlaylistService).Assembly;
         var moduleName = GetModuleName(moduleNamespace);
         var expectedModuleTypeName = $"{moduleNamespace}.{moduleName}Module";
 
@@ -82,7 +82,7 @@ public class ModuleConventionTests
     [TestCaseSource(nameof(GetModuleNamespaces))]
     public void Module_ShouldHaveAddModuleExtensionMethod(string moduleNamespace)
     {
-        var assembly = typeof(InDepthDispenza.Functions.Interfaces.IPlaylistService).Assembly;
+        var assembly = typeof(AtlasOfAlchemy.Functions.Interfaces.IPlaylistService).Assembly;
         var moduleName = GetModuleName(moduleNamespace);
         var expectedModuleTypeName = $"{moduleNamespace}.{moduleName}Module";
         var moduleType = assembly.GetType(expectedModuleTypeName);
@@ -106,7 +106,7 @@ public class ModuleConventionTests
     [TestCaseSource(nameof(GetModuleNamespaces))]
     public void Module_ShouldHaveHealthCheck(string moduleNamespace)
     {
-        var assembly = typeof(InDepthDispenza.Functions.Interfaces.IPlaylistService).Assembly;
+        var assembly = typeof(AtlasOfAlchemy.Functions.Interfaces.IPlaylistService).Assembly;
         var moduleName = GetModuleName(moduleNamespace);
         var expectedHealthCheckTypeName = $"{moduleNamespace}.{moduleName}HealthCheck";
 
@@ -122,7 +122,7 @@ public class ModuleConventionTests
     public void AllModules_WithModuleSuffix_ShouldBeStaticClasses()
     {
         // All classes ending with "Module" in Integrations namespace should be static
-        var result = Types.InAssembly(typeof(InDepthDispenza.Functions.Interfaces.IPlaylistService).Assembly)
+        var result = Types.InAssembly(typeof(AtlasOfAlchemy.Functions.Interfaces.IPlaylistService).Assembly)
             .That()
             .ResideInNamespace(IntegrationsNamespace)
             .And()
@@ -139,7 +139,7 @@ public class ModuleConventionTests
     public void AllHealthChecks_InIntegrations_ShouldImplementIHealthCheck()
     {
         // All classes ending with "HealthCheck" in Integrations namespace should implement IHealthCheck
-        var assembly = typeof(InDepthDispenza.Functions.Interfaces.IPlaylistService).Assembly;
+        var assembly = typeof(AtlasOfAlchemy.Functions.Interfaces.IPlaylistService).Assembly;
         var healthCheckTypes = assembly.GetTypes()
             .Where(t => t.Namespace?.StartsWith(IntegrationsNamespace) == true)
             .Where(t => t.Name.EndsWith("HealthCheck"))
@@ -168,13 +168,13 @@ Module Convention Documentation:
 
 Modules are identified by scanning the deepest namespaces in the Integrations folder.
 For example:
-- InDepthDispenza.Functions.Integrations.YouTube (module: YouTube)
-- InDepthDispenza.Functions.Integrations.Azure.Cosmos (module: Cosmos)
-- InDepthDispenza.Functions.Integrations.Azure.Storage (module: Storage)
+- AtlasOfAlchemy.Functions.Integrations.YouTube (module: YouTube)
+- AtlasOfAlchemy.Functions.Integrations.Azure.Cosmos (module: Cosmos)
+- AtlasOfAlchemy.Functions.Integrations.Azure.Storage (module: Storage)
 
 Each integration module should follow this structure:
 
-1. Directory: InDepthDispenza.Functions/Integrations/{Path}/
+1. Directory: AtlasOfAlchemy.Functions/Integrations/{Path}/
 
 2. Required Files:
    - {ModuleName}Module.cs       : Static class with Add{ModuleName}Module() extension method

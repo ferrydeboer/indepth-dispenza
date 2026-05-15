@@ -1,6 +1,6 @@
-using InDepthDispenza.Functions.Interfaces;
+using AtlasOfAlchemy.Functions.Interfaces;
 
-namespace InDepthDispenza.Functions.VideoAnalysis.Interfaces;
+namespace AtlasOfAlchemy.Functions.VideoAnalysis.Interfaces;
 
 /// <summary>
 /// Analyzes video transcripts by orchestrating prompt composition and LLM calls.

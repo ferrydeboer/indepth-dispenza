@@ -1,9 +1,9 @@
 using System.Text;
-using InDepthDispenza.Functions.Interfaces;
-using InDepthDispenza.Functions.VideoAnalysis.Interfaces;
+using AtlasOfAlchemy.Functions.Interfaces;
+using AtlasOfAlchemy.Functions.VideoAnalysis.Interfaces;
 using Microsoft.Extensions.Logging;
 
-namespace InDepthDispenza.Functions.VideoAnalysis.Prompting;
+namespace AtlasOfAlchemy.Functions.VideoAnalysis.Prompting;
 
 /// <summary>
 /// Composes the transcript portion of the LLM prompt.

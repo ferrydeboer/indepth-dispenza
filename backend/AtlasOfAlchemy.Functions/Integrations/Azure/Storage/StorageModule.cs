@@ -1,8 +1,8 @@
-using InDepthDispenza.Functions.Interfaces;
+using AtlasOfAlchemy.Functions.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace InDepthDispenza.Functions.Integrations.Azure.Storage;
+namespace AtlasOfAlchemy.Functions.Integrations.Azure.Storage;
 
 public static class StorageModule
 {

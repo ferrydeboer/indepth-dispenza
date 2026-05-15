@@ -1,7 +1,7 @@
 
 using System;
 
-namespace InDepthDispenza.Functions.Interfaces;
+namespace AtlasOfAlchemy.Functions.Interfaces;
 
 public interface IPlaylistService
 {

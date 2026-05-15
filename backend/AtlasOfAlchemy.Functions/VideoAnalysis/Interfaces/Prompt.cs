@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace InDepthDispenza.Functions.VideoAnalysis.Interfaces;
+namespace AtlasOfAlchemy.Functions.VideoAnalysis.Interfaces;
 
 /// <summary>
 /// Container for prompt segments composed by the pipeline.

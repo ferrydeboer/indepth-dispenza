@@ -1,12 +1,12 @@
 using System.Text.Json;
-using InDepthDispenza.Functions.Interfaces;
-using InDepthDispenza.Functions.VideoAnalysis.Interfaces;
+using AtlasOfAlchemy.Functions.Interfaces;
+using AtlasOfAlchemy.Functions.VideoAnalysis.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 
-namespace InDepthDispenza.Functions;
+namespace AtlasOfAlchemy.Functions;
 
 /// <summary>
 /// Azure Function entrypoint for video analysis.

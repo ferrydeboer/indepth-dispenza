@@ -1,8 +1,8 @@
-using InDepthDispenza.Functions.VideoAnalysis.Interfaces;
-using InDepthDispenza.Functions.Interfaces;
+using AtlasOfAlchemy.Functions.VideoAnalysis.Interfaces;
+using AtlasOfAlchemy.Functions.Interfaces;
 using Microsoft.Extensions.Logging;
 
-namespace InDepthDispenza.Functions.VideoAnalysis;
+namespace AtlasOfAlchemy.Functions.VideoAnalysis;
 
 /// <summary>
 /// Integrates taxonomy <see cref="TaxonomyProposal"/> items into the in-memory <see cref="VideoAnalysis.Achievements"/>.

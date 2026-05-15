@@ -5,7 +5,7 @@ using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
-namespace InDepthDispenza.Functions;
+namespace AtlasOfAlchemy.Functions;
 
 public class HealthCheck
 {

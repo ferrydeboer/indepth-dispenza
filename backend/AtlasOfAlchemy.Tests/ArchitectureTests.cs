@@ -1,7 +1,7 @@
 using NetArchTest.Rules;
 using NUnit.Framework;
 
-namespace IndepthDispenza.Tests;
+namespace AtlasOfAlchemy.Tests;
 
 /// <summary>
 /// Architecture tests that verify namespace dependencies remain acyclic.
@@ -10,19 +10,19 @@ namespace IndepthDispenza.Tests;
 [TestFixture]
 public class ArchitectureTests
 {
-    private const string FunctionsAssembly = "InDepthDispenza.Functions";
-    private const string InterfacesNamespace = "InDepthDispenza.Functions.Interfaces";
-    private const string VideoAnalysisNamespace = "InDepthDispenza.Functions.VideoAnalysis";
-    private const string IntegrationsYouTubeNamespace = "InDepthDispenza.Functions.Integrations.YouTube";
-    private const string IntegrationsAzureNamespace = "InDepthDispenza.Functions.Integrations.Azure";
-    private const string IntegrationsNamespace = "InDepthDispenza.Functions.Integrations";
+    private const string FunctionsAssembly = "AtlasOfAlchemy.Functions";
+    private const string InterfacesNamespace = "AtlasOfAlchemy.Functions.Interfaces";
+    private const string VideoAnalysisNamespace = "AtlasOfAlchemy.Functions.VideoAnalysis";
+    private const string IntegrationsYouTubeNamespace = "AtlasOfAlchemy.Functions.Integrations.YouTube";
+    private const string IntegrationsAzureNamespace = "AtlasOfAlchemy.Functions.Integrations.Azure";
+    private const string IntegrationsNamespace = "AtlasOfAlchemy.Functions.Integrations";
 
     [Test]
     [Ignore("Need to reconsider proper architectural dependency structure")]
     public void Interfaces_ShouldNotDependOnAnyOtherNamespace()
     {
         // Interfaces is the decoupling layer and should have no dependencies on other project namespaces
-        var result = Types.InAssembly(typeof(InDepthDispenza.Functions.Interfaces.IPlaylistService).Assembly)
+        var result = Types.InAssembly(typeof(AtlasOfAlchemy.Functions.Interfaces.IPlaylistService).Assembly)
             .That()
             .ResideInNamespace(InterfacesNamespace)
             .ShouldNot()
@@ -43,7 +43,7 @@ public class ArchitectureTests
     public void VideoAnalysis_ShouldOnlyDependOnInterfaces()
     {
         // VideoAnalysis should only depend on Interfaces, not on Integration implementations
-        var result = Types.InAssembly(typeof(InDepthDispenza.Functions.Interfaces.IPlaylistService).Assembly)
+        var result = Types.InAssembly(typeof(AtlasOfAlchemy.Functions.Interfaces.IPlaylistService).Assembly)
             .That()
             .ResideInNamespace(VideoAnalysisNamespace)
             .ShouldNot()
@@ -63,7 +63,7 @@ public class ArchitectureTests
     public void IntegrationsYouTube_ShouldOnlyDependOnInterfaces()
     {
         // Integrations.YouTube should only depend on Interfaces
-        var result = Types.InAssembly(typeof(InDepthDispenza.Functions.Interfaces.IPlaylistService).Assembly)
+        var result = Types.InAssembly(typeof(AtlasOfAlchemy.Functions.Interfaces.IPlaylistService).Assembly)
             .That()
             .ResideInNamespace(IntegrationsYouTubeNamespace)
             .ShouldNot()
@@ -83,7 +83,7 @@ public class ArchitectureTests
     public void IntegrationsAzure_ShouldOnlyDependOnInterfaces()
     {
         // Integrations.Azure should only depend on Interfaces
-        var result = Types.InAssembly(typeof(InDepthDispenza.Functions.Interfaces.IPlaylistService).Assembly)
+        var result = Types.InAssembly(typeof(AtlasOfAlchemy.Functions.Interfaces.IPlaylistService).Assembly)
             .That()
             .ResideInNamespace(IntegrationsAzureNamespace)
             .ShouldNot()
@@ -102,7 +102,7 @@ public class ArchitectureTests
     public void Integrations_ShouldOnlyDependOnInterfaces()
     {
         // Root Integrations namespace (e.g., LoggingQueueService) should only depend on Interfaces
-        var result = Types.InAssembly(typeof(InDepthDispenza.Functions.Interfaces.IPlaylistService).Assembly)
+        var result = Types.InAssembly(typeof(AtlasOfAlchemy.Functions.Interfaces.IPlaylistService).Assembly)
             .That()
             .ResideInNamespace(IntegrationsNamespace)
             .And()
@@ -127,7 +127,7 @@ public class ArchitectureTests
     public void RootNamespace_ShouldNotDependOnIntegrationImplementations()
     {
         // Root namespace (e.g., ScanPlaylist) should depend on Interfaces and VideoAnalysis, but not Integration implementations
-        var result = Types.InAssembly(typeof(InDepthDispenza.Functions.Interfaces.IPlaylistService).Assembly)
+        var result = Types.InAssembly(typeof(AtlasOfAlchemy.Functions.Interfaces.IPlaylistService).Assembly)
             .That()
             .ResideInNamespace(FunctionsAssembly)
             .And()
@@ -153,7 +153,7 @@ public class ArchitectureTests
     public void AllNamespaces_ShouldNotHaveCircularDependencies()
     {
         // Global check: ensure no circular dependencies exist in the assembly
-        var types = Types.InAssembly(typeof(InDepthDispenza.Functions.Interfaces.IPlaylistService).Assembly)
+        var types = Types.InAssembly(typeof(AtlasOfAlchemy.Functions.Interfaces.IPlaylistService).Assembly)
             .That()
             .ResideInNamespace(FunctionsAssembly)
             .GetTypes()

@@ -1,8 +1,8 @@
-using InDepthDispenza.Functions.Interfaces;
-using InDepthDispenza.Functions.VideoAnalysis.Interfaces;
+using AtlasOfAlchemy.Functions.Interfaces;
+using AtlasOfAlchemy.Functions.VideoAnalysis.Interfaces;
 using Microsoft.Extensions.Logging;
 
-namespace InDepthDispenza.Functions.VideoAnalysis.Filters;
+namespace AtlasOfAlchemy.Functions.VideoAnalysis.Filters;
 
 public class AnalysisExistsFilter : IVideoFilter
 {

@@ -1,7 +1,7 @@
-using InDepthDispenza.Functions.Interfaces;
+using AtlasOfAlchemy.Functions.Interfaces;
 using Microsoft.Extensions.Logging;
 
-namespace InDepthDispenza.Functions.Integrations.Azure.Cosmos;
+namespace AtlasOfAlchemy.Functions.Integrations.Azure.Cosmos;
 
 /// <summary>
 /// Transcript provider that caches results in Cosmos DB.

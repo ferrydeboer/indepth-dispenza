@@ -1,8 +1,8 @@
-using InDepthDispenza.Functions.Interfaces;
+using AtlasOfAlchemy.Functions.Interfaces;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
-namespace InDepthDispenza.Functions.Integrations;
+namespace AtlasOfAlchemy.Functions.Integrations;
 
 /// <summary>
 /// Queue services for mere debugging purposes. Simply outputs the video as JSON to a debug log.

@@ -1,11 +1,11 @@
-using InDepthDispenza.Functions.Interfaces;
-using InDepthDispenza.Functions.VideoAnalysis;
-using InDepthDispenza.Functions.VideoAnalysis.Interfaces;
+using AtlasOfAlchemy.Functions.Interfaces;
+using AtlasOfAlchemy.Functions.VideoAnalysis;
+using AtlasOfAlchemy.Functions.VideoAnalysis.Interfaces;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using NUnit.Framework;
 
-namespace IndepthDispenza.Tests.VideoAnalysis;
+namespace AtlasOfAlchemy.Tests.VideoAnalysis;
 
 public class TranscriptAnalyzerHandlersTests
 {
@@ -47,7 +47,7 @@ public class TranscriptAnalyzerHandlersTests
 
     private sealed class ThrowingHandler : IVideoAnalyzedHandler
     {
-        public Task HandleAsync(LlmResponse response, InDepthDispenza.Functions.VideoAnalysis.Interfaces.VideosAnalyzedContext context)
+        public Task HandleAsync(LlmResponse response, AtlasOfAlchemy.Functions.VideoAnalysis.Interfaces.VideosAnalyzedContext context)
         {
             throw new InvalidOperationException("boom");
         }

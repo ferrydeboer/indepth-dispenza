@@ -2,7 +2,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace InDepthDispenza.Functions.Integrations.Azure.OpenAI;
+namespace AtlasOfAlchemy.Functions.Integrations.Azure.OpenAI;
 
 public class OpenAIHealthCheck : IHealthCheck
 {

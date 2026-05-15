@@ -1,11 +1,11 @@
-using InDepthDispenza.Functions.Interfaces;
-using InDepthDispenza.Functions.VideoAnalysis.Interfaces;
-using InDepthDispenza.Functions.VideoAnalysis.Taxonomy;
+using AtlasOfAlchemy.Functions.Interfaces;
+using AtlasOfAlchemy.Functions.VideoAnalysis.Interfaces;
+using AtlasOfAlchemy.Functions.VideoAnalysis.Taxonomy;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using NUnit.Framework;
 
-namespace IndepthDispenza.Tests.VideoAnalysis.Taxonomy;
+namespace AtlasOfAlchemy.Tests.VideoAnalysis.Taxonomy;
 
 public class TaxonomyUpdateServiceTests
 {

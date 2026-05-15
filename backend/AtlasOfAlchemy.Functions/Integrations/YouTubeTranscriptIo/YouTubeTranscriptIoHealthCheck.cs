@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Net.Http.Json;
 
-namespace InDepthDispenza.Functions.Integrations.YouTubeTranscriptIo;
+namespace AtlasOfAlchemy.Functions.Integrations.YouTubeTranscriptIo;
 
 public class YouTubeTranscriptIoHealthCheck : IHealthCheck
 {

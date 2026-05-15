@@ -1,10 +1,10 @@
-using InDepthDispenza.Functions.Interfaces;
+using AtlasOfAlchemy.Functions.Interfaces;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace InDepthDispenza.Functions;
+namespace AtlasOfAlchemy.Functions;
 
 public class ScanPlaylist
 {

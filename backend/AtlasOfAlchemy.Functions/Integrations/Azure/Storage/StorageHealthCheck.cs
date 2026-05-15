@@ -3,7 +3,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace InDepthDispenza.Functions.Integrations.Azure.Storage;
+namespace AtlasOfAlchemy.Functions.Integrations.Azure.Storage;
 
 public class StorageHealthCheck : IHealthCheck
 {

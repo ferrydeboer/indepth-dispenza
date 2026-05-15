@@ -2,7 +2,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace InDepthDispenza.Functions.Integrations.XAi.Grok;
+namespace AtlasOfAlchemy.Functions.Integrations.XAi.Grok;
 
 public class GrokHealthCheck : IHealthCheck
 {

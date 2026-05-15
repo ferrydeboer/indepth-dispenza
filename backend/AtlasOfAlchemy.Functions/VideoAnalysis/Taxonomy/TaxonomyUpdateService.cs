@@ -1,8 +1,8 @@
-using InDepthDispenza.Functions.Interfaces;
-using InDepthDispenza.Functions.VideoAnalysis.Interfaces;
+using AtlasOfAlchemy.Functions.Interfaces;
+using AtlasOfAlchemy.Functions.VideoAnalysis.Interfaces;
 using Microsoft.Extensions.Logging;
 
-namespace InDepthDispenza.Functions.VideoAnalysis.Taxonomy;
+namespace AtlasOfAlchemy.Functions.VideoAnalysis.Taxonomy;
 
 public sealed class TaxonomyUpdateService : ITaxonomyUpdateService
 {

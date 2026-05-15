@@ -2,13 +2,13 @@ using System.Net;
 using System.Text.Json;
 using AutoFixture;
 using FluentAssertions;
-using InDepthDispenza.Functions.VideoAnalysis.Interfaces;
-using InDepthDispenza.IntegrationTests.Infrastructure;
+using AtlasOfAlchemy.Functions.VideoAnalysis.Interfaces;
+using AtlasOfAlchemy.IntegrationTests.Infrastructure;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Azure.Cosmos;
 using WireMock.Admin.Mappings;
 
-namespace InDepthDispenza.IntegrationTests;
+namespace AtlasOfAlchemy.IntegrationTests;
 
 [TestFixture]
 public class AnalyzeVideoIntegrationTests : IntegrationTestBase
