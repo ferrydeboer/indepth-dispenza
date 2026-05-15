@@ -3,6 +3,6 @@ version: "1.0.0"
 # Factory-level configuration shared across all agents
 # Individual agent configs live in {agent}/agent.yml
 
-repository: "https://github.com/ferrydeboer/indepth-dispenza"
+repository: "https://github.com/ferrydeboer/atlas-of-alchemy"
 runsPath: "agents/runs"
 projectContext: "docs/README.md"
