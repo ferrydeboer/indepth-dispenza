@@ -106,16 +106,17 @@ jobs:
           echo "✅ All Bicep templates are valid"
 
   # Deploy to tmp environment
-  deploy-tmp:
-    needs: [build-and-test, validate-infrastructure]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    uses: ./.github/workflows/deploy-environment.yml
-    with:
-      environment: tmp
-      artifact-name: function-app
-    secrets:
-      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
-      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
-      YOUTUBE_TRANSCRIPT_API_TOKEN: ${{ secrets.YOUTUBE_TRANSCRIPT_API_TOKEN }}
-      GROK_API_KEY: ${{ secrets.GROK_API_KEY }}
+  # Disabled during project rename (issue #21) — re-enable in issue #14
+  # deploy-tmp:
+  #   needs: [build-and-test, validate-infrastructure]
+  #   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+  #   uses: ./.github/workflows/deploy-environment.yml
+  #   with:
+  #     environment: tmp
+  #     artifact-name: function-app
+  #   secrets:
+  #     AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+  #     AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  #     YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+  #     YOUTUBE_TRANSCRIPT_API_TOKEN: ${{ secrets.YOUTUBE_TRANSCRIPT_API_TOKEN }}
+  #     GROK_API_KEY: ${{ secrets.GROK_API_KEY }}
