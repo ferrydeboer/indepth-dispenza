@@ -276,6 +276,47 @@ propagation downstream.
 
 ---
 
+## Run Log
+
+Append your section to `{runFolder}/run-log.md` as the final action of every
+run, regardless of outcome. If the file does not exist yet, create it with the
+run header first. This file accumulates one section per agent across the full
+pipeline run and is the primary input for future prompt improvement.
+
+If the file does not exist, write this header first:
+
+```markdown
+# Run Log — Issue {issue} — {date}
+```
+
+Then append:
+
+```markdown
+## PO Agent
+
+**Outcome:** work_item | needs_clarification | rejected
+**Turns:** {turnCount}
+
+### What Broke
+{Freeform. Any prompt failures, unexpected issue formats, wrong inferences,
+questions that didn't land well. Be specific — "the issue body had no acceptance
+criteria so I had to ask twice" is useful. "Nothing" is acceptable if clean.}
+
+### Clarification Quality
+{Were the questions you asked necessary? Did any turn out to be answerable from
+context you had? Note questions you should not have needed to ask.}
+
+### Scope Decisions
+{Any cases where the one-sentence test was hard to apply. Any scope calls that
+felt uncertain. Any outOfScope items you nearly included.}
+
+### Prompt Change Suggestions
+{Specific improvements to this SKILL.md that would have made this run cleaner.
+Reference the section by heading. Leave empty if none.}
+```
+
+---
+
 ## Examples
 
 See `examples/` folder for sample inputs and outputs demonstrating:

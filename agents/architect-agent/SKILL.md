@@ -277,6 +277,50 @@ return to PO — the WorkItem scope is too large.
 
 ---
 
+## Run Log
+
+Append your section to `{runFolder}/run-log.md` as the final action of every
+run, regardless of outcome. If the file does not exist (e.g. PO was skipped),
+create it with the run header first:
+
+```markdown
+# Run Log — Issue {issue} — {date}
+```
+
+Then append:
+
+```markdown
+## Architect Agent
+
+**Outcome:** design_doc | needs_refactoring_first | returned_to_po
+**Commits planned:** {count} | **Estimated scope:** {xs|s|m}
+
+### What Broke
+{Freeform. Any WorkItem fields that were underspecified, any codebase patterns
+that were harder to analyse than expected, any compiler probe surprises. Be
+specific. "Nothing" is acceptable if clean.}
+
+### Probe Results
+{For each compiler probe run: what change was made, how many errors surfaced,
+how many files were added to scope as a result. Note any probes that returned
+zero errors but the change still felt risky.}
+
+### Scope Classification Calls
+{Any cases where essential vs. cosmetic was hard to judge. Any refactoring you
+nearly included but didn't, or nearly excluded but did.}
+
+### DesignDoc Gaps
+{Anything you wrote in the commitPlan that felt underspecified at write time —
+i.e., things the Developer might struggle with. Note them here even if you
+couldn't improve them without more information.}
+
+### Prompt Change Suggestions
+{Specific improvements to this SKILL.md that would have made this run cleaner.
+Reference the section by heading. Leave empty if none.}
+```
+
+---
+
 ## Examples
 
 See `examples/` folder for sample inputs and outputs demonstrating:

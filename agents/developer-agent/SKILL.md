@@ -568,6 +568,51 @@ change + its formatting.
 
 ---
 
+## Run Log
+
+ok, Append your section to `{runFolder}/run-log.md` as the final action of every
+run, regardless of outcome. If the file does not exist (e.g. PO or Architect
+was skipped), create it with the run header first:
+
+```markdown
+# Run Log — Issue {issue} — {date}
+```
+
+Then append:
+
+```markdown
+## Developer Agent
+
+**Outcome:** complete | escalated-to-architect | escalated-to-human
+**Steps completed:** {n}/{total} | **Overall result:** {all_criteria_met|partial|failed}
+
+### Step Summary
+| Step | Status | Retries | Escalation |
+|------|--------|---------|------------|
+| 1    | done   | 0       | —          |
+| 2    | failed | 3       | human      |
+
+### What Broke
+{Freeform. Compiler errors that recurred across retries, test failures that were
+hard to diagnose, integration test failures that unit tests missed. Be specific.}
+
+### DesignDoc Gaps Encountered
+{Any step description that was too vague to implement unambiguously. Any file
+path that was wrong or missing. Any testRequired that was impossible to satisfy
+with the described approach. These feed directly back to Architect prompt tuning.}
+
+### Criteria Coverage Gaps
+{Any acceptance criteria from the WorkItem that no completed step's test
+exercises. Note whether this is a DesignDoc gap (no step covered it) or a test
+gap (a step covered it but the test doesn't assert it).}
+
+### Prompt Change Suggestions
+{Specific improvements to this SKILL.md that would have made this run cleaner.
+Reference the section by heading. Leave empty if none.}
+```
+
+---
+
 ## Examples
 
 See `examples/` folder for sample inputs and outputs demonstrating:
