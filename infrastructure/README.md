@@ -1,6 +1,6 @@
 # Infrastructure as Code (Bicep)
 
-This directory contains Azure Bicep templates for provisioning the InDepth Dispenza infrastructure.
+This directory contains Azure Bicep templates for provisioning the Atlas of Alchemy infrastructure.
 
 ## Quick Start
 
@@ -34,11 +34,11 @@ infrastructure/
 The `environment` parameter accepts **any string value** (e.g., `dev`, `prod`, `tmp`, `test`, `yourname`).
 
 This creates resources with that environment suffix:
-- **Resource Group**: `indepth-dispenza-{environment}-rg`
-- **Cosmos DB**: `indepth-dispenza-{environment}-cosmos`
-- **Storage Account**: `indepthdispenza{environment}st`
-- **Function App**: `indepth-dispenza-{environment}-func`
-- **Application Insights**: `indepth-dispenza-{environment}-ai`
+- **Resource Group**: `atlas-of-alchemy-{environment}-rg`
+- **Cosmos DB**: `atlas-of-alchemy-{environment}-cosmos`
+- **Storage Account**: `atlasofalchemy{environment}st`
+- **Function App**: `atlas-of-alchemy-{environment}-func`
+- **Application Insights**: `atlas-of-alchemy-{environment}-ai`
 
 **All environments use the same configuration:**
 - ✅ **Cosmos DB**: Serverless with **free tier** (400 RU/s, 25GB) - perfect for pet projects!
@@ -98,7 +98,7 @@ az deployment sub create \
 az deployment sub create \
   --location westeurope \
   --template-file main.bicep \
-  --parameters environment=test projectName=indepth-dispenza location=westeurope
+  --parameters environment=test projectName=atlas-of-alchemy location=westeurope
 ```
 
 ## What-If Analysis
@@ -137,18 +137,18 @@ az deployment sub show \
 Some secrets need to be added manually (not included in IaC for security):
 
 ```bash
-FUNCTION_APP_NAME="indepth-dispenza-dev-func"
+FUNCTION_APP_NAME="atlas-of-alchemy-dev-func"
 
 # YouTube API Key
 az functionapp config appsettings set \
   --name $FUNCTION_APP_NAME \
-  --resource-group indepth-dispenza-dev-rg \
+  --resource-group atlas-of-alchemy-dev-rg \
   --settings "YouTube__ApiKey=your-youtube-api-key"
 
 # Azure OpenAI (for Story 2)
 az functionapp config appsettings set \
   --name $FUNCTION_APP_NAME \
-  --resource-group indepth-dispenza-dev-rg \
+  --resource-group atlas-of-alchemy-dev-rg \
   --settings \
     "AzureOpenAI__Endpoint=https://your-resource.openai.azure.com/" \
     "AzureOpenAI__ApiKey=your-openai-key" \
@@ -158,8 +158,8 @@ az functionapp config appsettings set \
 ### 2. Get Cosmos DB Connection String
 
 ```bash
-COSMOS_ACCOUNT_NAME="indepth-dispenza-dev-cosmos"
-RESOURCE_GROUP="indepth-dispenza-dev-rg"
+COSMOS_ACCOUNT_NAME="atlas-of-alchemy-dev-cosmos"
+RESOURCE_GROUP="atlas-of-alchemy-dev-rg"
 
 # Get primary key
 az cosmosdb keys list \
@@ -192,7 +192,7 @@ The Function App uses managed identity for Cosmos DB access (no connection strin
 To delete all resources:
 
 ```bash
-az group delete --name indepth-dispenza-dev-rg --yes --no-wait
+az group delete --name atlas-of-alchemy-dev-rg --yes --no-wait
 ```
 
 ## Troubleshooting
@@ -204,7 +204,7 @@ Storage account names must be globally unique. If deployment fails, modify `proj
 ```json
 {
   "projectName": {
-    "value": "indepth-dispenza-yourname"
+    "value": "atlas-of-alchemy-yourname"
   }
 }
 ```
@@ -215,8 +215,8 @@ Check Application Insights logs or run:
 
 ```bash
 az functionapp log tail \
-  --name indepth-dispenza-dev-func \
-  --resource-group indepth-dispenza-dev-rg
+  --name atlas-of-alchemy-dev-func \
+  --resource-group atlas-of-alchemy-dev-rg
 ```
 
 ---
@@ -254,7 +254,7 @@ az account set --subscription $SUBSCRIPTION_ID
 
 # Create a service principal with Contributor role at subscription level
 az ad sp create-for-rbac \
-  --name "indepth-dispenza-github-actions" \
+  --name "atlas-of-alchemy-github-actions" \
   --role Contributor \
   --scopes /subscriptions/$SUBSCRIPTION_ID \
   --sdk-auth

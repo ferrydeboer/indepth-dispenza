@@ -24,7 +24,7 @@ az deployment sub create \
 az deployment sub show --name <deployment-name> --query properties.outputs
 
 # Delete resource group
-az group delete --name indepth-dispenza-dev-rg --yes --no-wait
+az group delete --name atlas-of-alchemy-dev-rg --yes --no-wait
 ```
 
 ## Structure
@@ -46,10 +46,10 @@ Azure OpenAI module exists but is disabled due to regional SKU issues - using ex
 ## Naming Convention
 
 Resources follow `{projectName}-{environment}-{suffix}` pattern:
-- Resource Group: `indepth-dispenza-{env}-rg`
-- Function App: `indepth-dispenza-{env}-func`
-- Cosmos DB: `indepth-dispenza-{env}-cosmos`
-- Storage: `indepthdispenza{env}st` (no hyphens, storage naming rules)
+- Resource Group: `atlas-of-alchemy-{env}-rg`
+- Function App: `atlas-of-alchemy-{env}-func`
+- Cosmos DB: `atlas-of-alchemy-{env}-cosmos`
+- Storage: `atlasofalchemy{env}st` (no hyphens, storage naming rules)
 
 ## CI/CD
 

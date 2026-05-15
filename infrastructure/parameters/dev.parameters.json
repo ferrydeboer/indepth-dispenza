@@ -9,11 +9,11 @@
       "value": "westeurope"
     },
     "projectName": {
-      "value": "indepth-dispenza"
+      "value": "atlas-of-alchemy"
     },
     "tags": {
       "value": {
-        "Project": "InDepth Dispenza",
+        "Project": "Atlas of Alchemy",
         "Environment": "Development",
         "ManagedBy": "Bicep",
         "CostCenter": "Development"

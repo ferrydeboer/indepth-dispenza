@@ -7,11 +7,11 @@ param environment string = 'dev'
 param location string = 'westeurope'
 
 @description('The name of the project')
-param projectName string = 'indepth-dispenza'
+param projectName string = 'atlas-of-alchemy'
 
 @description('Tags to apply to all resources')
 param tags object = {
-  Project: 'InDepth Dispenza'
+  Project: 'Atlas of Alchemy'
   Environment: environment
   ManagedBy: 'Bicep'
 }

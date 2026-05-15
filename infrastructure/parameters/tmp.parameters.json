@@ -9,11 +9,11 @@
       "value": "canadacentral"
     },
     "projectName": {
-      "value": "indepth-dispenza"
+      "value": "atlas-of-alchemy"
     },
     "tags": {
       "value": {
-        "Project": "InDepth Dispenza",
+        "Project": "Atlas of Alchemy",
         "Environment": "Temporary",
         "ManagedBy": "Bicep",
         "CostCenter": "Testing",
