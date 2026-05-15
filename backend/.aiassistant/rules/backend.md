@@ -22,13 +22,13 @@ it in individual tests using `with` expressions for records.
 ## Layers & Modules
 * Azure Functions should not execute any business logic themselves.
 * The Azure Functions only propagate requests to the domain layer which now resides 
-in `InDepthDispenza.Functions/VideoAnalysis`.
+in `AtlasOfAlchemy.Functions/VideoAnalysis`.
 
 ## Error Handling
-* Third party services in `InDepthDispenza.Functions/VideoAnalysis`
+* Third party services in `AtlasOfAlchemy.Functions/VideoAnalysis`
   * propagate errors using exceptions only.
   * These are module specific exception types tailored to convey information about the recoverability of the error.
-* Business services in `InDepthDispenza.Functions/VideoAnalysis`
+* Business services in `AtlasOfAlchemy.Functions/VideoAnalysis`
   * handle expected exception and use `ServiceResult` types to return the information.
   * let unexpected exception that can't be handled still propagate to higher layers for specific exception handling 
   and recovery strategies
